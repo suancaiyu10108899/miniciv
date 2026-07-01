@@ -21,10 +21,12 @@ _SEED = 42
 _MESSAGE = ""
 _AI_TYPE = "rulesrandom"  # "rulesrandom" | "flash"
 _FLASH_THINKING = ""  # 最近一次 Flash 思考过程
+_AUTO_MODE = False  # AI vs AI 自动模式
+_AUTO_TIMER = None
 
 
 def _reset():
-    global _GAME, _FOGS, _AI_RNG, _MESSAGE, _FLASH_THINKING
+    global _GAME, _FOGS, _AI_RNG, _MESSAGE, _FLASH_THINKING, _AUTO_MODE
     from prototype.fow import init_fog, update_fog
     _GAME = init_game(seed=_SEED, size=_SIZE, generator_id=_GENERATOR_ID)
     _FOGS = init_fog(_SIZE)
@@ -32,6 +34,7 @@ def _reset():
     _AI_RNG = random.Random(_SEED + 1)
     _MESSAGE = ""
     _FLASH_THINKING = ""
+    _AUTO_MODE = False
     clear_flash_log()
 
 
@@ -64,18 +67,26 @@ def _render_html():
             ch = "."
             fg = "#fff"
             # 迷雾
-            if not _is_visible(x, y, human):
+            from prototype.fow import Visibility
+            fv = _FOGS[human][y][x] if _FOGS else Visibility.VISIBLE
+            if fv == Visibility.UNKNOWN:
                 cells.append(f'<div class=c style=background:#111></div>')
                 continue
+            is_vis = (fv == Visibility.VISIBLE)
             t = gs.grid[y][x]["terrain"]
             bg = _TERRAIN_COLORS.get(t.name, "#333")
+            # EXPLORED: 暗色调
+            if not is_vis:
+                bg = {"PLAIN": "#4a5e4a", "FOREST": "#1a3e1a", "MOUNTAIN": "#4a4a4a",
+                      "WATER": "#0a2a5a", "CITY": "#5a3a00"}.get(t.name, "#333")
             ch = {"PLAIN": ".", "FOREST": ".", "MOUNTAIN": ".", "WATER": ".", "CITY": ""}.get(t.name, ".")
-            # 单位
-            for u in gs.units:
-                if u.alive and u.x == x and u.y == y:
-                    fg = _PLAYER_COLORS.get(u.player_id, "#fff")
-                    ch = _UNIT_CHARS.get(u.unit_type, "?")
-                    ch = ch.upper() if u.player_id == 0 else ch.lower()
+            # 单位——只在 VISIBLE 时显示
+            if is_vis:
+                for u in gs.units:
+                    if u.alive and u.x == x and u.y == y:
+                        fg = _PLAYER_COLORS.get(u.player_id, "#fff")
+                        ch = _UNIT_CHARS.get(u.unit_type, "?")
+                        ch = ch.upper() if u.player_id == 0 else ch.lower()
             # 城市
             for c in cities:
                 if c.x == x and c.y == y:
@@ -109,8 +120,12 @@ def _render_html():
     if gs.winner is not None:
         winner_html = f'<div style="color:#ff0;font-size:20px;margin:12px">🏆 P{gs.winner} 获胜! ({gs.victory_type})</div>'
 
+    auto_js = ""
+    if _AUTO_MODE and gs.winner is None:
+        auto_js = '<script>setTimeout(function(){document.forms[0].act.value="end";document.forms[0].submit();},2500);</script>'
+
     return f'''<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>miniciv — P{human} vs AI</title>
+<html><head><meta charset="utf-8"><title>miniciv — P{human} vs AI</title>{auto_js}
 <style>
 body{{font-family:monospace;background:#1a1a2e;color:#eee;margin:0;padding:8px}}
 .r{{display:flex}}
@@ -148,6 +163,7 @@ h3{{margin:4px 0;color:#e94560}}
 产兵: <button name=act value=ui>步兵</button><button name=act value=ua>弓箭</button><button name=act value=uc>骑兵</button><button name=act value=skip_prod>跳过</button><br>
 研究: <select name=tech>{tech_opts}</select> <button name=act value=research>研究</button> <button name=act value=skip_res>跳过</button><br>
 <button name=act value=end style=background:#e94560;font-size:16px;padding:8px 24px>▶ 执行回合</button>
+<button name=act value=auto_run style=background:#ff0;color:#000;font-size:14px>⚡ 自动对战</button>
 </form>
 <div style=margin-top:8px>
 <form method=post action=/reset>
@@ -161,7 +177,8 @@ AI: <select name=ai><option value=rulesrandom>RulesRandom(本地)</option><optio
 </div></div>
 <div style=font-size:10px;color:#666;margin-top:8px>科技树: M1(锻造+5ATK)→M2(骑冲+5)/M3(步防+10)→M4(+10HP) | E1(粮+1)→E2(木+1)/E3(金+1)→E4(工+1速) | C1→C2(城+100HP)/C3(研速÷2)→C4(+2粮)→C5(★建设胜利)</div>
 <div style=margin-top:8px;font-size:11px;color:#aaa;max-height:200px;overflow-y:auto;background:#111;padding:6px;border-radius:4px>
-<b>AI 思考过程 ({_AI_TYPE}):</b><br>{_FLASH_THINKING.replace(chr(10),'<br>') if _FLASH_THINKING else '等待执行回合...'}
+{'<div style=background:#0a0;color:#000;padding:8px;border-radius:4px;margin:4px 0><b>自动对战模式</b> — 每3秒自动执行一回合</div>' if _AUTO_MODE else ''}
+<b>AI 思考过程 ({_AI_TYPE}):</b><br><pre style=white-space:pre-wrap;margin:0;font-size:11px>{_FLASH_THINKING if _FLASH_THINKING else '等待执行回合...'}</pre>
 </div>
 </body></html>'''
 
@@ -170,7 +187,8 @@ def _is_visible(x, y, pid):
     if _FOGS is None:
         return True
     from prototype.fow import Visibility
-    return _FOGS[pid][y][x] == Visibility.VISIBLE
+    v = _FOGS[pid][y][x]
+    return v in (Visibility.VISIBLE, Visibility.EXPLORED)  # 已探索的也显示地形
 
 
 # ─── HTTP 处理器 ─────────────────────────────────
@@ -211,31 +229,40 @@ class GameHandler(http.server.BaseHTTPRequestHandler):
             human = _HUMAN_PID
             ai = 1 - human
 
-            if act == 'end':
-                global _FLASH_THINKING
+            if act == 'end' or act == 'auto_run':
+                global _FLASH_THINKING, _AUTO_MODE
+                if act == 'auto_run':
+                    _AUTO_MODE = True
                 ai_pid = 1 - human
-                # AI 决策
+                # AI 决策（自动模式=双方都用AI）
                 if _AI_TYPE == "flash":
                     a0 = ai_flash_decide_simple(_GAME, 0)
                     a1 = ai_flash_decide_simple(_GAME, 1)
-                    # 提取思考
                     log = get_flash_log()
                     if log:
-                        last = log[-1]
-                        _FLASH_THINKING = (f"[P{last['pid']}] " + last.get('reasoning', '')[:1500])
+                        lines = []
+                        for entry in log[-2:]:
+                            lines.append(f"[P{entry['pid']}] {entry.get('reasoning','')[:800]}")
+                        _FLASH_THINKING = '\n---\n'.join(lines)
                 else:
                     a0 = ai_decide(_GAME, 0, _AI_RNG)
                     a1 = ai_decide(_GAME, 1, _AI_RNG)
                     _FLASH_THINKING = ""
-                buf = _get_buffer()
-                if human == 0:
-                    step_game(_GAME, buf, a1)
+
+                if _AUTO_MODE:
+                    # 双方 AI 对打
+                    step_game(_GAME, a0, a1)
+                    _MESSAGE = f"自动 T{_GAME.turn} (AI vs AI)"
                 else:
-                    step_game(_GAME, a0, buf)
+                    buf = _get_buffer()
+                    if human == 0:
+                        step_game(_GAME, buf, a1)
+                    else:
+                        step_game(_GAME, a0, buf)
+                    buf.clear()
+                    _MESSAGE = f"回合 {_GAME.turn} 完成 (AI: {_AI_TYPE})"
                 from prototype.fow import update_fog
                 update_fog(_GAME, _FOGS)
-                buf.clear()
-                _MESSAGE = f"回合 {_GAME.turn} 完成 (AI: {_AI_TYPE})"
             else:
                 # 缓存人类动作
                 ui = int(params.get('ui', ['0'])[0])

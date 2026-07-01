@@ -33,13 +33,7 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
         if act:
             actions.append(act)
 
-    # 暴兵
-    for ut in ["cavalry", "archer", "infantry"]:
-        if econ.can_afford(UNIT_COST[ut]):
-            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
-            break
-
-    # 研究：优先战斗线
+    # === 研究优先 (先研究再生产) ===
     if tech.researching is None:
         avail = tech.available_to_research()
         order = ["M1", "M2", "M3", "E1", "E2", "E3", "M4", "C1"]
@@ -47,6 +41,12 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
             if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                 break
+
+    # 暴兵 (研究后剩余资源)
+    for ut in ["cavalry", "archer", "infantry"]:
+        if econ.can_afford(UNIT_COST[ut]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
+            break
 
     return actions
 
@@ -142,19 +142,27 @@ def _nearest_missing(unit, gs, pid, has_f, has_l, has_m):
 
 
 def _move_to(unit, ui, gs, target, rng):
+    """向目标移动一步, 地形偏好"""
     legal = get_single_step_moves(unit, gs.grid)
     if not legal:
         return {"unit_idx": ui, "type": "end_turn"}
     tx, ty = target
     def td(a, b, s): return min(abs(b - a), s - abs(b - a))
-    best, best_d = [], 999
+    best, best_score = [], -999
     for mv in legal:
         nx, ny = (unit.x + mv[0]) % gs.size, (unit.y + mv[1]) % gs.size
         d = td(nx, tx, gs.size) + td(ny, ty, gs.size)
-        if d < best_d:
-            best_d = d
+        terrain = get_terrain(gs.grid, nx, ny)
+        def_bonus = terrain_def_bonus(terrain)
+        score = -d + def_bonus * 0.15
+        if terrain == Terrain.WATER:
+            score -= 100
+        if terrain == Terrain.MOUNTAIN and not unit.can_enter_mountain:
+            score -= 100
+        if score > best_score:
+            best_score = score
             best = [mv]
-        elif d == best_d:
+        elif abs(score - best_score) < 0.001:
             best.append(mv)
     mv = rng.choice(best)
     return {"unit_idx": ui, "type": "move", "dx": mv[0], "dy": mv[1]}

@@ -44,11 +44,11 @@ UNIT_STATS = {
 
 # (粮食花费, 木材花费, 金币花费)
 UNIT_COST = {
-    "infantry":  (8, 0, 0),
-    "cavalry":   (8, 0, 5),
-    "archer":    (5, 5, 0),
-    "scout":     (5, 0, 0),
-    "worker":    (5, 0, 0),
+    "infantry":  (5, 0, 0),
+    "cavalry":   (5, 0, 3),
+    "archer":    (3, 3, 0),
+    "scout":     (3, 0, 0),
+    "worker":    (3, 0, 0),
 }
 
 # ─── 地形战斗加成 ─────────────────────────────────
@@ -62,7 +62,7 @@ CITY_DAMAGE = 20
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
 # ─── 经济 ──────────────────────────────────────────
-STARTING_RESOURCES = {"food": 15, "wood": 15, "gold": 15}
+STARTING_RESOURCES = {"food": 25, "wood": 25, "gold": 25}
 STARTING_UNITS = {"worker": 3, "scout": 1}
 FACILITY_OUTPUT = {"farm": {"food": 3}, "lumbermill": {"wood": 3}, "mine": {"gold": 3}}
 
@@ -77,11 +77,11 @@ TECH_TREE = {
     "E2":  {"cost": (0, 3, 0),   "turns": 1, "requires": ["E1"],     "effect": "lumbermill_wood+1"},
     "E3":  {"cost": (5, 0, 3),   "turns": 1, "requires": ["E1"],     "effect": "mine_gold+1"},
     "E4":  {"cost": (8, 8, 0),   "turns": 1, "requires": ["E2","E3"],"effect": "worker_move+1"},
-    "C1":  {"cost": (10, 10, 5), "turns": 1, "requires": [],         "effect": "unlock_construction"},
-    "C2":  {"cost": (8, 12, 0),  "turns": 1, "requires": ["C1"],     "effect": "city_hp+50"},
-    "C3":  {"cost": (10, 10, 10),"turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
-    "C4":  {"cost": (12, 5, 5),  "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
-    "C5":  {"cost": (20, 20, 20),"turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
+    "C1":  {"cost": (6, 6, 3),   "turns": 1, "requires": [],         "effect": "unlock_construction"},
+    "C2":  {"cost": (5, 7, 0),   "turns": 1, "requires": ["C1"],     "effect": "city_hp+30"},
+    "C3":  {"cost": (6, 6, 6),   "turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
+    "C4":  {"cost": (7, 3, 3),   "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
+    "C5":  {"cost": (4, 4, 4),   "turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
 }
 
 # ─── 迷雾 ──────────────────────────────────────────

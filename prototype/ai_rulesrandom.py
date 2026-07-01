@@ -46,12 +46,12 @@ def ai_decide(gs, pid: int, rng: _random.Random | None = None) -> list[dict]:
             actions.append(act)
             assigned.add(ui)
 
-    # 城市生产
-    if rng.random() < 0.5:
-        cheapest = _cheapest_affordable(econ)
-        if cheapest:
+    # 城市生产（偏向战斗单位，有资源就造）
+    if rng.random() < 0.7:
+        preferred = _prefer_combat_unit(econ, tech)
+        if preferred:
             actions.append({"unit_idx": -1, "type": "produce_unit",
-                           "unit_type": cheapest})
+                           "unit_type": preferred})
 
     # 研究
     if tech.researching is None:
@@ -72,36 +72,71 @@ TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
 
 
 def _worker_action(worker, ui, gs, pid, econ, rng):
-    """工人 AI"""
+    """工人 AI：确保三类设施各≥1 → 然后生产"""
     x, y = worker.x, worker.y
     terrain = get_terrain(gs.grid, x, y)
-
-    # 1. 当前格已有己方设施→生产
     facility = gs.grid[y % gs.size][x % gs.size].get("facility")
-    if facility and facility.player_id == pid:
-        return {"unit_idx": ui, "type": "produce"}
+    has_farm, has_lumb, has_mine = _count_my_facilities(gs, pid)
 
-    # 2. 当前格可建且未建→建造
+    # 如果设施不全且当前格已有设施→离开去找缺失的
+    if facility and facility.player_id == pid:
+        if has_farm and has_lumb and has_mine:
+            return {"unit_idx": ui, "type": "produce"}  # 齐了，生产
+        # 不全→去建缺失的
+        target = _find_nearest_resource(worker, gs, pid)
+        if target:
+            return _move_toward(worker, ui, gs, target, rng)
+
+    # 当前格可建→只在缺少该类型时建
     buildable = terrain_buildable(terrain)
     if buildable and not facility:
-        return {"unit_idx": ui, "type": "build"}
+        need = ((buildable == "farm" and not has_farm) or
+                (buildable == "lumbermill" and not has_lumb) or
+                (buildable == "mine" and not has_mine))
+        if need:
+            return {"unit_idx": ui, "type": "build"}
 
-    # 3. 移动到最近的可建/可生产格
+    # 去最近的新资源
     target = _find_nearest_resource(worker, gs, pid)
     if target:
-        tx, ty = target
-        dx = 1 if tx > x else (-1 if tx < x else 0)
-        dy = 1 if ty > y else (-1 if ty < y else 0)
-        # 简单：只走一步
-        legal = get_single_step_moves(worker, gs.grid)
-        if (dx, dy) in legal:
-            return {"unit_idx": ui, "type": "move", "dx": dx, "dy": dy}
-        # 尝试任意合法方向
-        if legal:
-            mv = rng.choice(legal)
-            return {"unit_idx": ui, "type": "move", "dx": mv[0], "dy": mv[1]}
+        return _move_toward(worker, ui, gs, target, rng)
 
     return {"unit_idx": ui, "type": "end_turn"}
+
+
+def _count_my_facilities(gs, pid):
+    """统计pid玩家已有哪些类型的设施"""
+    has_farm = has_lumb = has_mine = False
+    for y in range(gs.size):
+        for x in range(gs.size):
+            f = gs.grid[y][x].get("facility")
+            if f and f.player_id == pid:
+                if f.facility_type == "farm": has_farm = True
+                elif f.facility_type == "lumbermill": has_lumb = True
+                elif f.facility_type == "mine": has_mine = True
+    return has_farm, has_lumb, has_mine
+
+
+def _move_toward(unit, ui, gs, target, rng):
+    """向目标格移动一步"""
+    tx, ty = target
+    legal = get_single_step_moves(unit, gs.grid)
+    if not legal:
+        return {"unit_idx": ui, "type": "end_turn"}
+    # 选最接近目标的方向
+    def td(a, b, s): return min(abs(b-a), s-abs(b-a))
+    best = []
+    best_dist = 999
+    for mv in legal:
+        nx = (unit.x + mv[0]) % gs.size
+        ny = (unit.y + mv[1]) % gs.size
+        d = td(nx, tx, gs.size) + td(ny, ty, gs.size)
+        if d < best_dist:
+            best_dist = d; best = [mv]
+        elif d == best_dist:
+            best.append(mv)
+    mv = rng.choice(best)
+    return {"unit_idx": ui, "type": "move", "dx": mv[0], "dy": mv[1]}
 
 
 def _scout_action(scout, ui, gs, rng):
@@ -156,19 +191,10 @@ def _combat_action(unit, ui, gs, pid, opp_city, rng):
 
 def _find_nearest_resource(worker, gs, pid):
     """找最近的可建资源格。优先还没有己方设施的资源类型。"""
-    # 检查已有设施覆盖了哪些资源类型
-    has_farm = has_lumbermill = has_mine = False
-    for y in range(gs.size):
-        for x in range(gs.size):
-            f = gs.grid[y][x].get("facility")
-            if f and f.player_id == pid:
-                if f.facility_type == "farm": has_farm = True
-                elif f.facility_type == "lumbermill": has_lumbermill = True
-                elif f.facility_type == "mine": has_mine = True
+    has_farm, has_lumb, has_mine = _count_my_facilities(gs, pid)
 
     def td(a, b, s): return min(abs(b-a), s-abs(b-a))
 
-    # 优先找还没覆盖的资源类型
     targets = []
     for y in range(gs.size):
         for x in range(gs.size):
@@ -176,37 +202,29 @@ def _find_nearest_resource(worker, gs, pid):
             buildable = terrain_buildable(terrain)
             if buildable is None:
                 continue
-            # 跳过已有己方设施的格
             f = gs.grid[y][x].get("facility")
             if f and f.player_id == pid:
-                continue
-            # 跳过被敌方设施占的格
+                continue  # 跳过已有己方设施的格
             if f:
-                continue
-            # 标记是否是新资源类型
+                continue  # 敌方设施跳过
             is_new = ((buildable == "farm" and not has_farm) or
-                      (buildable == "lumbermill" and not has_lumbermill) or
+                      (buildable == "lumbermill" and not has_lumb) or
                       (buildable == "mine" and not has_mine))
             d = td(worker.x, x, gs.size) + td(worker.y, y, gs.size)
             targets.append((d, is_new, x, y))
 
     if not targets:
         return None
-    # 新资源类型优先，同类型取最近
     targets.sort(key=lambda t: (not t[1], t[0]))
     return (targets[0][2], targets[0][3])
 
 
-def _cheapest_affordable(econ):
-    """返回当前可买的最便宜战斗单位"""
-    combat_units = ["infantry", "archer", "cavalry", "scout"]
-    affordable = []
-    for ut in combat_units:
+def _prefer_combat_unit(econ, tech):
+    """返回当前应生产的战斗单位。优先能买得起的，偏向多样性。"""
+    # 优先顺序：骑兵(最贵但最强) > 弓箭 > 步兵(最便宜)
+    order = ["cavalry", "archer", "infantry", "scout"]
+    for ut in order:
         c = UNIT_COST[ut]
         if econ.can_afford(c):
-            affordable.append((ut, c))
-    if not affordable:
-        return None
-    # 按总花费排序
-    affordable.sort(key=lambda x: sum(x[1]))
-    return affordable[0][0]
+            return ut
+    return None

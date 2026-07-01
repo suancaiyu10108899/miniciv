@@ -8,17 +8,20 @@ FLASH_KEY = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
 FLASH_MODEL = "deepseek-v4-flash"
 
 
-def _call_api(messages: list, max_tokens: int = 200) -> dict:
+def _call_api(messages: list, max_tokens: int = 200, no_think: bool = False) -> dict:
     """调用 Flash API"""
-    body = json.dumps({
+    payload = {
         "model": FLASH_MODEL,
         "max_tokens": max_tokens,
         "messages": messages,
-    }).encode()
+    }
+    if no_think:
+        payload["thinking"] = {"type": "disabled"}
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(FLASH_URL, data=body,
         headers={"Content-Type": "application/json", "x-api-key": FLASH_KEY},
         method="POST")
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=120) as resp:
         return json.loads(resp.read())
 
 
@@ -80,12 +83,14 @@ C1(unlock construction)→C2(city+100HP)/C3(research speed x2)→C4(city+2food)�
 
 Reply ONLY with JSON: {{"actions": [action_dicts...], "reasoning": "brief explanation of your strategy"}}"""
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {"role": "user", "content": prompt + "\n\n用中文回复。在JSON的reasoning字段中写出你的策略思考(≤300字)，actions字段列出所有动作。只输出JSON，不要其他内容。"},
+    ]
 
     # 重试最多 3 次（API 可能返回不完整 JSON）
     for attempt in range(3):
         try:
-            resp = _call_api(messages, max_tokens=2000)
+            resp = _call_api(messages, max_tokens=500, no_think=True)
             # 提取 text（JSON 动作）和 thinking（思考过程）
             thinking = ""
             text = ""

@@ -21,6 +21,7 @@
       "Bash(curl *)",
       "Bash(which *)",
       "Bash(python3 *)"
-    ]
+    ],
+    "defaultMode": "acceptEdits"
   }
 }

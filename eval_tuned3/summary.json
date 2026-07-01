@@ -1,0 +1,119 @@
+{
+  "config": {
+    "games_per_pair": 300,
+    "size": 15,
+    "gen": "balanced"
+  },
+  "pairs": [
+    {
+      "ai0": "random",
+      "ai1": "random",
+      "n": 300,
+      "p0_winrate": 0.49666666666666665,
+      "p1_winrate": 0.5033333333333333,
+      "conquests": 300,
+      "constructions": 0,
+      "tiebreaks": 0,
+      "avg_turns": 20.173333333333332,
+      "avg_dead": 8.826666666666666
+    },
+    {
+      "ai0": "random",
+      "ai1": "greedy",
+      "n": 300,
+      "p0_winrate": 0.22,
+      "p1_winrate": 0.78,
+      "conquests": 95,
+      "constructions": 165,
+      "tiebreaks": 40,
+      "avg_turns": 83.70666666666666,
+      "avg_dead": 47.74666666666667
+    },
+    {
+      "ai0": "random",
+      "ai1": "aggressive",
+      "n": 300,
+      "p0_winrate": 0.2633333333333333,
+      "p1_winrate": 0.7366666666666667,
+      "conquests": 200,
+      "constructions": 69,
+      "tiebreaks": 31,
+      "avg_turns": 69.84,
+      "avg_dead": 35.27333333333333
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "random",
+      "n": 300,
+      "p0_winrate": 0.9066666666666666,
+      "p1_winrate": 0.09333333333333334,
+      "conquests": 117,
+      "constructions": 153,
+      "tiebreaks": 30,
+      "avg_turns": 81.16333333333333,
+      "avg_dead": 45.23
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "greedy",
+      "n": 300,
+      "p0_winrate": 0.69,
+      "p1_winrate": 0.31,
+      "conquests": 44,
+      "constructions": 167,
+      "tiebreaks": 89,
+      "avg_turns": 93.59333333333333,
+      "avg_dead": 48.24666666666667
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "aggressive",
+      "n": 300,
+      "p0_winrate": 0.9033333333333333,
+      "p1_winrate": 0.09666666666666666,
+      "conquests": 60,
+      "constructions": 240,
+      "tiebreaks": 0,
+      "avg_turns": 90.79,
+      "avg_dead": 51.28333333333333
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "random",
+      "n": 300,
+      "p0_winrate": 0.76,
+      "p1_winrate": 0.24,
+      "conquests": 197,
+      "constructions": 76,
+      "tiebreaks": 27,
+      "avg_turns": 68.63,
+      "avg_dead": 34.39
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "greedy",
+      "n": 300,
+      "p0_winrate": 0.12666666666666668,
+      "p1_winrate": 0.8733333333333333,
+      "conquests": 62,
+      "constructions": 238,
+      "tiebreaks": 0,
+      "avg_turns": 91.76333333333334,
+      "avg_dead": 57.60333333333333
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "aggressive",
+      "n": 300,
+      "p0_winrate": 0.85,
+      "p1_winrate": 0.15,
+      "conquests": 54,
+      "constructions": 0,
+      "tiebreaks": 246,
+      "avg_turns": 90.80666666666667,
+      "avg_dead": 53.306666666666665
+    }
+  ],
+  "total_games": 2700,
+  "elapsed_s": 12.5
+}

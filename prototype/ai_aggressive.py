@@ -36,7 +36,7 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
     # === 研究优先 (先研究再生产) ===
     if tech.researching is None:
         avail = tech.available_to_research()
-        order = ["M1", "M2", "M3", "E1", "E2", "E3", "M4", "C1"]
+        order = ["M1", "C1", "M2", "E1", "C2", "M3", "E2", "C3", "M4", "E3", "C4", "E4", "C5"]
         for t in order:
             if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})

@@ -1,4 +1,8 @@
-# prototype/ai_flatmc.py — FlatMC v2: 偏向进攻的rollout + 进度奖励
+# prototype/ai_flatmc.py — FlatMC v3: 精确对手建模
+# 核心思路：
+# 1. rolloute中己方用Greedy AI（近似Future FlatMC行为）
+# 2. 对手用实际Random AI(ai_rulesrandom)，使推演对手行为匹配真实对局
+# 3. 评分聚焦城市HP差和防守
 import random as _random, copy as _copy
 from prototype.movement import get_single_step_moves
 from prototype.mapgen import get_terrain
@@ -8,10 +12,23 @@ from prototype.economy import worker_action_build, worker_action_produce, produc
 from prototype.constants import TECH_TREE as _TECH_TREE, UNIT_COST, CITY_DAMAGE
 TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
 
+from prototype.ai_greedy import ai_decide as _greedy_decide
+from prototype.ai_rulesrandom import ai_decide as _random_decide
+from prototype.game import step_game
+
 
 class FlatMCAgent:
-    def __init__(self, simulations: int = 25):
+    """FlatMC Agent with exact opponent modeling.
+
+    对每个合法动作运行多次rollout:
+    -己方(Greedy AI) vs 对手(Random AI)
+    -评分器聚焦城市HP差和防守
+    -depth=20覆盖完整对局长度
+    """
+
+    def __init__(self, simulations: int = 15, rollout_depth: int = 20):
         self.sims = simulations
+        self.rollout_depth = rollout_depth
 
     def decide(self, gs, pid: int, rng=None) -> list[dict]:
         if rng is None:
@@ -29,9 +46,10 @@ class FlatMCAgent:
             best_act, best_score = (0, 0), -99999
             for mv in legal:
                 total = 0.0
-                sims_per = max(1, self.sims // len(legal))
+                sims_per = max(2, self.sims // len(legal))
                 for _ in range(sims_per):
-                    score = _rollout(gs, pid, ui, mv, rng)
+                    score = _rollout_mirror(gs, pid, ui, mv, rng,
+                                            self.rollout_depth)
                     total += score
                 avg = total / sims_per
                 if avg > best_score:
@@ -46,11 +64,9 @@ class FlatMCAgent:
         tech = gs.techs[pid]
         if tech.researching is None:
             avail = tech.available_to_research()
-            from prototype.constants import TECH_TREE as TT
-            TC = {k: v["cost"] for k, v in TT.items()}
-            avail.sort(key=lambda t: -sum(TC.get(t, (0, 0, 0))))
+            avail.sort(key=lambda t: -sum(TECH_TREE_COST.get(t, (0, 0, 0))))
             for t in avail:
-                if econ.can_afford(TC.get(t, (99, 99, 99))):
+                if econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                     actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                     break
         for ut in ["cavalry", "archer", "infantry"]:
@@ -61,160 +77,101 @@ class FlatMCAgent:
         return actions
 
 
-def _rollout(gs, pid, unit_idx, first_move, rng):
-    """v2 rollout: 偏向进攻的模拟 + 进度奖励"""
+def _rollout_mirror(gs, pid, unit_idx, first_move, rng, depth):
+    """
+    Mirror rollout: 己方用Greedy AI，对手用实际Random AI。
+    推演结果用于评估first_move的质量。
+    """
     sim = _copy.deepcopy(gs)
-    sim.rng = _random.Random(rng.randint(0, 999999))
     opp = 1 - pid
-    my_city = sim.cities[pid]
-    opp_city = sim.cities[opp]
 
-    # 地图最大距离
-    max_dist = sim.size * 2
+    rollout_rng = _random.Random(rng.randint(0, 999999))
 
-    # 应用第一步
+    # 应用第一步 = 强制指定单位按给定方向移动
     u = None
     for i, uu in enumerate(sim.units):
-        if i == unit_idx:
+        if i == unit_idx and uu.player_id == pid:
             u = uu
             break
     if u and u.alive and first_move != (0, 0):
-        nx, ny = (u.x + first_move[0]) % sim.size, (u.y + first_move[1]) % sim.size
+        nx = (u.x + first_move[0]) % sim.size
+        ny = (u.y + first_move[1]) % sim.size
         blocker = next((eu for eu in sim.units
                         if eu.alive and eu.player_id != pid
                         and eu.x == nx and eu.y == ny), None)
         if blocker:
             t_att = get_terrain(sim.grid, u.x, u.y)
             t_def = get_terrain(sim.grid, blocker.x, blocker.y)
-            resolve_melee(u, blocker, t_att, t_def)
+            result = resolve_melee(u, blocker, t_att, t_def)
             if u.alive and not blocker.alive:
                 u.x, u.y = nx, ny
+                opp_city = sim.cities[opp]
+                if nx == opp_city.x and ny == opp_city.y:
+                    dmg = max(1, u.atk - opp_city.def_)
+                    opp_city.hp -= dmg
+                    if opp_city.hp <= 0:
+                        opp_city.hp = 0
+                        sim.winner = pid
+                        sim.victory_type = "conquest"
         else:
             u.x, u.y = nx, ny
+            opp_city = sim.cities[opp]
+            if nx == opp_city.x and ny == opp_city.y:
+                dmg = max(1, u.atk - opp_city.def_)
+                opp_city.hp -= dmg
+                if opp_city.hp <= 0:
+                    opp_city.hp = 0
+                    sim.winner = pid
+                    sim.victory_type = "conquest"
 
-    # 记录初始状态用于进度计算
-    initial_dist = _td(u.x, opp_city.x, sim.size) + _td(u.y, opp_city.y, sim.size) if u and u.alive else max_dist
-    initial_opp_hp = opp_city.hp
-    progress_score = 0.0
-    damage_dealt = 0
-
-    # 偏向进攻的rollout (不是纯随机)
-    sim_turns = min(sim.turn + 15, 100)
+    # Rollout循环: 己方Greedy AI, 对手Random AI
+    sim_turns = min(sim.turn + depth, 100)
     while sim.turn < sim_turns and sim.winner is None:
-        sim.turn += 1
-        for p in (0, 1):
-            for uu in [u for u in sim.units if u.player_id == p and u.alive]:
-                legal = get_single_step_moves(uu, sim.grid)
-                if not legal:
-                    continue
-
-                # 偏向进攻: 70%向敌城, 30%随机
-                if sim.rng.random() < 0.7 and p != pid:
-                    # 偏向进攻(对手模拟): 向我的城市推进
-                    target = (sim.cities[1-p].x, sim.cities[1-p].y)
-                    mv = _pick_toward(uu, legal, target, sim)
-                elif sim.rng.random() < 0.7 and p == pid:
-                    # 偏向进攻(我方模拟): 向敌城推进
-                    mv = _pick_toward(uu, legal, (opp_city.x, opp_city.y), sim)
-                else:
-                    mv = sim.rng.choice(legal + [(0, 0)])
-
-                if mv == (0, 0):
-                    continue
-
-                nx, ny = (uu.x + mv[0]) % sim.size, (uu.y + mv[1]) % sim.size
-                blocker = next((eu for eu in sim.units
-                                if eu.alive and eu.player_id != p
-                                and eu.x == nx and eu.y == ny), None)
-                if blocker:
-                    t_att = get_terrain(sim.grid, uu.x, uu.y)
-                    t_def = get_terrain(sim.grid, blocker.x, blocker.y)
-                    result = resolve_melee(uu, blocker, t_att, t_def)
-
-                    # 追踪伤害
-                    if p == pid:
-                        damage_dealt += result["att_damage"]
-                    else:
-                        damage_dealt -= result["def_damage"]
-
-                    if uu.alive and not blocker.alive:
-                        uu.x, uu.y = nx, ny
-                        for c in sim.cities:
-                            if c.player_id != p and c.x == nx and c.y == ny:
-                                dmg = max(1, uu.atk - c.def_)
-                                c.hp -= dmg
-                                if p == pid:
-                                    progress_score += dmg * 5  # 对敌城造成伤害=高分
-                                if c.hp <= 0:
-                                    c.hp = 0
-                                    sim.winner = p
-                                    sim.victory_type = "conquest"
-                else:
-                    uu.x, uu.y = nx, ny
-
-        # 城市防守伤害
-        for p in (0, 1):
-            city = sim.cities[p]
-            for uu in sim.units:
-                if uu.alive and uu.player_id != p and uu.x == city.x and uu.y == city.y:
-                    uu.hp -= CITY_DAMAGE
-                    if uu.hp <= 0:
-                        uu.hp = 0
-                        uu.alive = False
-                    if p == pid:
-                        damage_dealt += CITY_DAMAGE
-
-        # 经济
-        for p in (0, 1):
-            sim.economies[p].food += 1  # city base
-
-        sim.units = [u for u in sim.units if u.alive]
+        if pid == 0:
+            p0_actions = _greedy_decide(sim, 0, rollout_rng)
+            p1_actions = _random_decide(sim, 1, rollout_rng)
+        else:
+            p0_actions = _random_decide(sim, 0, rollout_rng)
+            p1_actions = _greedy_decide(sim, 1, rollout_rng)
+        step_game(sim, p0_actions, p1_actions)
 
     # === 评分 ===
     if sim.winner == pid:
-        return 500  # 我方胜利
+        return 500.0
     elif sim.winner == opp:
-        return -500  # 敌方胜利
+        return -500.0
 
-    # 进度分
-    if u and u.alive:
-        final_dist = _td(u.x, opp_city.x, sim.size) + _td(u.y, opp_city.y, sim.size)
-        progress_score += (initial_dist - final_dist) * 3  # 接近敌城=正分
+    # 未分胜负时的评分（重点防守）
+    my_city_hp = sim.cities[pid].hp
+    opp_city_hp = sim.cities[opp].hp
 
-    # 城市伤害
-    progress_score += (initial_opp_hp - opp_city.hp) * 2
+    # 城市HP差: 对我方城市HP的保留给予高分，对敌方城市HP减少也给予高分
+    score = 0.0
+    score -= (100 - my_city_hp) * 12.0  # 己方城市每掉1HP = -12
+    score += (100 - opp_city_hp) * 8.0  # 敌方城市每掉1HP = +8
 
-    # 伤害分
-    progress_score += damage_dealt * 0.5
-
-    # 存活单位分
+    # 单位优势
     my_alive = sum(1 for uu in sim.units if uu.player_id == pid and uu.alive)
     opp_alive = sum(1 for uu in sim.units if uu.player_id == opp and uu.alive)
-    progress_score += (my_alive - opp_alive) * 5
+    score += (my_alive - opp_alive) * 10.0
 
-    return progress_score
+    # 城郊防御: 接近己方城市的敌方单位给负分
+    def td(a, b, s): return min(abs(b - a), s - abs(b - a))
+    for uu in sim.units:
+        if uu.alive and uu.player_id == opp:
+            d = td(uu.x, my_city_hp if False else sim.cities[pid].x, sim.size) + \
+                td(uu.y, sim.cities[pid].y, sim.size)
+            if d <= 2:
+                score -= 15.0  # 敌人靠近城市 = 负分
 
-
-def _td(a, b, s):
-    return min(abs(b - a), s - abs(b - a))
-
-
-def _pick_toward(unit, legal, target, gs):
-    """选最接近target的合法移动"""
-    best, best_d = None, 999
-    for mv in legal:
-        nx, ny = (unit.x + mv[0]) % gs.size, (unit.y + mv[1]) % gs.size
-        d = _td(nx, target[0], gs.size) + _td(ny, target[1], gs.size)
-        if d < best_d:
-            best_d = d
-            best = mv
-    return best if best else (0, 0)
+    return score
 
 
 _agent_cache = {}
 
 def ai_decide(gs, pid: int, rng=None) -> list[dict]:
-    sims = 25
-    if sims not in _agent_cache:
-        _agent_cache[sims] = FlatMCAgent(sims)
-    return _agent_cache[sims].decide(gs, pid, rng)
+    sims = 15
+    key = f"mc{sims}"
+    if key not in _agent_cache:
+        _agent_cache[key] = FlatMCAgent(simulations=sims, rollout_depth=20)
+    return _agent_cache[key].decide(gs, pid, rng)

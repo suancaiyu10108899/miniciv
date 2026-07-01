@@ -1,0 +1,23 @@
+{
+  "config": {
+    "games_per_pair": 100,
+    "size": 15,
+    "gen": "symmetric"
+  },
+  "pairs": [
+    {
+      "ai0": "greedy",
+      "ai1": "greedy",
+      "n": 100,
+      "p0_winrate": 0.87,
+      "p1_winrate": 0.13,
+      "conquests": 20,
+      "constructions": 2,
+      "tiebreaks": 78,
+      "avg_turns": 85.55,
+      "avg_dead": 28.76
+    }
+  ],
+  "total_games": 100,
+  "elapsed_s": 1.0
+}

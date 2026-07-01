@@ -30,13 +30,13 @@ GENERATOR_CLUSTER = {
 # ─── 兵种属性 ─────────────────────────────────────
 # (hp, atk, def, move, vision, can_enter_mountain, ranged, range_dist)
 UNIT_STATS = {
-    "infantry":  {"hp": 100, "atk": 40, "def": 30, "move": 1, "vision": 2,
+    "infantry":  {"hp": 100, "atk": 45, "def": 30, "move": 1, "vision": 2,
                   "can_enter_mountain": True, "ranged": False, "range_dist": 0},
-    "cavalry":   {"hp": 80,  "atk": 55, "def": 15, "move": 2, "vision": 2,
+    "cavalry":   {"hp": 80,  "atk": 60, "def": 15, "move": 2, "vision": 2,
                   "can_enter_mountain": False, "ranged": False, "range_dist": 0},
-    "archer":    {"hp": 60,  "atk": 45, "def": 10, "move": 1, "vision": 2,
+    "archer":    {"hp": 60,  "atk": 50, "def": 10, "move": 1, "vision": 2,
                   "can_enter_mountain": True, "ranged": True, "range_dist": 2},
-    "scout":     {"hp": 40,  "atk": 10, "def": 5,  "move": 2, "vision": 3,
+    "scout":     {"hp": 40,  "atk": 15, "def": 5,  "move": 2, "vision": 3,
                   "can_enter_mountain": True, "ranged": False, "range_dist": 0},
     "worker":    {"hp": 10,  "atk": 0,  "def": 0,  "move": 1, "vision": 2,
                   "can_enter_mountain": True, "ranged": False, "range_dist": 0},
@@ -58,13 +58,13 @@ CAVALRY_CHARGE_BONUS = 10  # 骑兵走2格平原后攻击→额外ATK
 # ─── 城市 ──────────────────────────────────────────
 CITY_HP = 100
 CITY_DEF = 10
-CITY_DAMAGE = 20
+CITY_DAMAGE = 15
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
 # ─── 经济 ──────────────────────────────────────────
 STARTING_RESOURCES = {"food": 25, "wood": 25, "gold": 25}
 STARTING_UNITS = {"worker": 3, "scout": 1}
-FACILITY_OUTPUT = {"farm": {"food": 3}, "lumbermill": {"wood": 3}, "mine": {"gold": 3}}
+FACILITY_OUTPUT = {"farm": {"food": 4}, "lumbermill": {"wood": 4}, "mine": {"gold": 4}}
 
 # ─── 科技 ──────────────────────────────────────────
 # 科技树节点: (花费粮/木/金, 研究回合, 前置列表, 效果)
@@ -77,11 +77,11 @@ TECH_TREE = {
     "E2":  {"cost": (0, 3, 0),   "turns": 1, "requires": ["E1"],     "effect": "lumbermill_wood+1"},
     "E3":  {"cost": (5, 0, 3),   "turns": 1, "requires": ["E1"],     "effect": "mine_gold+1"},
     "E4":  {"cost": (8, 8, 0),   "turns": 1, "requires": ["E2","E3"],"effect": "worker_move+1"},
-    "C1":  {"cost": (6, 6, 3),   "turns": 1, "requires": [],         "effect": "unlock_construction"},
-    "C2":  {"cost": (5, 7, 0),   "turns": 1, "requires": ["C1"],     "effect": "city_hp+30"},
-    "C3":  {"cost": (6, 6, 6),   "turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
-    "C4":  {"cost": (7, 3, 3),   "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
-    "C5":  {"cost": (4, 4, 4),   "turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
+    "C1":  {"cost": (5, 5, 3),   "turns": 1, "requires": [],         "effect": "unlock_construction"},
+    "C2":  {"cost": (4, 6, 0),   "turns": 1, "requires": ["C1"],     "effect": "city_hp+30"},
+    "C3":  {"cost": (5, 5, 5),   "turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
+    "C4":  {"cost": (6, 3, 3),   "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
+    "C5":  {"cost": (3, 3, 3),   "turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
 }
 
 # ─── 迷雾 ──────────────────────────────────────────

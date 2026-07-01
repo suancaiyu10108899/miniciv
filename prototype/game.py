@@ -149,8 +149,9 @@ def step_game(gs: GameState, actions_p0: list[dict],
         food_bonus = bonuses.get("city_food", 0)
         city_base_income(econ, food_bonus)
 
-        # 科技研究推进
-        completed = tech.tick_research()
+    # 科技研究推进（双方同时，消除P0研究先手优势）
+    for pid in (0, 1):
+        completed = gs.techs[pid].tick_research()
         if completed == "C5":
             gs.winner = pid
             gs.victory_type = "construction"

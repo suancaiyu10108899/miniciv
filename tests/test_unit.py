@@ -13,7 +13,7 @@ class TestUnitCreate:
         assert u.player_id == 0
         assert u.x == 3 and u.y == 5
         assert u.hp == 100
-        assert u.atk == 40
+        assert u.atk == 45
         assert u.def_ == 30
         assert u.move == 1
         assert u.vision == 2
@@ -23,7 +23,7 @@ class TestUnitCreate:
     def test_create_cavalry(self):
         u = Unit.create("cavalry", 0, 0, 0)
         assert u.hp == 80
-        assert u.atk == 55
+        assert u.atk == 60
         assert u.def_ == 15
         assert u.move == 2
         assert u.can_enter_mountain is False
@@ -56,7 +56,7 @@ class TestUnitCreate:
 
 class TestUnitStatQuery:
     def test_unit_stat(self):
-        assert unit_stat("cavalry", "atk") == 55
+        assert unit_stat("cavalry", "atk") == 60
         assert unit_stat("infantry", "hp") == 100
 
     def test_unit_speed(self):

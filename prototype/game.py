@@ -62,11 +62,12 @@ def init_game(seed: int, size: int = DEFAULT_SIZE,
     gs.cities = [City(0, cx0, cy0), City(1, cx1, cy1)]
 
     # 初始单位
+    from prototype.constants import STARTING_UNITS
     gs.units = []
+    n_workers = STARTING_UNITS.get("worker", 2)
+    n_scouts = STARTING_UNITS.get("scout", 1)
     for pid, (cx, cy) in enumerate([(cx0, cy0), (cx1, cy1)]):
-        # 2 工人
-        for i in range(2):
-            # 放在四邻第一格
+        for _ in range(n_workers):
             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                 nx, ny = (cx + dx) % size, (cy + dy) % size
                 t = get_terrain(gs.grid, nx, ny)
@@ -75,16 +76,15 @@ def init_game(seed: int, size: int = DEFAULT_SIZE,
                     if not occupied:
                         gs.units.append(Unit.create("worker", pid, nx, ny))
                         break
-            # 2 侦察兵
-            for j in range(2):
-                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-                    nx, ny = (cx + dx) % size, (cy + dy) % size
-                    t = get_terrain(gs.grid, nx, ny)
-                    if t == Terrain.PLAIN:
-                        occupied = any(u.x == nx and u.y == ny for u in gs.units)
-                        if not occupied:
-                            gs.units.append(Unit.create("scout", pid, nx, ny))
-                            break
+        for _ in range(n_scouts):
+            for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                nx, ny = (cx + dx) % size, (cy + dy) % size
+                t = get_terrain(gs.grid, nx, ny)
+                if t == Terrain.PLAIN:
+                    occupied = any(u.x == nx and u.y == ny for u in gs.units)
+                    if not occupied:
+                        gs.units.append(Unit.create("scout", pid, nx, ny))
+                        break
 
     # 经济
     gs.economies = [Economy(0), Economy(1)]
@@ -115,8 +115,8 @@ def step_game(gs: GameState, actions_p0: list[dict],
 
         for act in actions:
             atype = act.get("type", "end_turn")
-            ui = act.get("unit_idx", 0)
-            unit = units[ui] if ui < len(units) else None
+            ui = act.get("unit_idx", -1)
+            unit = units[ui] if (ui >= 0 and ui < len(units)) else None
 
             if atype == "move" and unit:
                 dx, dy = act.get("dx", 0), act.get("dy", 0)

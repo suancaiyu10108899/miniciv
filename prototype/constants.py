@@ -61,8 +61,9 @@ CITY_DEF = 25
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
 # ─── 经济 ──────────────────────────────────────────
-STARTING_RESOURCES = {"food": 5, "wood": 5, "gold": 5}
-STARTING_UNITS = {"worker": 2, "scout": 2}
+STARTING_RESOURCES = {"food": 10, "wood": 10, "gold": 10}
+STARTING_UNITS = {"worker": 3, "scout": 1}
+FACILITY_OUTPUT = {"farm": {"food": 2}, "lumbermill": {"wood": 2}, "mine": {"gold": 2}}
 FACILITY_OUTPUT = {"farm": {"food": 1}, "lumbermill": {"wood": 1}, "mine": {"gold": 1}}
 
 # ─── 科技 ──────────────────────────────────────────

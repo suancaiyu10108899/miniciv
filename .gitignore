@@ -1,0 +1,30 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data
+data/models/*.pt
+data/models/*.npz
+data/models/*.zip
+data/trajectories/*.json
+
+# Env
+.env
+.env.local

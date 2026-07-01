@@ -17,7 +17,7 @@
 
 ## v1：半径视野
 
-视野范围内所有格子 = VISIBLE。不计算地形遮挡。
+视野范围内所有格子 = VISIBLE。不计算地形遮挡（水域不阻断视野）。
 环面视野：`torus_delta(x1,x2,W) ≤ range && torus_delta(y1,y2,H) ≤ range`。
 
 ## v2：LOS 视线（backlog）

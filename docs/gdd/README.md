@@ -39,3 +39,4 @@
 | ADR-002 | 无单位数量上限 | `adr/adr-002-no-unit-cap.md` |
 | ADR-003 | 固定伤害（非随机） | `adr/adr-003-fixed-damage.md` |
 | ADR-004 | 不做经验/升级系统 | `adr/adr-004-no-xp.md` |
+| ADR-005 | 工人—设施经济模型 | `adr/adr-005-worker-facility.md` |

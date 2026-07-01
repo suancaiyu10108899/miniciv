@@ -22,6 +22,6 @@
       "Bash(which *)",
       "Bash(python3 *)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "dontAsk"
   }
 }

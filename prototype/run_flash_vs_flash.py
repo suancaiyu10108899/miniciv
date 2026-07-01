@@ -29,7 +29,7 @@ def main():
         result0 = ai_flash_decide(gs, 0)
         t0_time = time.time() - t0_start
         actions0 = result0.get("actions", [])
-        thinking0 = result0.get("_thinking", "")
+        thinking0 = result0.get("reasoning", "") or result0.get("_thinking", "")
         tokens0 = result0.get("_tokens", {})
         print(f" {t0_time:.1f}s, {tokens0.get('input_tokens','?')}+{tokens0.get('output_tokens','?')}tokens")
 
@@ -39,7 +39,7 @@ def main():
         result1 = ai_flash_decide(gs, 1)
         t1_time = time.time() - t1_start
         actions1 = result1.get("actions", [])
-        thinking1 = result1.get("_thinking", "")
+        thinking1 = result1.get("reasoning", "") or result1.get("_thinking", "")
         tokens1 = result1.get("_tokens", {})
         print(f" {t1_time:.1f}s, {tokens1.get('input_tokens','?')}+{tokens1.get('output_tokens','?')}tokens")
 

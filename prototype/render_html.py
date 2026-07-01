@@ -4,6 +4,7 @@
 import json, os
 from prototype.snapshot import game_to_dict
 from prototype.terrain import Terrain, TERRAIN_CHAR
+from prototype.constants import TECH_TREE, UNIT_STATS, TERRAIN_DEF_BONUS
 
 
 # ─── 颜色映射 ──────────────────────────────────────
@@ -20,6 +21,7 @@ def generate_replay(gs, output_path: str = "data/replay.html", ai0="P0_AI", ai1=
     # 从 seed 重建逐帧快照
     frames = _rebuild_frames(gs)
 
+    tech_data_js = json.dumps({k:{'cost':v['cost'],'turns':v['turns'],'requires':v['requires'],'effect':v['effect']} for k,v in TECH_TREE.items()}, ensure_ascii=False)
     frames_json = json.dumps(frames, ensure_ascii=False)
     n = len(frames)
 
@@ -103,8 +105,19 @@ function render(i){{
   p+='<br>P0科技:'+f.p0.techs.join(',')+'<br>P1科技:'+f.p1.techs.join(',')+'<br>';
   p+='<br>P0建设:'+f.p0.constr+'/5 P1建设:'+f.p1.constr+'/5<br>';
   p+='<br>P0单位:'+f.p0.nalive+' P1单位:'+f.p1.nalive;
+  p+='<br><br><b>科技树:</b><div style=display:grid;grid-template-columns:repeat(3,1fr);gap:3px;font-size:9px;margin-top:4px>';
+  Object.entries(TECH_DATA).forEach(function(e){{
+    var k=e[0],v=e[1],done=(f.p0.techs||[]).includes(k)||(f.p1.techs||[]).includes(k);
+    var cls=done?'color:#4caf50':'color:#666';
+    var cat=k[0],catc=cat=='M'?'#ff9800':cat=='E'?'#2196f3':'#e94560';
+    p+='<div style=background:#1a1a2e;padding:3px 5px;border-left:2px solid '+catc+';'+cls+'>';
+    p+='<b>'+k+'</b> '+v.effect+'<br><span style=color:#888>('+v.cost.join('/')+') '+v.turns+'T</span>';
+    p+='</div>';
+  }});
+  p+='</div>';
   document.getElementById('panel').innerHTML=p;
 }}
+var TECH_DATA = {tech_data_js};
 var TERRAIN_COLORS={{'PLAIN':'#c8e6c9','FOREST':'#388e3c','MOUNTAIN':'#9e9e9e','WATER':'#1565c0','CITY':'#ff8f00'}};
 var PLAYER_COLORS={{0:'#ffeb3b',1:'#f44336'}};
 var UNIT_CHARS={{'infantry':'I','cavalry':'C','archer':'A','scout':'S','worker':'W'}};

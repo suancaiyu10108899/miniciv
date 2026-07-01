@@ -107,7 +107,8 @@ def step_game(gs: GameState, actions_p0: list[dict],
     gs.turn += 1
     gs.action_log.append({"turn": gs.turn, "p0": actions_p0, "p1": actions_p1})
 
-    for pid, actions in [(0, actions_p0), (1, actions_p1)]:
+    player_order = [(0, actions_p0), (1, actions_p1)] if gs.turn % 2 == 1 else [(1, actions_p1), (0, actions_p0)]
+    for pid, actions in player_order:
         units = [u for u in gs.units if u.player_id == pid and u.alive]
         econ = gs.economies[pid]
         tech = gs.techs[pid]
@@ -210,13 +211,21 @@ def _do_move(unit: Unit, gs: GameState, dx: int, dy: int):
                 opp_city = gs.cities[1 - unit.player_id]
                 if target_x == opp_city.x and target_y == opp_city.y:
                     dmg = city_occupation_damage(unit, opp_city)
-                    if dmg >= opp_city.hp:
+                    opp_city.hp -= dmg
+                    if opp_city.hp <= 0:
                         opp_city.hp = 0
             elif not result["attacker_alive"]:
                 pass  # 攻方已死
     else:
         # 目标格为空→直接移动
         unit.x, unit.y = target_x, target_y
+        # 占领空城
+        opp_city = gs.cities[1 - unit.player_id]
+        if target_x == opp_city.x and target_y == opp_city.y:
+            dmg = city_occupation_damage(unit, opp_city)
+            opp_city.hp -= dmg
+            if opp_city.hp <= 0:
+                opp_city.hp = 0
 
     # 更新视野（lazy）
     # TODO: fow update

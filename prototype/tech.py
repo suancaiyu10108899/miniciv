@@ -104,7 +104,7 @@ class TechManager:
         if "E4" in self.completed:
             bonuses["worker_speed"] = 1
         if "C2" in self.completed:
-            bonuses["city_hp"] = 100
+            bonuses["city_hp"] = 30
         if "C4" in self.completed:
             bonuses["city_food"] = 2
         return bonuses

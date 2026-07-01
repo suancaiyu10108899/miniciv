@@ -52,11 +52,11 @@ UNIT_COST = {
 }
 
 # ─── 地形战斗加成 ─────────────────────────────────
-TERRAIN_DEF_BONUS = {"plain": 0, "forest": 10, "mountain": 15, "water": 0, "city": 25}
+TERRAIN_DEF_BONUS = {"plain": 0, "forest": 5, "mountain": 8, "water": 0, "city": 15}
 CAVALRY_CHARGE_BONUS = 10  # 骑兵走2格平原后攻击→额外ATK
 
 # ─── 城市 ──────────────────────────────────────────
-CITY_HP = 150
+CITY_HP = 100
 CITY_DEF = 10
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
@@ -64,7 +64,6 @@ CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 STARTING_RESOURCES = {"food": 15, "wood": 15, "gold": 15}
 STARTING_UNITS = {"worker": 3, "scout": 1}
 FACILITY_OUTPUT = {"farm": {"food": 3}, "lumbermill": {"wood": 3}, "mine": {"gold": 3}}
-FACILITY_OUTPUT = {"farm": {"food": 1}, "lumbermill": {"wood": 1}, "mine": {"gold": 1}}
 
 # ─── 科技 ──────────────────────────────────────────
 # 科技树节点: (花费粮/木/金, 研究回合, 前置列表, 效果)

@@ -56,32 +56,32 @@ TERRAIN_DEF_BONUS = {"plain": 0, "forest": 10, "mountain": 15, "water": 0, "city
 CAVALRY_CHARGE_BONUS = 10  # 骑兵走2格平原后攻击→额外ATK
 
 # ─── 城市 ──────────────────────────────────────────
-CITY_HP = 500
-CITY_DEF = 25
+CITY_HP = 150
+CITY_DEF = 10
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
 # ─── 经济 ──────────────────────────────────────────
-STARTING_RESOURCES = {"food": 10, "wood": 10, "gold": 10}
+STARTING_RESOURCES = {"food": 15, "wood": 15, "gold": 15}
 STARTING_UNITS = {"worker": 3, "scout": 1}
-FACILITY_OUTPUT = {"farm": {"food": 2}, "lumbermill": {"wood": 2}, "mine": {"gold": 2}}
+FACILITY_OUTPUT = {"farm": {"food": 3}, "lumbermill": {"wood": 3}, "mine": {"gold": 3}}
 FACILITY_OUTPUT = {"farm": {"food": 1}, "lumbermill": {"wood": 1}, "mine": {"gold": 1}}
 
 # ─── 科技 ──────────────────────────────────────────
 # 科技树节点: (花费粮/木/金, 研究回合, 前置列表, 效果)
 TECH_TREE = {
-    "M1":  {"cost": (10, 5, 0),  "turns": 1, "requires": [],         "effect": "infantry_atk+5,archer_atk+5"},
-    "M2":  {"cost": (15, 0, 10), "turns": 1, "requires": ["M1"],     "effect": "cavalry_charge+5"},
-    "M3":  {"cost": (10, 10, 5), "turns": 2, "requires": ["M1"],     "effect": "infantry_def_forest_mountain+10"},
-    "M4":  {"cost": (20, 0, 15), "turns": 2, "requires": ["M2","M3"],"effect": "all_hp+10"},
-    "E1":  {"cost": (5, 0, 0),   "turns": 1, "requires": [],         "effect": "farm_food+1"},
-    "E2":  {"cost": (0, 5, 0),   "turns": 1, "requires": ["E1"],     "effect": "lumbermill_wood+1"},
-    "E3":  {"cost": (10, 0, 5),  "turns": 1, "requires": ["E1"],     "effect": "mine_gold+1"},
-    "E4":  {"cost": (10, 10, 0), "turns": 2, "requires": ["E2","E3"],"effect": "worker_move+1"},
-    "C1":  {"cost": (20, 20, 10),"turns": 2, "requires": [],         "effect": "unlock_construction"},
-    "C2":  {"cost": (15, 20, 0), "turns": 1, "requires": ["C1"],     "effect": "city_hp+100"},
-    "C3":  {"cost": (15, 15, 15),"turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
-    "C4":  {"cost": (20, 10, 10),"turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
-    "C5":  {"cost": (30, 30, 30),"turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
+    "M1":  {"cost": (8, 3, 0),   "turns": 1, "requires": [],         "effect": "infantry_atk+5,archer_atk+5"},
+    "M2":  {"cost": (10, 0, 8),  "turns": 1, "requires": ["M1"],     "effect": "cavalry_charge+5"},
+    "M3":  {"cost": (8, 8, 3),   "turns": 1, "requires": ["M1"],     "effect": "infantry_def_forest_mountain+10"},
+    "M4":  {"cost": (15, 0, 10), "turns": 2, "requires": ["M2","M3"],"effect": "all_hp+10"},
+    "E1":  {"cost": (3, 0, 0),   "turns": 1, "requires": [],         "effect": "farm_food+1"},
+    "E2":  {"cost": (0, 3, 0),   "turns": 1, "requires": ["E1"],     "effect": "lumbermill_wood+1"},
+    "E3":  {"cost": (5, 0, 3),   "turns": 1, "requires": ["E1"],     "effect": "mine_gold+1"},
+    "E4":  {"cost": (8, 8, 0),   "turns": 1, "requires": ["E2","E3"],"effect": "worker_move+1"},
+    "C1":  {"cost": (10, 10, 5), "turns": 1, "requires": [],         "effect": "unlock_construction"},
+    "C2":  {"cost": (8, 12, 0),  "turns": 1, "requires": ["C1"],     "effect": "city_hp+50"},
+    "C3":  {"cost": (10, 10, 10),"turns": 2, "requires": ["C1"],     "effect": "research_time_half"},
+    "C4":  {"cost": (12, 5, 5),  "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
+    "C5":  {"cost": (20, 20, 20),"turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
 }
 
 # ─── 迷雾 ──────────────────────────────────────────

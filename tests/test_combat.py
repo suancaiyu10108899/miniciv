@@ -157,5 +157,5 @@ class TestCityOccupation:
 
     def test_damage(self):
         c = City(1, 0, 0)
-        # 骑(ATK 55) - 城(DEF 25) = 30
-        assert city_occupation_damage(make("cavalry"), c) == 30
+        # 骑(ATK 55) - 城(DEF 10) = 45
+        assert city_occupation_damage(make("cavalry"), c) == 45

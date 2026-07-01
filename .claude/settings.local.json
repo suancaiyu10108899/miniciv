@@ -20,7 +20,10 @@
       "Bash(grep *)",
       "Bash(curl *)",
       "Bash(which *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(python -m prototype.eval *)",
+      "Bash(python -m prototype.run_flash_vs_flash *)",
+      "Bash(python -c *)"
     ],
     "defaultMode": "dontAsk"
   }

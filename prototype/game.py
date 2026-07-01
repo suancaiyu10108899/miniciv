@@ -11,7 +11,7 @@ from prototype.economy import (
     worker_action_produce, produce_unit, destroy_facility, city_base_income,
 )
 from prototype.tech import TechManager, apply_tech_to_unit
-from prototype.constants import MAX_TURNS, DEFAULT_SIZE, CITY_HP, UNIT_STATS
+from prototype.constants import MAX_TURNS, DEFAULT_SIZE, CITY_HP, UNIT_STATS, CITY_DAMAGE
 from prototype.movement import (
     get_legal_moves, get_single_step_moves, apply_move,
     cavalry_forest_check,
@@ -154,6 +154,16 @@ def step_game(gs: GameState, actions_p0: list[dict],
         if completed == "C5":
             gs.winner = pid
             gs.victory_type = "construction"
+
+    # 城市防守：每回合对占领者造成伤害
+    for pid in (0, 1):
+        city = gs.cities[pid]
+        for u in gs.units:
+            if u.alive and u.player_id != pid and u.x == city.x and u.y == city.y:
+                u.hp -= CITY_DAMAGE
+                if u.hp <= 0:
+                    u.hp = 0
+                    u.alive = False
 
     # 征服胜利检查
     for pid in (0, 1):

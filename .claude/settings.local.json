@@ -23,7 +23,9 @@
       "Bash(python3 *)",
       "Bash(python -m prototype.eval *)",
       "Bash(python -m prototype.run_flash_vs_flash *)",
-      "Bash(python -c *)"
+      "Bash(python -c *)",
+      "Edit",
+      "Write"
     ],
     "defaultMode": "dontAsk"
   }

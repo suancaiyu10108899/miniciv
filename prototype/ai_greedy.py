@@ -73,8 +73,28 @@ def _greedy_worker(w, ui, gs, pid, rng):
 
 
 def _greedy_combat(u, ui, gs, pid, opp_city, rng):
-    """战斗单位：攻击邻敌 > 向敌城推进"""
-    # 邻格有敌→攻击
+    """战斗单位：守城 > 攻击邻敌 > 向敌城推进"""
+    my_city = gs.cities[pid]
+
+    # 优先: 敌人在我城邻格→攻击驱逐
+    for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        nx, ny = (u.x + dx) % gs.size, (u.y + dy) % gs.size
+        if nx == my_city.x and ny == my_city.y:
+            target = next((eu for eu in gs.units
+                           if eu.alive and eu.player_id != pid
+                           and eu.x == nx and eu.y == ny), None)
+            if target:
+                return {"unit_idx": ui, "type": "move", "dx": dx, "dy": dy}
+
+    # 有敌接近我城(距离≤2)→拦截
+    def td(a, b, s): return min(abs(b - a), s - abs(b - a))
+    for eu in gs.units:
+        if eu.alive and eu.player_id != pid:
+            d = td(eu.x, my_city.x, gs.size) + td(eu.y, my_city.y, gs.size)
+            if d <= 2:
+                return _move_to(u, ui, gs, (eu.x, eu.y), rng)
+
+    # 攻击邻格敌人
     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         nx, ny = (u.x + dx) % gs.size, (u.y + dy) % gs.size
         target = next((eu for eu in gs.units

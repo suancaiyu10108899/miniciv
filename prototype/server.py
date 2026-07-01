@@ -6,6 +6,7 @@ import http.server, json, urllib.parse, random, sys, os
 from io import BytesIO
 from prototype.game import init_game, step_game
 from prototype.ai_rulesrandom import ai_decide
+from prototype.ai_flash import ai_flash_decide_simple, get_flash_log, clear_flash_log
 from prototype.terrain import Terrain
 
 
@@ -18,16 +19,20 @@ _GENERATOR_ID = "balanced"
 _SIZE = 15
 _SEED = 42
 _MESSAGE = ""
+_AI_TYPE = "rulesrandom"  # "rulesrandom" | "flash"
+_FLASH_THINKING = ""  # 最近一次 Flash 思考过程
 
 
 def _reset():
-    global _GAME, _FOGS, _AI_RNG, _MESSAGE
+    global _GAME, _FOGS, _AI_RNG, _MESSAGE, _FLASH_THINKING
     from prototype.fow import init_fog, update_fog
     _GAME = init_game(seed=_SEED, size=_SIZE, generator_id=_GENERATOR_ID)
     _FOGS = init_fog(_SIZE)
     update_fog(_GAME, _FOGS)
     _AI_RNG = random.Random(_SEED + 1)
     _MESSAGE = ""
+    _FLASH_THINKING = ""
+    clear_flash_log()
 
 
 # ─── HTML 生成 ───────────────────────────────────
@@ -149,11 +154,15 @@ h3{{margin:4px 0;color:#e94560}}
 生成器: <select name=gen><option>balanced</option><option>symmetric</option><option>fertile</option><option>harsh</option><option>mountain_pass</option><option>archipelago</option></select>
 尺寸: <select name=size><option>10</option><option selected>15</option><option>20</option><option>30</option></select>
 人类: <select name=pid><option value=0 selected>P0</option><option value=1>P1</option></select>
+AI: <select name=ai><option value=rulesrandom>RulesRandom(本地)</option><option value=flash>Flash(API)</option></select>
 <button>新游戏</button>
 </form>
 </div>
 </div></div>
 <div style=font-size:10px;color:#666;margin-top:8px>科技树: M1(锻造+5ATK)→M2(骑冲+5)/M3(步防+10)→M4(+10HP) | E1(粮+1)→E2(木+1)/E3(金+1)→E4(工+1速) | C1→C2(城+100HP)/C3(研速÷2)→C4(+2粮)→C5(★建设胜利)</div>
+<div style=margin-top:8px;font-size:11px;color:#aaa;max-height:200px;overflow-y:auto;background:#111;padding:6px;border-radius:4px>
+<b>AI 思考过程 ({_AI_TYPE}):</b><br>{_FLASH_THINKING.replace(chr(10),'<br>') if _FLASH_THINKING else '等待执行回合...'}
+</div>
 </body></html>'''
 
 
@@ -186,10 +195,11 @@ class GameHandler(http.server.BaseHTTPRequestHandler):
         path = self.path
 
         if path == '/reset':
-            global _GENERATOR_ID, _SIZE, _HUMAN_PID, _SEED
+            global _GENERATOR_ID, _SIZE, _HUMAN_PID, _SEED, _AI_TYPE
             _GENERATOR_ID = params.get('gen', ['balanced'])[0]
             _SIZE = int(params.get('size', ['15'])[0])
             _HUMAN_PID = int(params.get('pid', ['0'])[0])
+            _AI_TYPE = params.get('ai', ['rulesrandom'])[0]
             import random as _r
             _SEED = _r.randint(0, 99999)
             _reset()
@@ -202,8 +212,21 @@ class GameHandler(http.server.BaseHTTPRequestHandler):
             ai = 1 - human
 
             if act == 'end':
-                a0 = ai_decide(_GAME, 0, _AI_RNG)
-                a1 = ai_decide(_GAME, 1, _AI_RNG)
+                global _FLASH_THINKING
+                ai_pid = 1 - human
+                # AI 决策
+                if _AI_TYPE == "flash":
+                    a0 = ai_flash_decide_simple(_GAME, 0)
+                    a1 = ai_flash_decide_simple(_GAME, 1)
+                    # 提取思考
+                    log = get_flash_log()
+                    if log:
+                        last = log[-1]
+                        _FLASH_THINKING = (f"[P{last['pid']}] " + last.get('reasoning', '')[:1500])
+                else:
+                    a0 = ai_decide(_GAME, 0, _AI_RNG)
+                    a1 = ai_decide(_GAME, 1, _AI_RNG)
+                    _FLASH_THINKING = ""
                 buf = _get_buffer()
                 if human == 0:
                     step_game(_GAME, buf, a1)
@@ -212,7 +235,7 @@ class GameHandler(http.server.BaseHTTPRequestHandler):
                 from prototype.fow import update_fog
                 update_fog(_GAME, _FOGS)
                 buf.clear()
-                _MESSAGE = f"回合 {_GAME.turn} 完成"
+                _MESSAGE = f"回合 {_GAME.turn} 完成 (AI: {_AI_TYPE})"
             else:
                 # 缓存人类动作
                 ui = int(params.get('ui', ['0'])[0])

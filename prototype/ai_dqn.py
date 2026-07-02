@@ -40,8 +40,8 @@ class DQNAgent:
     """numpy-only DQN agent with experience replay."""
 
     def __init__(self, n_features: int, n_actions: int,
-                 learning_rate: float = 0.001, gamma: float = 0.9,
-                 epsilon: float = 0.3, replay_capacity: int = 10000):
+                 learning_rate: float = 0.0001, gamma: float = 0.9,
+                 epsilon: float = 0.1, replay_capacity: int = 10000):
         self.n_features = n_features
         self.n_actions = n_actions
         self.lr = learning_rate
@@ -180,6 +180,10 @@ class DQNAgent:
         db2 /= n
         dW3 /= n
         db3 /= n
+
+        # Gradient clipping
+        for grad in (dW1, db1, dW2, db2, dW3, db3):
+            np.clip(grad, -1.0, 1.0, out=grad)
 
         # Update weights (SGD)
         self.W1 -= self.lr * dW1

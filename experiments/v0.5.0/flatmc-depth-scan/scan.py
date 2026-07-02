@@ -19,13 +19,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 # ─── Config ──────────────────────────────────────────
 DEPTHS = [5, 10, 20, 50]
 ROLLOUTS_MAP = {5: 20, 10: 10, 20: 5, 50: 2}
-GAMES_PER_DEPTH = 200        # paired: 200 seeds → 400 sims
+GAMES_PER_DEPTH = 50         # paired: 50 seeds → 100 sims (~15min/depth)
 SIZE = 15
 MAX_TURNS = 100
 GENERATOR = "balanced"
 BASE_SEED = 42
-MAX_WORKERS = 8              # conservative for Windows handle stability
-TASKS_PER_CHILD = 25         # recycle workers to prevent handle leak
+MAX_WORKERS = 4              # conservative; deepcopy bottleneck anyway
+TASKS_PER_CHILD = 20         # recycle workers to prevent handle leak
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

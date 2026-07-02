@@ -157,6 +157,7 @@ def _apply_econ_only_patch():
 
 def _extract_result(gs, seed, ai0_name, ai1_name):
     """Extract result dict from a finished game state."""
+    e0, e1 = gs.economies
     return {
         "seed": seed, "ai0": ai0_name, "ai1": ai1_name,
         "winner": gs.winner, "victory_type": gs.victory_type or "tiebreak",
@@ -168,6 +169,16 @@ def _extract_result(gs, seed, ai0_name, ai1_name):
         "p1_dead": sum(1 for u in gs.dead_units if u.player_id == 1),
         "p0_techs": len(gs.techs[0].completed),
         "p1_techs": len(gs.techs[1].completed),
+        # Economic metrics
+        "p0_food": e0.food, "p0_wood": e0.wood, "p0_gold": e0.gold,
+        "p1_food": e1.food, "p1_wood": e1.wood, "p1_gold": e1.gold,
+        "p0_total_resources": e0.food + e0.wood + e0.gold,
+        "p1_total_resources": e1.food + e1.wood + e1.gold,
+        "p0_construction": gs.techs[0].construction_count(),
+        "p1_construction": gs.techs[1].construction_count(),
+        # Composite: total units produced = alive + dead
+        "p0_units_produced": sum(1 for u in gs.units if u.player_id == 0 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 0),
+        "p1_units_produced": sum(1 for u in gs.units if u.player_id == 1 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 1),
     }
 
 
@@ -190,6 +201,7 @@ def _run_one_paired(args):
     rng1 = random.Random(seed + 1)
     while gs1.winner is None and gs1.turn < max_turns:
         step_game(gs1, ai_a(gs1, 0, rng0), ai_b(gs1, 1, rng1))
+    e1_0, e1_1 = gs1.economies
 
     # Game 2: AI_A=P1, AI_B=P0 (swapped roles, same map via same seed)
     gs2 = _make_game(seed, size, gen, mode)
@@ -197,35 +209,35 @@ def _run_one_paired(args):
     rng1 = random.Random(seed + 2_000_001)
     while gs2.winner is None and gs2.turn < max_turns:
         step_game(gs2, ai_b(gs2, 0, rng0), ai_a(gs2, 1, rng1))
+    e2_0, e2_1 = gs2.economies
 
-    # Game 1: AI_A=P0, AI_B=P1
-    g1 = {
-        "seed": seed, "ai0": ai_a_name, "ai1": ai_b_name,
-        "winner": gs1.winner, "victory_type": gs1.victory_type or "tiebreak",
-        "turns": gs1.turn,
-        "p0_hp": gs1.cities[0].hp, "p1_hp": gs1.cities[1].hp,
-        "p0_alive": sum(1 for u in gs1.units if u.player_id == 0 and u.alive),
-        "p1_alive": sum(1 for u in gs1.units if u.player_id == 1 and u.alive),
-        "p0_dead": sum(1 for u in gs1.dead_units if u.player_id == 0),
-        "p1_dead": sum(1 for u in gs1.dead_units if u.player_id == 1),
-        "p0_techs": len(gs1.techs[0].completed),
-        "p1_techs": len(gs1.techs[1].completed),
-        "ai_a_p0": True, "ai_b_p1": True,
-    }
-    # Game 2: AI_A=P1, AI_B=P0
-    g2 = {
-        "seed": seed + 1_000_000, "ai0": ai_b_name, "ai1": ai_a_name,
-        "winner": gs2.winner, "victory_type": gs2.victory_type or "tiebreak",
-        "turns": gs2.turn,
-        "p0_hp": gs2.cities[0].hp, "p1_hp": gs2.cities[1].hp,
-        "p0_alive": sum(1 for u in gs2.units if u.player_id == 0 and u.alive),
-        "p1_alive": sum(1 for u in gs2.units if u.player_id == 1 and u.alive),
-        "p0_dead": sum(1 for u in gs2.dead_units if u.player_id == 0),
-        "p1_dead": sum(1 for u in gs2.dead_units if u.player_id == 1),
-        "p0_techs": len(gs2.techs[0].completed),
-        "p1_techs": len(gs2.techs[1].completed),
-        "ai_a_p1": True, "ai_b_p0": True,
-    }
+    def _game_dict(gs, econ0, econ1, ai0_name, ai1_name, seed, ai_a_p0):
+        """Build per-game dict with full economic metrics."""
+        p0_alive = sum(1 for u in gs.units if u.player_id == 0 and u.alive)
+        p1_alive = sum(1 for u in gs.units if u.player_id == 1 and u.alive)
+        p0_dead = sum(1 for u in gs.dead_units if u.player_id == 0)
+        p1_dead = sum(1 for u in gs.dead_units if u.player_id == 1)
+        return {
+            "seed": seed, "ai0": ai0_name, "ai1": ai1_name,
+            "winner": gs.winner, "victory_type": gs.victory_type or "tiebreak",
+            "turns": gs.turn,
+            "p0_hp": gs.cities[0].hp, "p1_hp": gs.cities[1].hp,
+            "p0_alive": p0_alive, "p1_alive": p1_alive,
+            "p0_dead": p0_dead, "p1_dead": p1_dead,
+            "p0_techs": len(gs.techs[0].completed), "p1_techs": len(gs.techs[1].completed),
+            "p0_food": econ0.food, "p0_wood": econ0.wood, "p0_gold": econ0.gold,
+            "p1_food": econ1.food, "p1_wood": econ1.wood, "p1_gold": econ1.gold,
+            "p0_total_resources": econ0.food + econ0.wood + econ0.gold,
+            "p1_total_resources": econ1.food + econ1.wood + econ1.gold,
+            "p0_construction": gs.techs[0].construction_count(),
+            "p1_construction": gs.techs[1].construction_count(),
+            "p0_units_produced": p0_alive + p0_dead,
+            "p1_units_produced": p1_alive + p1_dead,
+            "ai_a_p0": ai_a_p0, "ai_b_p1": not ai_a_p0,
+        }
+
+    g1 = _game_dict(gs1, e1_0, e1_1, ai_a_name, ai_b_name, seed, True)
+    g2 = _game_dict(gs2, e2_0, e2_1, ai_b_name, ai_a_name, seed + 1_000_000, False)
 
     # Paired stats: per-seed, does AI_A win both, split, or AI_B win both
     g1ai_a_won = (g1["winner"] == 0)   # game1: AI_A=P0
@@ -272,6 +284,35 @@ def _mean_std(values):
     m = sum(values) / n
     v = sum((x - m) ** 2 for x in values) / (n - 1)
     return (m, math.sqrt(v))
+
+
+def _save_checkpoint(results_by_pair, output_dir, completed, total):
+    """Save intermediate results to checkpoint file. Thread-safe enough for single-writer."""
+    import json as _json
+    ckpt_path = os.path.join(output_dir, "_checkpoint.json")
+    # Compact format: just per-pair result counts, no raw game data
+    summary = {
+        "completed": completed,
+        "total": total,
+        "pairs": {}
+    }
+    for (ai_a, ai_b), results in results_by_pair.items():
+        n = len(results)
+        if n == 0:
+            continue
+        # Quick winrate summary
+        if "ai_a_wins" in results[0]:
+            # paired mode
+            ai_a_w = sum(r["ai_a_wins"] for r in results)
+            summary["pairs"][f"{ai_a}_vs_{ai_b}"] = {"n": n, "ai_a_wins": ai_a_w, "total_games": n * 2}
+        else:
+            p0w = sum(1 for r in results if r["winner"] == 0)
+            summary["pairs"][f"{ai_a}_vs_{ai_b}"] = {"n": n, "p0_wins": p0w}
+    with open(ckpt_path, "w") as f:
+        _json.dump(summary, f, indent=2)
+    # Also print checkpoint confirmation
+    pct = completed / total * 100
+    print(f"  [checkpoint] {completed}/{total} ({pct:.1f}%) saved to {ckpt_path}")
 
 
 def main():
@@ -355,6 +396,9 @@ def main():
                 rate = completed / elapsed
                 eta = (total - completed) / rate if rate > 0 else 0
                 print(f"  {completed}/{total} ({completed/total*100:.0f}%) {rate:.0f}g/s ETA {eta:.0f}s")
+            # ── Checkpoint save every 500 completions ──
+            if completed % 500 == 0:
+                _save_checkpoint(results_by_pair, args.output, completed, total)
 
     elapsed = time.perf_counter() - t0
     actual_games = total * 2 if paired else total
@@ -451,11 +495,52 @@ def main():
             ai_a_ci = _ci(ai_a_wr, total_games)
             ai_b_ci = _ci(ai_b_wr, total_games)
 
+            # ── Economic metrics ──
+            # AI_A is P0 in g1, P1 in g2. Aggregate across both roles.
+            ai_a_units = []
+            ai_b_units = []
+            ai_a_resources = []
+            ai_b_resources = []
+            ai_a_construction = []
+            ai_b_construction = []
+            for r in results:
+                g1, g2 = r["game1"], r["game2"]
+                # g1: AI_A=P0, AI_B=P1
+                ai_a_units.append(g1["p0_units_produced"])
+                ai_b_units.append(g1["p1_units_produced"])
+                ai_a_resources.append(g1["p0_total_resources"])
+                ai_b_resources.append(g1["p1_total_resources"])
+                ai_a_construction.append(g1["p0_construction"])
+                ai_b_construction.append(g1["p1_construction"])
+                # g2: AI_A=P1, AI_B=P0
+                ai_a_units.append(g2["p1_units_produced"])
+                ai_b_units.append(g2["p0_units_produced"])
+                ai_a_resources.append(g2["p1_total_resources"])
+                ai_b_resources.append(g2["p0_total_resources"])
+                ai_a_construction.append(g2["p1_construction"])
+                ai_b_construction.append(g2["p0_construction"])
+
+            au_mean, au_std = _mean_std(ai_a_units)
+            bu_mean, bu_std = _mean_std(ai_b_units)
+            ar_mean, ar_std = _mean_std(ai_a_resources)
+            br_mean, br_std = _mean_std(ai_b_resources)
+            ac_mean, ac_std = _mean_std(ai_a_construction)
+            bc_mean, bc_std = _mean_std(ai_b_construction)
+
+            # Resource efficiency: winrate per 100 resources (higher = better allocation)
+            ai_a_efficiency = round(ai_a_wr / (ar_mean + 1) * 1000, 2) if ar_mean > 0 else 0
+            ai_b_efficiency = round(ai_b_wr / (br_mean + 1) * 1000, 2) if br_mean > 0 else 0
+
             print(f"{ai_a:12s} {ai_b:12s} {ai_a_wr*100:6.1f}% {ai_a_ci*100:4.1f}% "
                   f"{ai_b_wr*100:6.1f}% {ai_b_ci*100:4.1f}% "
                   f"{p0_wr*100:6.1f}% {p0_ci*100:4.1f}% "
                   f"{cq_mean*100:4.1f}% {cs_mean*100:4.1f}% {tie_mean*100:4.1f}% "
                   f"{avg_t:6.1f} {avg_d:5.1f}")
+            print(f"  {' ' * 12} {' ' * 12} Econ: "
+                  f"A_units={au_mean:.1f}±{au_std:.1f} B_units={bu_mean:.1f}±{bu_std:.1f} "
+                  f"A_res={ar_mean:.0f}±{ar_std:.0f} B_res={br_mean:.0f}±{br_std:.0f} "
+                  f"A_con={ac_mean:.1f} B_con={bc_mean:.1f} "
+                  f"eff_A={ai_a_efficiency:.1f} eff_B={ai_b_efficiency:.1f}")
 
             # Save raw paired data (only if --save-raw is set, otherwise save light summary)
             raw_data = {
@@ -476,6 +561,15 @@ def main():
                 "tiebreak_rate": round(tie_mean, 4),
                 "avg_turns": round(avg_t, 2),
                 "avg_dead": round(avg_d, 2),
+                # Economic metrics
+                "ai_a_units_mean": round(au_mean, 2), "ai_a_units_std": round(au_std, 2),
+                "ai_b_units_mean": round(bu_mean, 2), "ai_b_units_std": round(bu_std, 2),
+                "ai_a_resources_mean": round(ar_mean, 1), "ai_a_resources_std": round(ar_std, 1),
+                "ai_b_resources_mean": round(br_mean, 1), "ai_b_resources_std": round(br_std, 1),
+                "ai_a_construction_mean": round(ac_mean, 2), "ai_a_construction_std": round(ac_std, 2),
+                "ai_b_construction_mean": round(bc_mean, 2), "ai_b_construction_std": round(bc_std, 2),
+                "ai_a_resource_efficiency": ai_a_efficiency,
+                "ai_b_resource_efficiency": ai_b_efficiency,
             }
             if args.save_raw:
                 raw_data["seeds"] = [{
@@ -508,6 +602,14 @@ def main():
                 "tiebreak_rate": round(tie_mean, 4),
                 "avg_turns": round(avg_t, 2),
                 "avg_dead": round(avg_d, 2),
+                "ai_a_units_mean": round(au_mean, 2), "ai_a_units_std": round(au_std, 2),
+                "ai_b_units_mean": round(bu_mean, 2), "ai_b_units_std": round(bu_std, 2),
+                "ai_a_resources_mean": round(ar_mean, 1), "ai_a_resources_std": round(ar_std, 1),
+                "ai_b_resources_mean": round(br_mean, 1), "ai_b_resources_std": round(br_std, 1),
+                "ai_a_construction_mean": round(ac_mean, 2), "ai_a_construction_std": round(ac_std, 2),
+                "ai_b_construction_mean": round(bc_mean, 2), "ai_b_construction_std": round(bc_std, 2),
+                "ai_a_resource_efficiency": ai_a_efficiency,
+                "ai_b_resource_efficiency": ai_b_efficiency,
             })
 
     config = {"games_per_pair": args.games, "size": args.size, "gen": args.gen,

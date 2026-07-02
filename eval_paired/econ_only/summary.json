@@ -1,0 +1,33 @@
+{
+  "config": {
+    "games_per_pair": 300,
+    "size": 15,
+    "gen": "balanced",
+    "paired": true,
+    "mode": "econ_only"
+  },
+  "pairs": [
+    {
+      "mode": "paired",
+      "ai_a": "greedy",
+      "ai_b": "greedy",
+      "n_seeds": 300,
+      "n_games": 600,
+      "ai_a_winrate": 0.5,
+      "ai_b_winrate": 0.5,
+      "p0_winrate": 1.0,
+      "p0_std": 0.0,
+      "p0_ci95": 0.0,
+      "ai_a_std": 0.0,
+      "ai_a_ci95": 0.04,
+      "conquest_rate": 0.0,
+      "construction_rate": 0.0,
+      "tiebreak_rate": 1.0,
+      "avg_turns": 100.0,
+      "avg_dead": 0.0
+    }
+  ],
+  "total_seeds": 300,
+  "total_games": 600,
+  "elapsed_s": 114.1
+}

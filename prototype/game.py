@@ -255,7 +255,9 @@ def _tiebreak(gs: GameState):
     elif gs.cities[1].hp > gs.cities[0].hp:
         gs.winner, gs.victory_type = 1, "tiebreak_city_hp"
     else:
-        gs.winner, gs.victory_type = 0, "tiebreak_p0"
+        # 随机判定, 消除系统性P0偏向
+        gs.winner = gs.rng.randint(0, 1)
+        gs.victory_type = "tiebreak_random"
 
 
 from prototype.constants import TECH_TREE as _TECH_TREE

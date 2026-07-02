@@ -122,8 +122,11 @@ def _add_starting_army(gs, pid, cx, cy):
 
 
 def _apply_econ_only_patch():
-    """Econ-only: disable all combat by patching combat module."""
+    """Econ-only: disable all combat by patching module-level references."""
+    # Patch combat module (sets attributes on the module object)
     import prototype.combat as combat_mod
+    import prototype.game as game_mod
+    import importlib as _il
 
     def _noop_melee(attacker, defender, terrain_att, terrain_def,
                     attacker_just_charged=False):
@@ -133,9 +136,23 @@ def _apply_econ_only_patch():
     def _noop_ranged(archer, target, terrain_target):
         return {"damage": 0, "target_alive": True}
 
+    def _noop_occupy(unit, city):
+        return 0
+
+    # First, patch the combat module
     combat_mod.resolve_melee = _noop_melee
     combat_mod.resolve_ranged = _noop_ranged
-    combat_mod.city_occupation_damage = lambda unit, city: 0
+    combat_mod.city_occupation_damage = _noop_occupy
+
+    # Then reload game.py so its `from prototype.combat import ...` gets the patched versions
+    _il.reload(game_mod)
+
+    # After reload, game.py has fresh imports from combat_mod (now patched).
+    # But reload also resets combat_mod to its original state.
+    # Re-patch combat_mod so future imports see the patches.
+    combat_mod.resolve_melee = _noop_melee
+    combat_mod.resolve_ranged = _noop_ranged
+    combat_mod.city_occupation_damage = _noop_occupy
 
 
 def _extract_result(gs, seed, ai0_name, ai1_name):

@@ -10,11 +10,11 @@ from prototype.game import init_game, step_game
 from prototype.ai_evo import ai_decide, random_weights, mutate_weights, crossover_weights, DEFAULT_WEIGHTS
 
 # ─── 配置 ─────────────────────────────────────────
-POPULATION_SIZE = 50
+POPULATION_SIZE = 60
 ELITE_RATIO = 0.2          # 前20%入选
-GENERATIONS = 20
-OPPONENTS = ["random", "greedy"]  # 对手AI
-GAMES_PER_MATCHUP = 3       # 每局配对玩3盘 (P0+P1各执先手各玩, 再加1盘P0先手)
+GENERATIONS = 50
+OPPONENTS = ["random", "greedy", "aggressive"]  # 对手AI
+GAMES_PER_MATCHUP = 5       # 每局配对玩5盘 (交替先手)
 SEED_OFFSET = 42
 SIZE = 15
 MAX_TURNS = 100

@@ -1,0 +1,119 @@
+{
+  "config": {
+    "games_per_pair": 100,
+    "size": 15,
+    "gen": "balanced"
+  },
+  "pairs": [
+    {
+      "ai0": "random",
+      "ai1": "random",
+      "n": 100,
+      "p0_winrate": 0.52,
+      "p1_winrate": 0.48,
+      "conquests": 100,
+      "constructions": 0,
+      "tiebreaks": 0,
+      "avg_turns": 21.23,
+      "avg_dead": 9.69
+    },
+    {
+      "ai0": "random",
+      "ai1": "greedy",
+      "n": 100,
+      "p0_winrate": 0.26,
+      "p1_winrate": 0.74,
+      "conquests": 26,
+      "constructions": 61,
+      "tiebreaks": 13,
+      "avg_turns": 85.37,
+      "avg_dead": 47.03
+    },
+    {
+      "ai0": "random",
+      "ai1": "aggressive",
+      "n": 100,
+      "p0_winrate": 0.23,
+      "p1_winrate": 0.77,
+      "conquests": 68,
+      "constructions": 23,
+      "tiebreaks": 9,
+      "avg_turns": 71.47,
+      "avg_dead": 36.2
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "random",
+      "n": 100,
+      "p0_winrate": 0.89,
+      "p1_winrate": 0.11,
+      "conquests": 34,
+      "constructions": 53,
+      "tiebreaks": 13,
+      "avg_turns": 81.91,
+      "avg_dead": 46.02
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "greedy",
+      "n": 100,
+      "p0_winrate": 0.58,
+      "p1_winrate": 0.42,
+      "conquests": 8,
+      "constructions": 63,
+      "tiebreaks": 29,
+      "avg_turns": 97.06,
+      "avg_dead": 49.82
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "aggressive",
+      "n": 100,
+      "p0_winrate": 0.94,
+      "p1_winrate": 0.06,
+      "conquests": 16,
+      "constructions": 84,
+      "tiebreaks": 0,
+      "avg_turns": 92.57,
+      "avg_dead": 56.22
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "random",
+      "n": 100,
+      "p0_winrate": 0.85,
+      "p1_winrate": 0.15,
+      "conquests": 69,
+      "constructions": 23,
+      "tiebreaks": 8,
+      "avg_turns": 71.22,
+      "avg_dead": 36.5
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "greedy",
+      "n": 100,
+      "p0_winrate": 0.08,
+      "p1_winrate": 0.92,
+      "conquests": 18,
+      "constructions": 82,
+      "tiebreaks": 0,
+      "avg_turns": 91.98,
+      "avg_dead": 53.98
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "aggressive",
+      "n": 100,
+      "p0_winrate": 0.79,
+      "p1_winrate": 0.21,
+      "conquests": 15,
+      "constructions": 0,
+      "tiebreaks": 85,
+      "avg_turns": 92.31,
+      "avg_dead": 69.67
+    }
+  ],
+  "total_games": 900,
+  "elapsed_s": 5.8
+}

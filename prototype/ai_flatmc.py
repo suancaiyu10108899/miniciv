@@ -12,8 +12,8 @@ import copy as _copy
 import random as _random
 from prototype.movement import get_single_step_moves
 
-ROLLOUTS = 10  # patch from outside before calling ai_decide
-ROLLOUT_DEPTH = 5      # how many turns to simulate in each rollout
+ROLLOUTS = 5  # patch from outside before calling ai_decide
+ROLLOUT_DEPTH = 20      # how many turns to simulate in each rollout
 
 
 def _rollout_score(gs, pid: int) -> float:
@@ -31,7 +31,7 @@ def _fast_rollout(gs, pid: int, rng: _random.Random) -> float:
     Does NOT deepcopy internally -- caller is responsible for that.
     """
     from prototype.game import step_game
-    from prototype.ai_rulesrandom import ai_decide as _rdecide
+    from prototype.ai_greedy import ai_decide as _gdecide
 
     rng0 = _random.Random(rng.randint(0, 2**30))
     rng1 = _random.Random(rng.randint(0, 2**30))
@@ -39,8 +39,8 @@ def _fast_rollout(gs, pid: int, rng: _random.Random) -> float:
     max_turns = orig_turn + ROLLOUT_DEPTH
 
     while gs.winner is None and gs.turn < max_turns:
-        a0 = _rdecide(gs, 0, rng0)
-        a1 = _rdecide(gs, 1, rng1)
+        a0 = _gdecide(gs, 0, rng0)
+        a1 = _gdecide(gs, 1, rng1)
         step_game(gs, a0, a1)
 
     if gs.winner == pid:

@@ -1,34 +1,30 @@
-# Rust
-/target/
-**/*.rs.bk
-
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project data (large files)
-data/models/*.pt
-data/models/*.npz
-data/models/*.zip
-data/trajectories/*.json
-archive/agent-outputs/bc_training_data.json
-archive/agent-outputs/bc_history.json
-prototype/bc_training_data.json
 
 # Env
+# IDE
+# OS
+# Project data (large files)
+# Python
+# Rust
+**/*.rs.bk
+*.egg-info/
+*.py[cod]
+*.swo
+*.swp
+.DS_Store
 .env
 .env.local
+.idea/
+.venv/
+.vscode/
+/target/
+Thumbs.db
+__pycache__/
+archive/agent-outputs/bc_history.json
+archive/agent-outputs/bc_training_data.json
+data/models/*.npz
+data/models/*.pt
+data/models/*.zip
+data/trajectories/*.json
 eval_paradigms/
+prototype/bc_training_data.json
+venv/

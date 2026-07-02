@@ -8,6 +8,8 @@
 | [GAME.md](GAME.md) | 当前游戏参数（唯一真相源） | 参数相关操作时 |
 | [DECISIONS.md](DECISIONS.md) | 设计决策日志 | 需要知道"为什么"时 |
 | [WORKFLOW.md](WORKFLOW.md) | 开发纪律 + Agent 规范 | 写代码/跑实验/用 Agent 前 |
+| [AI-EVAL.md](AI-EVAL.md) | AI 评估标准化协议 | 评估 AI 性能时 |
+| [AI-AUDIT.md](AI-AUDIT.md) | 每个 AI 的实现审计和诊断 | 修复/改进 AI 时 |
 
 ## 设计（已冻结）
 

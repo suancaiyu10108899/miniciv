@@ -1,0 +1,36 @@
+{
+  "b3_evo_population_gradient": [
+    {
+      "population": 20,
+      "generations": 20,
+      "total_evals": 6000,
+      "train_best_winrate": 1.0,
+      "test_winrate_vs_greedy": 0.785,
+      "test_stddev_pct": 2.9049526674285073
+    },
+    {
+      "population": 50,
+      "generations": 8,
+      "total_evals": 6000,
+      "train_best_winrate": 1.0,
+      "test_winrate_vs_greedy": 0.795,
+      "test_stddev_pct": 2.8546015483776364
+    },
+    {
+      "population": 100,
+      "generations": 4,
+      "total_evals": 6000,
+      "train_best_winrate": 1.0,
+      "test_winrate_vs_greedy": 0.895,
+      "test_stddev_pct": 2.1676600286945367
+    },
+    {
+      "population": 200,
+      "generations": 2,
+      "total_evals": 6000,
+      "train_best_winrate": 0.8666666666666667,
+      "test_winrate_vs_greedy": 0.7,
+      "test_stddev_pct": 3.24037034920393
+    }
+  ]
+}

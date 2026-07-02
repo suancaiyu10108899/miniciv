@@ -48,31 +48,47 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
         act = _aggro_worker(u, units.index(u), gs, pid, has_f, has_l, has_m, rng)
         if act: actions.append(act)
 
-    # === 研究优先 ===
+    # === 研究: 僵局时走C线, 否则正常战斗顺序 ===
+    stalemate = (gs.turn > 50)
+
     if tech.researching is None:
-        avail = tech.available_to_research()
-        order = ["M1", "C1", "M2", "E1", "C2", "M3", "E2", "C3", "M4", "E3", "C4", "E4", "C5"]
-        for t in order:
-            if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
-                actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
-                break
+        if stalemate:
+            # 建设模式: C线优先
+            avail = tech.available_to_research()
+            c_avail = [t for t in avail if t.startswith("C")]
+            c_avail.sort(key=lambda t: TECH_TREE_COST.get(t, (0,0,0))[0])
+            for t in c_avail:
+                if econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
+                    actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
+                    break
+        else:
+            # 正常: 战斗+经济+建设混合顺序
+            avail = tech.available_to_research()
+            order = ["M1", "C1", "M2", "E1", "C2", "M3", "E2", "C3", "M4", "E3", "C4", "E4", "C5"]
+            for t in order:
+                if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
+                    actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
+                    break
 
-    # === 波浪进攻生产节奏 ===
-    # 如果前线兵力不足且敌方防线强→攒钱暴兵, 否则持续生产
-    frontline = assessment["my_frontline_count"]
-    surge = assessment["enemy_defense_strong"] and frontline < 4
-
-    if surge:
-        # 攒钱模式: 只造便宜的步兵, 省钱暴骑兵
-        if econ.can_afford(UNIT_COST["cavalry"]) and econ.food > 15:
-            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
-        elif econ.can_afford(UNIT_COST["infantry"]) and frontline < 3:
+    # === 生产: 僵局时攒钱, 否则正常暴兵 ===
+    if stalemate:
+        if econ.can_afford(UNIT_COST["infantry"]) and assessment["my_frontline_count"] < 3:
             actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
     else:
-        for ut in ["cavalry", "archer", "infantry"]:
-            if econ.can_afford(UNIT_COST[ut]):
-                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
-                break
+        # === 波浪进攻生产节奏 ===
+        frontline = assessment["my_frontline_count"]
+        surge = assessment["enemy_defense_strong"] and frontline < 4
+
+        if surge:
+            if econ.can_afford(UNIT_COST["cavalry"]) and econ.food > 15:
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+            elif econ.can_afford(UNIT_COST["infantry"]) and frontline < 3:
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
+        else:
+            for ut in ["cavalry", "archer", "infantry"]:
+                if econ.can_afford(UNIT_COST[ut]):
+                    actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
+                    break
 
     return actions
 

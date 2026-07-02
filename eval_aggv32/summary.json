@@ -1,0 +1,59 @@
+{
+  "config": {
+    "games_per_pair": 200,
+    "size": 15,
+    "gen": "balanced"
+  },
+  "pairs": [
+    {
+      "ai0": "greedy",
+      "ai1": "greedy",
+      "n": 200,
+      "p0_winrate": 0.61,
+      "p1_winrate": 0.39,
+      "conquests": 25,
+      "constructions": 115,
+      "tiebreaks": 60,
+      "avg_turns": 94.31,
+      "avg_dead": 41.705
+    },
+    {
+      "ai0": "greedy",
+      "ai1": "aggressive",
+      "n": 200,
+      "p0_winrate": 0.94,
+      "p1_winrate": 0.06,
+      "conquests": 34,
+      "constructions": 166,
+      "tiebreaks": 0,
+      "avg_turns": 92.74,
+      "avg_dead": 66.29
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "greedy",
+      "n": 200,
+      "p0_winrate": 0.06,
+      "p1_winrate": 0.94,
+      "conquests": 37,
+      "constructions": 163,
+      "tiebreaks": 0,
+      "avg_turns": 92.905,
+      "avg_dead": 71.41
+    },
+    {
+      "ai0": "aggressive",
+      "ai1": "aggressive",
+      "n": 200,
+      "p0_winrate": 0.82,
+      "p1_winrate": 0.18,
+      "conquests": 45,
+      "constructions": 0,
+      "tiebreaks": 155,
+      "avg_turns": 94.135,
+      "avg_dead": 77.895
+    }
+  ],
+  "total_games": 800,
+  "elapsed_s": 5.2
+}

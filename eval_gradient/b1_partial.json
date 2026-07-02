@@ -1,0 +1,20 @@
+[
+  {
+    "rollouts": 3,
+    "opponent": "random",
+    "winrate": 0.845,
+    "stddev_pct": 2.56
+  },
+  {
+    "rollouts": 3,
+    "opponent": "greedy",
+    "winrate": 0.48,
+    "stddev_pct": 3.53
+  },
+  {
+    "rollouts": 5,
+    "opponent": "random",
+    "winrate": 0.835,
+    "stddev_pct": 2.62
+  }
+]

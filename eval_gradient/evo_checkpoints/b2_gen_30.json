@@ -1,0 +1,21 @@
+{
+  "gen": 30,
+  "wr": 1.0,
+  "w": {
+    "attack_adjacent": 3.8125540003757563,
+    "rush_enemy_city": 2.6968951505981287,
+    "defend_own_city": 3.8931323931527912,
+    "intercept_near_city": 2.6517683609758875,
+    "retreat_hp_threshold": 0.7785174526573555,
+    "terrain_def_weight": 0.12622097487420625,
+    "retreat_terrain_bonus": 0.5784103078700241,
+    "archer_keep_distance": 5.0,
+    "archer_prefer_high": 0.55083900700267,
+    "build_efficiency": 2.4949965880835383,
+    "resource_variety": 0.09510385731556004,
+    "research_priority": 0.17377549948256266,
+    "military_tech_bias": 0.6072474938909317,
+    "cavalry_production": 0.6689923799342007,
+    "archer_production": 0.25696035620363633
+  }
+}

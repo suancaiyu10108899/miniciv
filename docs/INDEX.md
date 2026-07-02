@@ -28,10 +28,10 @@
 
 | 文档 | 内容 | 数据量 |
 |------|------|--------|
-| [reports/p0-first-move-analysis.md](reports/p0-first-move-analysis.md) | 先手效应完整分析 | Paired 3000 局 |
-| [reports/ai-paradigm-validation.md](reports/ai-paradigm-validation.md) | AI 范式验证 | 多种 AI 对比 |
-| [reports/game-depth-analysis.md](reports/game-depth-analysis.md) | 游戏深度分析（梯度曲线） | FlatMC+Evo+Greedy 梯度 |
-| [reports/balance-tuning-log.md](reports/balance-tuning-log.md) | 平衡调优日志 | 多次参数迭代 |
+| [reports/game-depth-analysis.md](reports/game-depth-analysis.md) | **游戏深度分析（梯度曲线）** | FlatMC+Evo+Greedy 梯度, ~9000局 |
+| [reports/ai-paradigm-validation.md](reports/ai-paradigm-validation.md) | **AI 范式验证** | 7种范式对比 |
+| [reports/p0-first-move-analysis.md](reports/p0-first-move-analysis.md) | 先手效应分析 | Paired 3000 局 |
+| [reports/balance-tuning-log.md](reports/balance-tuning-log.md) | 平衡调优日志 | 5轮参数迭代 |
 
 ## 实验数据
 

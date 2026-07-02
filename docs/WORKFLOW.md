@@ -134,10 +134,16 @@ experiments/vX.Y.Z/<experiment-name>/
 
 ### 模型分工
 
-| 角色 | 模型 | 职责 |
-|------|------|------|
-| 主Agent | DeepSeek V4 Pro | 设计决策、架构判断、数据审核、写文档 |
-| 子Agent | DeepSeek V4 Flash | 代码修改+测试、跑实验、数据分析初版、格式化 |
+| 角色 | 模型 | CC alias | 职责 |
+|------|------|----------|------|
+| 主Agent | DeepSeek V4 Pro | `opus`（默认） | 设计决策、架构判断、数据审核、写文档 |
+| 子Agent | DeepSeek V4 Flash | `haiku` / `sonnet` | 代码修改+测试、跑实验、数据分析初版、格式化 |
+
+> **DeepSeek 官方映射规则**（2026-07-02）：
+> - `claude-opus-*` → `deepseek-v4-pro`
+> - `claude-haiku-*` / `claude-sonnet-*` → `deepseek-v4-flash`
+>
+> 因此子 Agent 调用时指定 `model: "haiku"` 即可走 Flash（省 token），主 Agent 不指定或用 `opus` 走 Pro。
 
 ### 子Agent 任务定义规范
 

@@ -2,14 +2,19 @@
 
 ## 当前阶段
 
-**Python 原型迭代**。GDD 设计完成，原型跑过 ~60k 局。下一阶段：参数对比实验 → 游戏设计定稿 → Rust 内核。
+**Python 原型迭代 + Multi-Agent 协作试点**。
 
 ## 当前任务（优先级排序）
 
-1. **文档体系重组**（进行中）— 建立可持续的文档纪律
-2. **地图尺寸对比实验** — 15×15 vs 30×30，决定基准尺寸
-3. **AI eval 标准化** — 三级评估协议 + 训练诊断 checklist
-4. **Agent 协作流程试点** — Worktree 隔离 + 结构化接口
+1. **Multi-Agent 试点**（进行中）— DQN修复 + FlatMC修复 + FlatMC深度扫描，三个子Agent并行
+2. **DQN 重训** — 梯度裁剪 + 降LR，修复 NaN bug
+3. **FlatMC 加深** — 20T rollout + Greedy policy
+4. **BC 多对手重训** — Greedy+Aggressive+Random 混合数据
+
+## 上次做到哪了
+
+→ `docs/sessions/2026-07-02.md`
+→ `docs/planning/multi-agent-pilot.md`（本任务详细规划）
 
 ## 上次做到哪了
 

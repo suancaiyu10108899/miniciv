@@ -12,6 +12,7 @@ AI_MODULES = {
     "flatmc":     "prototype.ai_flatmc",
     "evo":        "prototype.ai_evo",
     "dqn":        "prototype.ai_dqn",
+    "dqn_trained": "prototype.ai_dqn_trained",  # DQN with pretrained weights
     "hybrid":     "prototype.ai_hybrid",
     "bc":         "prototype.ai_bc",
 }

@@ -26,6 +26,7 @@ data/models/*.zip
 data/trajectories/*.json
 archive/agent-outputs/bc_training_data.json
 archive/agent-outputs/bc_history.json
+prototype/bc_training_data.json
 
 # Env
 .env

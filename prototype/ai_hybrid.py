@@ -13,6 +13,25 @@ from prototype.constants import UNIT_COST, TECH_TREE as _TECH_TREE
 
 TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
 
+# ─── 自动加载最佳训练参数 ────────────────────────────
+# 检查多个可能的位置
+_HYBRID_CANDIDATES = [
+    os.path.join(os.path.dirname(__file__), "hybrid_best_params.json"),
+    os.path.join(os.path.dirname(__file__), "..", "experiments", "v0.4.0", "paradigms", "hybrid_best_params.json"),
+]
+_HYBRID_PARAMS = None
+for _hp in _HYBRID_CANDIDATES:
+    _resolved = os.path.abspath(_hp)
+    if os.path.exists(_resolved):
+        try:
+            with open(_resolved) as _f:
+                _hp_data = json.load(_f)
+            _HYBRID_PARAMS = _hp_data.get("params", _hp_data)
+        except Exception:
+            pass
+        if _HYBRID_PARAMS is not None:
+            break
+
 # ─── 默认参数 (各范围中点) ──────────────────────────
 DEFAULT_PARAMS = {
     "retreat_threshold": 0.3,
@@ -247,7 +266,10 @@ def ai_decide(gs, pid: int, rng=None, params: dict = None) -> list[dict]:
     if rng is None:
         rng = _random.Random(gs.seed + gs.turn * 1000 + pid)
     if params is None:
-        params = dict(DEFAULT_PARAMS)
+        if _HYBRID_PARAMS is not None:
+            params = dict(_HYBRID_PARAMS)
+        else:
+            params = dict(DEFAULT_PARAMS)
 
     units = [u for u in gs.units if u.player_id == pid and u.alive]
     opp_city = gs.cities[1 - pid]

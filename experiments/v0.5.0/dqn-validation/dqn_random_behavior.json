@@ -1,0 +1,12 @@
+{
+  "sample_size": 20,
+  "construction_victory_pct": 0.0,
+  "conquest_victory_pct": 85.0,
+  "avg_techs_completed": 9,
+  "avg_construction_techs": 4,
+  "avg_military_units_produced": 24.25,
+  "avg_scouts_produced": 1,
+  "avg_workers_produced": 3,
+  "c5_completion_rate_pct": 0.0,
+  "c5_completed_games": 0
+}

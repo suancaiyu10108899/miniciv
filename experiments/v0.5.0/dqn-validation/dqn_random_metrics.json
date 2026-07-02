@@ -1,0 +1,36 @@
+{
+  "n_games": 500,
+  "dqn_wins": 453,
+  "opp_wins": 47,
+  "draws": 0,
+  "winrate_pct": 90.6,
+  "winrate_std_pct": 1.31,
+  "victory_types": {
+    "conquest": 499,
+    "tiebreak_construction": 1
+  },
+  "dqn_construction_wins": 0,
+  "dqn_conquest_wins": 452,
+  "avg_turns": 28.76,
+  "std_turns": 11.29,
+  "avg_dead_dqn": 4.48,
+  "avg_dead_opp": 6.94,
+  "avg_techs_dqn": 9,
+  "avg_techs_opp": 4.42,
+  "avg_construction_dqn": 4,
+  "avg_construction_opp": 0.88,
+  "avg_dqn_units_by_type": {
+    "infantry": 25.25,
+    "cavalry": 0,
+    "archer": 0,
+    "scout": 1,
+    "worker": 3
+  },
+  "avg_opp_units_by_type": {
+    "infantry": 3.192,
+    "cavalry": 0,
+    "archer": 6.352,
+    "scout": 1,
+    "worker": 3
+  }
+}

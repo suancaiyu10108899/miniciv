@@ -1,0 +1,40 @@
+{
+  "commit_hash": "8de44895244378fbcab2df699c9890aa0d5ecb61",
+  "config": {
+    "games_per_pair": 300,
+    "size": 15,
+    "gen": "balanced",
+    "paired": true,
+    "mode": "econ_only",
+    "city_hp": 100,
+    "city_damage": 15
+  },
+  "pairs": [
+    {
+      "mode": "paired",
+      "ai_a": "greedy",
+      "ai_b": "greedy",
+      "n_seeds": 300,
+      "n_games": 600,
+      "city_hp": 100,
+      "city_damage": 15,
+      "size": 15,
+      "gen": "balanced",
+      "ai_a_winrate": 0.5,
+      "ai_b_winrate": 0.5,
+      "p0_winrate": 0.4933,
+      "p0_std": 0.5008,
+      "p0_ci95": 0.04,
+      "ai_a_std": 0.0,
+      "ai_a_ci95": 0.04,
+      "conquest_rate": 0.0,
+      "construction_rate": 0.0,
+      "tiebreak_rate": 1.0,
+      "avg_turns": 100.0,
+      "avg_dead": 0.0
+    }
+  ],
+  "total_seeds": 300,
+  "total_games": 600,
+  "elapsed_s": 15.7
+}

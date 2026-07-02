@@ -1,0 +1,23 @@
+{
+  "mode": "paired",
+  "ai_a": "random",
+  "ai_b": "greedy",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 100,
+  "city_damage": 15,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.18,
+  "ai_b_winrate": 0.82,
+  "p0_winrate": 0.54,
+  "p0_std": 0.2762,
+  "p0_ci95": 0.0488,
+  "ai_a_std": 0.2654,
+  "ai_a_ci95": 0.0377,
+  "conquest_rate": 0.3525,
+  "construction_rate": 0.075,
+  "tiebreak_rate": 0.5725,
+  "avg_turns": 82.19,
+  "avg_dead": 45.87
+}

@@ -1,0 +1,17 @@
+{
+  "mode": "paired",
+  "ai_a": "random",
+  "ai_b": "greedy",
+  "n_seeds": 200,
+  "n_games": 400,
+  "ai_a_winrate": 0.145,
+  "ai_b_winrate": 0.855,
+  "p0_winrate": 0.525,
+  "p0_ci95": 0.0489,
+  "ai_a_ci95": 0.0345,
+  "ai_a_std": 0.2536,
+  "conquest_rate": 0.365,
+  "construction_rate": 0.065,
+  "tiebreak_rate": 0.57,
+  "avg_turns": 82.0
+}

@@ -1,0 +1,456 @@
+{
+  "results": {
+    "random_vs_random": {
+      "p0_winrate": 0.53,
+      "p1_winrate": 0.47,
+      "conquest": 1.0,
+      "construction": 0.0,
+      "tiebreak": 0.0,
+      "avg_turns": 20.03,
+      "avg_dead": 8.75
+    },
+    "random_vs_greedy": {
+      "p0_winrate": 0.22,
+      "p1_winrate": 0.78,
+      "conquest": 0.3,
+      "construction": 0.46,
+      "tiebreak": 0.24,
+      "avg_turns": 83.07,
+      "avg_dead": 45.27
+    },
+    "random_vs_aggressive": {
+      "p0_winrate": 0.03,
+      "p1_winrate": 0.97,
+      "conquest": 0.99,
+      "construction": 0.01,
+      "tiebreak": 0.0,
+      "avg_turns": 40.47,
+      "avg_dead": 20.01
+    },
+    "random_vs_evo": {
+      "p0_winrate": 0.16,
+      "p1_winrate": 0.84,
+      "conquest": 0.04,
+      "construction": 0.83,
+      "tiebreak": 0.13,
+      "avg_turns": 50.24,
+      "avg_dead": 19.34
+    },
+    "random_vs_dqn": {
+      "p0_winrate": 0.02,
+      "p1_winrate": 0.98,
+      "conquest": 1.0,
+      "construction": 0.0,
+      "tiebreak": 0.0,
+      "avg_turns": 28.26,
+      "avg_dead": 15.31
+    },
+    "random_vs_hybrid": {
+      "p0_winrate": 0.28,
+      "p1_winrate": 0.72,
+      "conquest": 0.73,
+      "construction": 0.27,
+      "tiebreak": 0.0,
+      "avg_turns": 70.85,
+      "avg_dead": 32.99
+    },
+    "random_vs_bc": {
+      "p0_winrate": 1.0,
+      "p1_winrate": 0.0,
+      "conquest": 1.0,
+      "construction": 0.0,
+      "tiebreak": 0.0,
+      "avg_turns": 18.34,
+      "avg_dead": 4.18
+    },
+    "greedy_vs_random": {
+      "p0_winrate": 0.86,
+      "p1_winrate": 0.14,
+      "conquest": 0.4,
+      "construction": 0.5,
+      "tiebreak": 0.1,
+      "avg_turns": 80.07,
+      "avg_dead": 44.22
+    },
+    "greedy_vs_greedy": {
+      "p0_winrate": 0.59,
+      "p1_winrate": 0.41,
+      "conquest": 0.18,
+      "construction": 0.59,
+      "tiebreak": 0.23,
+      "avg_turns": 92.89,
+      "avg_dead": 37.29
+    },
+    "greedy_vs_aggressive": {
+      "p0_winrate": 0.96,
+      "p1_winrate": 0.04,
+      "conquest": 0.18,
+      "construction": 0.82,
+      "tiebreak": 0.0,
+      "avg_turns": 94.04,
+      "avg_dead": 71.32
+    },
+    "greedy_vs_evo": {
+      "p0_winrate": 0.2,
+      "p1_winrate": 0.8,
+      "conquest": 0.04,
+      "construction": 0.74,
+      "tiebreak": 0.22,
+      "avg_turns": 43.17,
+      "avg_dead": 17.74
+    },
+    "greedy_vs_dqn": {
+      "p0_winrate": 0.18,
+      "p1_winrate": 0.82,
+      "conquest": 0.32,
+      "construction": 0.67,
+      "tiebreak": 0.01,
+      "avg_turns": 85.29,
+      "avg_dead": 98.04
+    },
+    "greedy_vs_hybrid": {
+      "p0_winrate": 0.88,
+      "p1_winrate": 0.12,
+      "conquest": 0.27,
+      "construction": 0.56,
+      "tiebreak": 0.17,
+      "avg_turns": 81.98,
+      "avg_dead": 19.4
+    },
+    "greedy_vs_bc": {
+      "p0_winrate": 0.0,
+      "p1_winrate": 1.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "aggressive_vs_random": {
+      "p0_winrate": 0.98,
+      "p1_winrate": 0.02,
+      "conquest": 0.99,
+      "construction": 0.01,
+      "tiebreak": 0.0,
+      "avg_turns": 40.29,
+      "avg_dead": 19.31
+    },
+    "aggressive_vs_greedy": {
+      "p0_winrate": 0.02,
+      "p1_winrate": 0.98,
+      "conquest": 0.13,
+      "construction": 0.87,
+      "tiebreak": 0.0,
+      "avg_turns": 95.16,
+      "avg_dead": 71.95
+    },
+    "aggressive_vs_aggressive": {
+      "p0_winrate": 0.53,
+      "p1_winrate": 0.47,
+      "conquest": 0.19,
+      "construction": 0.0,
+      "tiebreak": 0.81,
+      "avg_turns": 94.57,
+      "avg_dead": 79.28
+    },
+    "aggressive_vs_evo": {
+      "p0_winrate": 0.08,
+      "p1_winrate": 0.92,
+      "conquest": 0.06,
+      "construction": 0.92,
+      "tiebreak": 0.02,
+      "avg_turns": 45.58,
+      "avg_dead": 22.81
+    },
+    "aggressive_vs_dqn": {
+      "p0_winrate": 0.14,
+      "p1_winrate": 0.86,
+      "conquest": 0.47,
+      "construction": 0.53,
+      "tiebreak": 0.0,
+      "avg_turns": 82.57,
+      "avg_dead": 97.48
+    },
+    "aggressive_vs_hybrid": {
+      "p0_winrate": 0.89,
+      "p1_winrate": 0.11,
+      "conquest": 0.39,
+      "construction": 0.49,
+      "tiebreak": 0.12,
+      "avg_turns": 77.42,
+      "avg_dead": 58.92
+    },
+    "aggressive_vs_bc": {
+      "p0_winrate": 0.0,
+      "p1_winrate": 1.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "evo_vs_random": {
+      "p0_winrate": 0.8,
+      "p1_winrate": 0.2,
+      "conquest": 0.03,
+      "construction": 0.85,
+      "tiebreak": 0.12,
+      "avg_turns": 43.02,
+      "avg_dead": 16.07
+    },
+    "evo_vs_greedy": {
+      "p0_winrate": 0.82,
+      "p1_winrate": 0.18,
+      "conquest": 0.07,
+      "construction": 0.8,
+      "tiebreak": 0.13,
+      "avg_turns": 35.25,
+      "avg_dead": 10.08
+    },
+    "evo_vs_aggressive": {
+      "p0_winrate": 0.94,
+      "p1_winrate": 0.06,
+      "conquest": 0.05,
+      "construction": 0.94,
+      "tiebreak": 0.01,
+      "avg_turns": 35.32,
+      "avg_dead": 13.86
+    },
+    "evo_vs_evo": {
+      "p0_winrate": 0.56,
+      "p1_winrate": 0.44,
+      "conquest": 0.0,
+      "construction": 0.95,
+      "tiebreak": 0.05,
+      "avg_turns": 21.62,
+      "avg_dead": 0.0
+    },
+    "evo_vs_dqn": {
+      "p0_winrate": 0.72,
+      "p1_winrate": 0.28,
+      "conquest": 0.12,
+      "construction": 0.88,
+      "tiebreak": 0.0,
+      "avg_turns": 34.55,
+      "avg_dead": 29.49
+    },
+    "evo_vs_hybrid": {
+      "p0_winrate": 0.95,
+      "p1_winrate": 0.05,
+      "conquest": 0.0,
+      "construction": 0.94,
+      "tiebreak": 0.06,
+      "avg_turns": 37.75,
+      "avg_dead": 0.0
+    },
+    "evo_vs_bc": {
+      "p0_winrate": 0.06,
+      "p1_winrate": 0.94,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 11.93,
+      "avg_dead": 0.06
+    },
+    "dqn_vs_random": {
+      "p0_winrate": 0.95,
+      "p1_winrate": 0.05,
+      "conquest": 1.0,
+      "construction": 0.0,
+      "tiebreak": 0.0,
+      "avg_turns": 27.61,
+      "avg_dead": 14.56
+    },
+    "dqn_vs_greedy": {
+      "p0_winrate": 0.84,
+      "p1_winrate": 0.16,
+      "conquest": 0.36,
+      "construction": 0.64,
+      "tiebreak": 0.0,
+      "avg_turns": 82.87,
+      "avg_dead": 94.36
+    },
+    "dqn_vs_aggressive": {
+      "p0_winrate": 0.85,
+      "p1_winrate": 0.15,
+      "conquest": 0.46,
+      "construction": 0.54,
+      "tiebreak": 0.0,
+      "avg_turns": 81.87,
+      "avg_dead": 97.5
+    },
+    "dqn_vs_evo": {
+      "p0_winrate": 0.38,
+      "p1_winrate": 0.62,
+      "conquest": 0.2,
+      "construction": 0.78,
+      "tiebreak": 0.02,
+      "avg_turns": 41.86,
+      "avg_dead": 40.74
+    },
+    "dqn_vs_dqn": {
+      "p0_winrate": 0.5,
+      "p1_winrate": 0.5,
+      "conquest": 0.89,
+      "construction": 0.0,
+      "tiebreak": 0.11,
+      "avg_turns": 47.27,
+      "avg_dead": 56.8
+    },
+    "dqn_vs_hybrid": {
+      "p0_winrate": 0.95,
+      "p1_winrate": 0.05,
+      "conquest": 0.75,
+      "construction": 0.25,
+      "tiebreak": 0.0,
+      "avg_turns": 52.96,
+      "avg_dead": 55.38
+    },
+    "dqn_vs_bc": {
+      "p0_winrate": 0.0,
+      "p1_winrate": 1.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "hybrid_vs_random": {
+      "p0_winrate": 0.68,
+      "p1_winrate": 0.32,
+      "conquest": 0.72,
+      "construction": 0.26,
+      "tiebreak": 0.02,
+      "avg_turns": 67.9,
+      "avg_dead": 31.67
+    },
+    "hybrid_vs_greedy": {
+      "p0_winrate": 0.12,
+      "p1_winrate": 0.88,
+      "conquest": 0.21,
+      "construction": 0.64,
+      "tiebreak": 0.15,
+      "avg_turns": 86.84,
+      "avg_dead": 15.05
+    },
+    "hybrid_vs_aggressive": {
+      "p0_winrate": 0.12,
+      "p1_winrate": 0.88,
+      "conquest": 0.45,
+      "construction": 0.47,
+      "tiebreak": 0.08,
+      "avg_turns": 75.37,
+      "avg_dead": 59.06
+    },
+    "hybrid_vs_evo": {
+      "p0_winrate": 0.09,
+      "p1_winrate": 0.91,
+      "conquest": 0.0,
+      "construction": 0.93,
+      "tiebreak": 0.07,
+      "avg_turns": 42.75,
+      "avg_dead": 0.0
+    },
+    "hybrid_vs_dqn": {
+      "p0_winrate": 0.12,
+      "p1_winrate": 0.88,
+      "conquest": 0.67,
+      "construction": 0.33,
+      "tiebreak": 0.0,
+      "avg_turns": 62.0,
+      "avg_dead": 68.43
+    },
+    "hybrid_vs_hybrid": {
+      "p0_winrate": 0.42,
+      "p1_winrate": 0.58,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 99.26,
+      "avg_dead": 0.0
+    },
+    "hybrid_vs_bc": {
+      "p0_winrate": 0.02,
+      "p1_winrate": 0.98,
+      "conquest": 0.0,
+      "construction": 0.98,
+      "tiebreak": 0.02,
+      "avg_turns": 46.31,
+      "avg_dead": 0.18
+    },
+    "bc_vs_random": {
+      "p0_winrate": 0.0,
+      "p1_winrate": 1.0,
+      "conquest": 1.0,
+      "construction": 0.0,
+      "tiebreak": 0.0,
+      "avg_turns": 18.15,
+      "avg_dead": 4.24
+    },
+    "bc_vs_greedy": {
+      "p0_winrate": 1.0,
+      "p1_winrate": 0.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "bc_vs_aggressive": {
+      "p0_winrate": 1.0,
+      "p1_winrate": 0.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "bc_vs_evo": {
+      "p0_winrate": 0.93,
+      "p1_winrate": 0.07,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 11.99,
+      "avg_dead": 0.01
+    },
+    "bc_vs_dqn": {
+      "p0_winrate": 1.0,
+      "p1_winrate": 0.0,
+      "conquest": 0.0,
+      "construction": 1.0,
+      "tiebreak": 0.0,
+      "avg_turns": 9.0,
+      "avg_dead": 0.0
+    },
+    "bc_vs_hybrid": {
+      "p0_winrate": 0.97,
+      "p1_winrate": 0.03,
+      "conquest": 0.02,
+      "construction": 0.97,
+      "tiebreak": 0.01,
+      "avg_turns": 58.96,
+      "avg_dead": 0.38
+    },
+    "bc_vs_bc": {
+      "p0_winrate": 0.56,
+      "p1_winrate": 0.44,
+      "conquest": 0.0,
+      "construction": 0.0,
+      "tiebreak": 1.0,
+      "avg_turns": 100.0,
+      "avg_dead": 0.84
+    }
+  },
+  "elapsed_s": 554.4637999534607,
+  "n_games_per_pair": 100,
+  "ais": [
+    "random",
+    "greedy",
+    "aggressive",
+    "evo",
+    "dqn",
+    "hybrid",
+    "bc"
+  ]
+}

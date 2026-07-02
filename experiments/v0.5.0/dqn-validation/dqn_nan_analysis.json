@@ -1,0 +1,6 @@
+{
+  "weights_path": "D:\\Dev\\miniciv\\experiments\\v0.4.0\\paradigms\\dqn_best_weights.json",
+  "contains_nan": true,
+  "forward_produces_nan": true,
+  "forward_produces_inf": false
+}

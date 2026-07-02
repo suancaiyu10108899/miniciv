@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-07-02T12:50:00+08:00",
+  "completed": [
+    {
+      "task": "2-C",
+      "status": "ok",
+      "key_finding": "True P0 advantage = ~3.3% (Standard 15x15). Tiebreak bug was sole source of 80-100% bias. Post-fix P0 balance achieved. No further mitigation needed.",
+      "needs_decision": false
+    },
+    {
+      "task": "2-A",
+      "status": "failure",
+      "key_finding": "DQN weights CORRUPTED (NaN in W2, b2, W3, b3 layers). Forward pass produces NaN Q-values; argmax defaults to index 0 => behavior is effectively random. Reported 92% winrate against Aggressive is invalid. Fresh (untrained) DQN control scored 0%.",
+      "needs_decision": true,
+      "decision": "Retrain DQN with gradient clipping + NaN detection + lower LR (0.0001) + Adam-style optimizer, OR abandon DQN paradigm for this version."
+    },
+    {
+      "task": "2-D",
+      "status": "ok",
+      "key_finding": "Combat randomness (±3) reduces Greedy mirror tiebreak rate by 7.4pp (88.6% -> 81.2%), increases conquest 7.4pp (11.4% -> 18.8%). Does NOT help underdogs (Greedy still ~80% vs Random). P0 balance unchanged. Recommendation: enable RANDOM_COMBAT as default.",
+      "needs_decision": false
+    }
+  ],
+  "running": [
+    {
+      "task": "2-B",
+      "status": "not started / no data yet",
+      "detail": "full-matrix-7x7/ directory exists but is empty (no JSON files present at check time)"
+    }
+  ],
+  "needs_main_agent": [
+    "DQN weights are NaN — retrain with gradient clipping + NaN detection + lower LR, or mark DQN as known-failed paradigm and move on?"
+  ],
+  "verification_notes": {
+    "data_files_present": true,
+    "data_file_anomalies": "None detected. All summary.json values sane. No Inf/NaN in any results files except the DQN weights themselves (which the report correctly flags).",
+    "duplicates_with_earlier_experiments": "P0 calibration pre-fix numbers (84.5%, 98.5%, 100%) match v0.4.0 results — correctly referenced as baseline. No new duplicates found.",
+    "total_fresh_findings": 3
+  }
+}

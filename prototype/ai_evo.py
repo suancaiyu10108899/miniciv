@@ -1,13 +1,24 @@
 # prototype/ai_evo.py — 可进化AI: 决策权重参数化
 # 使用权重向量进行加权决策, 供进化算法优化
 
-import random as _random
+import json, os, random as _random
 from prototype.movement import get_single_step_moves
 from prototype.mapgen import get_terrain
 from prototype.terrain import Terrain, terrain_buildable, terrain_def_bonus
 from prototype.constants import UNIT_COST, TECH_TREE as _TECH_TREE
 
 TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
+
+# ─── 自动加载最佳训练权重 ────────────────────────────
+_BEST_WEIGHTS_PATH = os.path.join(os.path.dirname(__file__), "evo_best_weights.json")
+_EVO_WEIGHTS = None
+if os.path.exists(_BEST_WEIGHTS_PATH):
+    try:
+        with open(_BEST_WEIGHTS_PATH) as _f:
+            _data = json.load(_f)
+        _EVO_WEIGHTS = _data.get("weights", _data)
+    except Exception:
+        _EVO_WEIGHTS = None
 
 # ─── 默认权重 ──────────────────────────────────────
 # 每个权重有 (默认值, 最小值, 最大值, 描述)
@@ -145,7 +156,10 @@ def ai_decide(gs, pid: int, rng=None, weights: dict = None) -> list[dict]:
     if rng is None:
         rng = _random.Random(gs.seed + gs.turn * 1000 + pid)
     if weights is None:
-        weights = {k: v[0] for k, v in DEFAULT_WEIGHTS.items()}
+        if _EVO_WEIGHTS is not None:
+            weights = _EVO_WEIGHTS
+        else:
+            weights = {k: v[0] for k, v in DEFAULT_WEIGHTS.items()}
 
     units = [u for u in gs.units if u.player_id == pid and u.alive]
     opp_city = gs.cities[1 - pid]

@@ -19,11 +19,13 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Project data
+# Project data (large files)
 data/models/*.pt
 data/models/*.npz
 data/models/*.zip
 data/trajectories/*.json
+archive/agent-outputs/bc_training_data.json
+archive/agent-outputs/bc_history.json
 
 # Env
 .env

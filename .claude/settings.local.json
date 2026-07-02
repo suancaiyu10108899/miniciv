@@ -25,7 +25,8 @@
       "Bash(python -m prototype.run_flash_vs_flash *)",
       "Bash(python -c *)",
       "Edit",
-      "Write"
+      "Write",
+      "Bash(export FILTER_BRANCH_SQUELCH_WARNING=1)"
     ],
     "defaultMode": "acceptEdits"
   }

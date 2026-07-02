@@ -338,7 +338,7 @@ def main():
     args = parser.parse_args()
 
     ai_names = [a.strip() for a in args.ais.split(",")]
-    workers = args.workers or min(24, os.cpu_count() or 4)
+    workers = args.workers or min(30, os.cpu_count() or 4)
     pairs = [(a0, a1) for a0 in ai_names for a1 in ai_names]
     os.makedirs(args.output, exist_ok=True)
 
@@ -362,9 +362,9 @@ def main():
     city_hp_ov = args.city_hp
     city_dmg_ov = args.city_damage
     all_tasks = []
-    for a0, a1 in unique_pairs:
+    for pair_idx, (a0, a1) in enumerate(unique_pairs):
         for i in range(args.games):
-            seed = args.seed + i * 1000 + hash((a0, a1, mode)) % 100000
+            seed = args.seed + i * 1000 + pair_idx * 100000  # deterministic, no hash()
             task = (seed, a0, a1, args.size, args.gen, args.max_turns)
             extras = []
             if mode != "normal":

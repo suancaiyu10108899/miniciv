@@ -13,7 +13,7 @@ import random as _random
 from prototype.movement import get_single_step_moves
 
 ROLLOUTS = 10          # default; overridden by sweep scripts
-ROLLOUT_DEPTH = 15     # how many turns to simulate in each rollout
+ROLLOUT_DEPTH = 5      # how many turns to simulate in each rollout
 
 
 def _rollout_score(gs, pid: int) -> float:

@@ -52,7 +52,8 @@ UNIT_COST = {
 }
 
 # ─── 地形战斗加成 ─────────────────────────────────
-TERRAIN_DEF_BONUS = {"plain": 0, "forest": 5, "mountain": 8, "water": 0, "city": 15}
+# 地形 DEF 值定义在 prototype/terrain.py 的 _TERRAIN_PROPS 中（唯一真相源）
+# 当前实际值: plain=0, forest=10, mountain=15, water=0, city=25
 CAVALRY_CHARGE_BONUS = 10  # 骑兵走2格平原后攻击→额外ATK
 
 # ─── 城市 ──────────────────────────────────────────

@@ -2,74 +2,82 @@
 
 ## 入口
 
-| 文档 | 内容 | 适合谁 |
+| 文档 | 内容 | 何时读 |
 |------|------|--------|
-| [current-status.md](current-status.md) | 项目当前状态、参数、已知问题 | 所有人 |
-| [gdd.md](gdd.md) | 游戏设计文档 | 新人入门 |
-| [README.md](../README.md) | 项目简介 | 路人 |
+| [../CLAUDE.md](../CLAUDE.md) | 当前阶段 + 当前任务 | **每个 session 开始** |
+| [GAME.md](GAME.md) | 当前游戏参数（唯一真相源） | 参数相关操作时 |
+| [DECISIONS.md](DECISIONS.md) | 设计决策日志 | 需要知道"为什么"时 |
+| [WORKFLOW.md](WORKFLOW.md) | 开发纪律 + Agent 规范 | 写代码/跑实验/用 Agent 前 |
 
-## 设计文档
+## 设计（已冻结）
 
 | 文档 | 内容 |
 |------|------|
-| [game-design-notes.md](game-design-notes.md) | 游戏设计笔记、数值理由、Meta 分析 |
-| [param-grid-scan.md](param-grid-scan.md) | 参数网格扫描——8100 局找到最优 HP=100/DMG=15 |
+| [design/README.md](design/README.md) | GDD 入口 + GDD vs 实际的偏离说明 |
+| [design/map.md](design/map.md) | 棋盘 + 地形 + 地图生成 |
+| [design/units.md](design/units.md) | 单位 + 战斗 + 移动 |
+| [design/city.md](design/city.md) | 城市 |
+| [design/economy.md](design/economy.md) | 资源 + 采集 + 花费 |
+| [design/tech.md](design/tech.md) | 科技树 |
+| [design/victory.md](design/victory.md) | 胜利条件 |
+| [design/fow.md](design/fow.md) | 迷雾与视野 |
+| [design/first-move.md](design/first-move.md) | 先手平衡 |
+| design/adr/ | 5 个架构决策记录 |
 
-## 开发文档
+## Session 日志
 
-| 文档 | 内容 |
+| 日期 | 内容 |
 |------|------|
-| [dev-workflow.md](dev-workflow.md) | 开发工作流、Agent 协作规范、多 Agent 并行教训 |
-| [dev-system-thoughts.md](dev-system-thoughts.md) | 开发体系思考——原型到 Rust 过渡规划 |
-| [rust-architecture.md](rust-architecture.md) | Rust 内核架构规划 |
-| [report-system.md](report-system.md) | 文档体系规划（本文档体系的设计） |
-
-## 分析报告
-
-| 文档 | 内容 | 数据量 |
-|------|------|--------|
-| [reports/game-depth-analysis.md](reports/game-depth-analysis.md) | **游戏深度分析（梯度曲线）** | FlatMC+Evo+Greedy 梯度, ~9000局 |
-| [reports/ai-paradigm-validation.md](reports/ai-paradigm-validation.md) | **AI 范式验证** | 7种范式对比 |
-| [reports/p0-first-move-analysis.md](reports/p0-first-move-analysis.md) | 先手效应分析 | Paired 3000 局 |
-| [reports/balance-tuning-log.md](reports/balance-tuning-log.md) | 平衡调优日志 | 5轮参数迭代 |
+| [sessions/2026-07-01.md](sessions/2026-07-01.md) | GDD 设计 + 原型开发 |
+| [sessions/2026-07-02.md](sessions/2026-07-02.md) | 调参 + AI 大军 + 文档重启 |
 
 ## 实验数据
 
 | 目录 | 内容 | 总局数 |
 |------|------|--------|
-| `../eval_final/` | 4×4 全矩阵（Random/Greedy/Aggressive/FlatMC 各对战 1,000 局） | 16,000 |
-| `../eval_results/` | 早期 3×3 矩阵（3 AI × 200 局） | 1,800 |
-| `../experiments/v0.4.0/gradient/` | FlatMC rollout + Evo 代 + Evo 种群梯度实验 | ~15,000 |
-| `../experiments/v0.4.0/greedy-grad/` | Greedy 版本梯度（v1-v4）+ 行为克隆 | ~7,000 |
-| `../experiments/v0.4.0/randomness/` | 战斗随机性对比（Greedy vs Greedy / Random vs Greedy） | 2,000 |
-| `../experiments/v0.4.0/paired-p0/` | Paired P0 标定（5 策略 × 200 局） | 1,000 |
-| `../experiments/v0.4.0/paradigms/` | AI 范式对比（Evo/DQN/SelfPlay/BC/Hybrid） | ~8,000 |
-| `../experiments/v0.4.0/full-matrix-partial/` | 7×7 完整矩阵（部分完成，含 Evo） | 规划中 |
+| `../eval_final/` | 4×4 核心全矩阵 | 16,000 |
+| `../experiments/v0.4.0/` | v0.4.0 全部实验 | ~45,000 |
+| `../experiments/v0.5.0/` | v0.5.0 实验 | ~5,000 |
+
+## 归档
+
+| 文档 | 内容 |
+|------|------|
+| [archive/balance-tuning-log.md](archive/balance-tuning-log.md) | 平衡调优五轮完整日志 |
+| [archive/param-grid-scan.md](archive/param-grid-scan.md) | 参数网格扫描 8100 局 |
+| [archive/game-design-notes.md](archive/game-design-notes.md) | 游戏设计笔记 |
+| [archive/2026-07-01-prototype-complete.md](archive/2026-07-01-prototype-complete.md) | 原型完成详细报告 |
+| [archive/2026-07-01-prototype-plan.md](archive/2026-07-01-prototype-plan.md) | 原型开发规划 |
+| archive/2026-07-01-gdd-*.md | GDD 各模块设计讨论 |
+
+## 旧项目
+
+| 文档 | 内容 |
+|------|------|
+| [reference/old-project-index.md](reference/old-project-index.md) | 旧 MiniCiv AI Lab 关键文件索引 |
+| [reference/env-setup.md](reference/env-setup.md) | 环境配置 |
 
 ## 项目元数据
 
 | 文件 | 内容 |
 |------|------|
 | [../VERSION.txt](../VERSION.txt) | 版本号 |
-| [../changelog/v0.4.0.md](../changelog/v0.4.0.md) | v0.4.0 变更日志 |
+| [../changelog/](../changelog/) | 版本变更日志 |
 
-## 归档
+## 其他（待整理）
 
-| 文档 | 内容 |
-|------|------|
-| [archive/2026-07-01-session.md](archive/2026-07-01-session.md) | 07-01 会话摘要 |
-| [archive/2026-07-01-decisions.md](archive/2026-07-01-decisions.md) | 07-01 决策记录 |
-| [archive/devlog-2026-07-02.md](archive/devlog-2026-07-02.md) | 07-02 开发日志 |
-| [archive/2026-07-01-b1-mapgen.md](archive/2026-07-01-b1-mapgen.md) | Agent B1 地图生成实验 |
-| [archive/2026-07-01-gdd-board.md](archive/2026-07-01-gdd-board.md) | GDD 棋盘设计讨论 |
-| [archive/2026-07-01-gdd-split.md](archive/2026-07-01-gdd-split.md) | GDD 拆分决策 |
-| [archive/2026-07-01-gdd-units.md](archive/2026-07-01-gdd-units.md) | GDD 单位设计讨论 |
-| [archive/2026-07-01-prototype-complete.md](archive/2026-07-01-prototype-complete.md) | 原型完成报告 |
-| [archive/2026-07-01-prototype-plan.md](archive/2026-07-01-prototype-plan.md) | 原型规划 |
-| [archive/devplan.md](archive/devplan.md) | 开发规划（v2026.07.01，已过时） |
-| [archive/prototype-plan.md](archive/prototype-plan.md) | 原型规划（已过时） |
-| [archive/eval-matrix.md](archive/eval-matrix.md) | 评估矩阵摘要（已过时） |
-| [archive/first-move-report.md](archive/first-move-report.md) | 先手效应报告（英文早期草稿） |
-| [archive/game-depth-report.md](archive/game-depth-report.md) | 游戏深度报告（英文早期草稿） |
-| [archive/ai-paradigm-report.md](archive/ai-paradigm-report.md) | AI 范式报告（英文早期草稿） |
-| [archive/data-book.md](archive/data-book.md) | 数据手册（英文综合参考） |
+以下文件仍在 docs/ 根目录，尚未完成迁移或归档：
+
+- `docs/gdd/` — 原始GDD目录（→ 迁移到 `docs/design/`）
+- `docs/gdd.md` — GDD入口指针（→ 废弃，被 `docs/design/README.md` 替代）
+- `docs/current-status.md` — 旧当前状态（→ 废弃，被 CLAUDE.md + session日志替代）
+- `docs/report-system.md` — 旧文档体系设计（→ 废弃，被 WORKFLOW.md 替代）
+- `docs/dev-workflow.md` — 旧开发流程（→ 内容已合并到 WORKFLOW.md）
+- `docs/dev-system-thoughts.md` — 旧开发体系思考（→ 移到 archive/）
+- `docs/rust-architecture.md` — Rust 架构规划（保留，未来有用）
+- `docs/reports/` — 旧报告目录（→ 移到 archive/）
+- `docs/planning/` — 旧规划目录（→ 移到 archive/）
+
+---
+
+*最后更新: 2026-07-02*

@@ -4,7 +4,7 @@
 import json, os
 from prototype.snapshot import game_to_dict
 from prototype.terrain import Terrain, TERRAIN_CHAR
-from prototype.constants import TECH_TREE, UNIT_STATS, TERRAIN_DEF_BONUS
+from prototype.constants import TECH_TREE, UNIT_STATS
 
 
 # ─── 颜色映射 ──────────────────────────────────────

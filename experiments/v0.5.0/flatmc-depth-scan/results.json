@@ -1,0 +1,70 @@
+{
+  "config": {
+    "version": "v3_single_pool",
+    "depths": [
+      5,
+      10,
+      20,
+      50
+    ],
+    "rollouts_map": {
+      "5": 20,
+      "10": 10,
+      "20": 5,
+      "50": 2
+    },
+    "games_per_depth": 50,
+    "size": 15,
+    "max_turns": 100,
+    "workers": 32,
+    "rollout_policy": "random",
+    "generator": "balanced"
+  },
+  "total_time_s": 713.5,
+  "results": [
+    {
+      "depth": 5,
+      "rollouts": 20,
+      "games_paired": 50,
+      "sims_completed": 100,
+      "flatmc_wins": 90,
+      "winrate": 0.9,
+      "winrate_p0": 0.88,
+      "winrate_p1": 0.92,
+      "conquest_rate": 0.4
+    },
+    {
+      "depth": 10,
+      "rollouts": 10,
+      "games_paired": 50,
+      "sims_completed": 100,
+      "flatmc_wins": 86,
+      "winrate": 0.86,
+      "winrate_p0": 0.84,
+      "winrate_p1": 0.88,
+      "conquest_rate": 0.35
+    },
+    {
+      "depth": 20,
+      "rollouts": 5,
+      "games_paired": 50,
+      "sims_completed": 100,
+      "flatmc_wins": 76,
+      "winrate": 0.76,
+      "winrate_p0": 0.8,
+      "winrate_p1": 0.72,
+      "conquest_rate": 0.27
+    },
+    {
+      "depth": 50,
+      "rollouts": 2,
+      "games_paired": 50,
+      "sims_completed": 100,
+      "flatmc_wins": 76,
+      "winrate": 0.76,
+      "winrate_p0": 0.82,
+      "winrate_p1": 0.7,
+      "conquest_rate": 0.36
+    }
+  ]
+}

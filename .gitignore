@@ -31,3 +31,4 @@ prototype/bc_training_data.json
 # Env
 .env
 .env.local
+eval_paradigms/

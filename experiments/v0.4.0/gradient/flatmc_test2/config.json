@@ -1,0 +1,20 @@
+{
+  "experiment": "flatmc_test2",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["flatmc", "random"],
+  "paired": false,
+  "games": 80,
+  "command": "python -m prototype.eval_matrix --ais flatmc,random --games 20 --size 15 --gen balanced"
+}

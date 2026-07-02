@@ -1,0 +1,3 @@
+miniciv-prototype v0.4.0
+"Gradient Experiments -- 游戏深度验证"
+2026-07-02

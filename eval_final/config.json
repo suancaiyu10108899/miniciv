@@ -1,0 +1,21 @@
+{
+  "experiment": "full-matrix-16k",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "0909f80",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["random", "greedy", "aggressive", "flatmc"],
+  "paired": false,
+  "games_per_pair": 1000,
+  "total_games": 16000,
+  "command": "python -m prototype.eval_matrix --ais random,greedy,aggressive,flatmc --games 1000 --size 15 --gen balanced --workers 24 --output eval_final/"
+}

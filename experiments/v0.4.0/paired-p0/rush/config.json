@@ -1,0 +1,21 @@
+{
+  "experiment": "rush",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 20,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["greedy"],
+  "paired": true,
+  "games": 1000,
+  "command": "python -m prototype.eval_matrix --paired --ais greedy --games 500 --size 20 --gen balanced",
+  "notes": "Rush sub-experiment with map_size=20. Marked as stale: pre-tiebreak-fix."
+}

@@ -1,0 +1,21 @@
+{
+  "experiment": "full-matrix-partial",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["random", "greedy", "aggressive"],
+  "paired": true,
+  "games": null,
+  "command": "python full-matrix-partial/run_matrix.py --games 300 --size 15 --gen balanced",
+  "notes": "Partial 7x7 matrix. Only 2 of 4 intended matchups completed: random_vs_greedy, random_vs_aggressive. random_vs_evo and random_vs_flatmc directories are empty (no data)."
+}

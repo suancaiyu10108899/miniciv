@@ -1,0 +1,20 @@
+{
+  "experiment": "random_vs_aggressive",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["random", "aggressive"],
+  "paired": true,
+  "games": 2400,
+  "command": "python -m prototype.eval_matrix --paired --ais random,aggressive --games 300 --size 15 --gen balanced"
+}

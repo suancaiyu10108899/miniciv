@@ -1,0 +1,21 @@
+{
+  "experiment": "paradigms",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["dqn", "hybrid", "bc", "greedy"],
+  "paired": false,
+  "games": 3000,
+  "command": "python paradigms/run_paradigm_comparison.py",
+  "notes": "ML paradigm evaluation: DQN (3-gen self-play), Rule+Parameter Hybrid, BC, and Greedy baseline. Gen1/2/3 each tested with 200 games vs Greedy."
+}

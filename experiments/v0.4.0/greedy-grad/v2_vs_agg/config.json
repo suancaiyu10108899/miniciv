@@ -1,0 +1,20 @@
+{
+  "experiment": "v2_vs_agg",
+  "version": "v0.4.0",
+  "date": "2026-07-02",
+  "git_commit": "3ea2c48",
+  "parameters": {
+    "city_hp": 100,
+    "city_damage": 15,
+    "map_size": 15,
+    "generator": "balanced",
+    "max_turns": 100,
+    "facility_output": 4,
+    "starting_resources": "25/25/25",
+    "unit_atk_bonus": 5
+  },
+  "ais_included": ["greedy_v2", "aggressive"],
+  "paired": true,
+  "games": 1200,
+  "command": "python -m prototype.eval_matrix --paired --ais greedy_v2,aggressive --games 150 --size 15 --gen balanced"
+}

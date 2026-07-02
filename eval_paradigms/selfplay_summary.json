@@ -1,0 +1,40 @@
+{
+  "n_generations": 3,
+  "games_per_gen": 1000,
+  "test_games": 200,
+  "hyperparameters": {
+    "lr": 0.001,
+    "gamma": 0.9,
+    "epsilon_init": 1.0,
+    "epsilon_min": 0.05,
+    "epsilon_decay": 0.997,
+    "batch_size": 64,
+    "train_interval": 10,
+    "train_steps": 3,
+    "n_features": 25,
+    "n_actions": 6
+  },
+  "generations": {
+    "gen1": {
+      "winrate": 0.965,
+      "std": 0.1842409390393196,
+      "ci95": 0.025470575179999382,
+      "wins": 193,
+      "games": 200
+    },
+    "gen2": {
+      "winrate": 0.965,
+      "std": 0.1842409390393196,
+      "ci95": 0.025470575179999382,
+      "wins": 193,
+      "games": 200
+    },
+    "gen3": {
+      "winrate": 0.965,
+      "std": 0.1842409390393196,
+      "ci95": 0.025470575179999382,
+      "wins": 193,
+      "games": 200
+    }
+  }
+}

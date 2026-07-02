@@ -99,3 +99,79 @@ Flash × N (执行者)
 - ProcessPoolExecutor: 适合大规模(≥5000局)
 - bench.py: 速度基准, 决定矩阵规模
 - git: 每次改动独立commit, 方便回退
+
+---
+
+## 多 Agent 协作规范 (新增于 2026-07-02 大型并行实验后)
+
+### 核心原则
+
+1. **写代码的 Agent 隔离，跑实验的 Agent 等稳定，读数据的 Agent 随便跑**
+2. **每个实验标记依赖文件的 git commit hash**
+3. **Agent 完成标准 = 任务目标达成（不是代码写完了）**
+
+### 文件竞态问题与解决方案
+
+**问题**：6 个 Agent 并行工作时发生了文件竞态：
+- Agent C 修改 ai_greedy.py 期间，Agent E 跑了 Greedy 矩阵，拿到了 bug 状态的数据
+- Agent A 修复 game.py 的 tiebreak 函数的同时，我也在改 game.py
+
+**方案**：
+
+1. **Worktree 隔离（首选）**
+   ```
+   写代码的 Agent: isolation="worktree"
+     → 独立 git worktree, 改完测试通过后 push 到临时分支
+     → 主会话 review diff, merge 到主分支
+   
+   跑实验的 Agent: 等代码 Agent 合并完毕后, 在稳定版本上执行
+   ```
+
+2. **依赖锁定**
+   每个实验启动时记录：
+   ```json
+   {
+     "experiment": "randomness-comparison",
+     "git_commit": "c7c9a02",
+     "files_used": ["ai_greedy.py", "constants.py", "combat.py"],
+     "file_hashes": { "ai_greedy.py": "sha256:...", ... }
+   }
+   ```
+   实验完成后校验：文件是否被修改？是 → 标记 stale → 重跑
+
+3. **分层执行**
+   ```
+   Wave 1 (并行): Agent A(改eval_matrix), C(改greedy), D(写DQN)
+     → worktree 隔离, 各改各的
+     → 完成后 review + merge
+   
+   Wave 2 (并行): Agent B(梯度), E(矩阵)
+     → 基于 Wave 1 的稳定版本
+     → 文件不会在实验期间被修改
+   
+   Wave 3: Agent F(文档报告)
+     → 只读不写, 随时可跑, 无冲突风险
+   ```
+
+### Agent 任务定义规范
+
+**错误示例**（太模糊）：
+"修 FlatMC, 让它变好"
+
+**正确示例**（有完成标准）：
+"FlatMC 对 Random 胜率 > 50%, 200局验证, 单局 < 15秒。不达标注失败原因然后尝试其他方案最多 5 次。"
+
+### Agent 经济学（基于本次实测）
+
+|      | Opus(我) | Flash Agent | 比率 |
+|------|----------|-------------|------|
+| 缓存命中 | 100% | 80% | 1:0.8 |
+| 未命中 | 100% | 33% | 1:0.33 |
+| 输出 | 100% | 33% | 1:0.33 |
+
+**决策规则**：
+- 探索性研究（需大量试错）→ Flash（1/3 价格，试错成本低）
+- 参数扫描/矩阵评估 → Flash（高度并行，明确输入输出）
+- 代码修改+验证 → Flash（规定完成标准）
+- 设计决策/架构判断 → Opus（不可委托）
+- 数据分析/报告撰写 → Flash 初版 + Opus 审核

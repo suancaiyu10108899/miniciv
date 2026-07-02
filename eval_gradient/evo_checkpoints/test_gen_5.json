@@ -1,12 +1,12 @@
 {
   "label": "gen_5",
-  "winrate": 0.95,
-  "stddev_pct": 1.541103500742245,
-  "wins": 190,
+  "winrate": 0.745,
+  "stddev_pct": 3.0820042180373473,
+  "wins": 149,
   "games": 200,
-  "avg_turns": 44.795,
-  "conquests": 7,
-  "constructions": 159,
-  "tiebreaks": 34,
-  "elapsed_s": 11.2
+  "avg_turns": 40.28,
+  "conquests": 24,
+  "constructions": 128,
+  "tiebreaks": 48,
+  "elapsed_s": 2.9
 }

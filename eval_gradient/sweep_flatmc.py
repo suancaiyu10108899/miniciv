@@ -18,14 +18,10 @@ WORKERS = 24
 SIZE = 15
 OUTPUT_DIR = Path(__file__).parent
 
-def patch_rollouts(n):
-    """Patch the flatmc module rollout count."""
-    import prototype.ai_flatmc
-    prototype.ai_flatmc.ROLLOUTS = n
-
 def run_eval(rollouts, opponent, games):
     """Run eval_matrix and return results dict."""
-    patch_rollouts(rollouts)
+    env = os.environ.copy()
+    env["FLATMC_ROLLOUTS"] = str(rollouts)
     output = OUTPUT_DIR / f"flatmc_rollout{rollouts}"
     if opponent == "greedy":
         output = OUTPUT_DIR / f"flatmc_vs_greedy_{rollouts}"
@@ -43,7 +39,7 @@ def run_eval(rollouts, opponent, games):
     print(f"FlatMC rollout={rollouts} vs {opponent} ({games} games)")
     print(f"{'='*60}")
     t0 = time.time()
-    proc = subprocess.run(cmd, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    proc = subprocess.run(cmd, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))), env=env)
     elapsed = time.time() - t0
     if proc.returncode != 0:
         print(f"ERROR: eval_matrix returned {proc.returncode}")

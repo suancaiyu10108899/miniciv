@@ -1,0 +1,10 @@
+{
+  "best_winrate": 0.8,
+  "params": {
+    "retreat_threshold": 0.33618830410294465,
+    "defense_range": 3,
+    "wave_threshold": 3,
+    "patience": 20,
+    "save_threshold": 17
+  }
+}

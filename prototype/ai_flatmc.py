@@ -12,7 +12,7 @@ import copy as _copy
 import random as _random
 from prototype.movement import get_single_step_moves
 
-ROLLOUTS = 10          # default; overridden by sweep scripts
+ROLLOUTS = 10  # patch from outside before calling ai_decide
 ROLLOUT_DEPTH = 5      # how many turns to simulate in each rollout
 
 

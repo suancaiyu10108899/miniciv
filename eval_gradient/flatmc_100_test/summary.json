@@ -1,0 +1,62 @@
+{
+  "config": {
+    "games_per_pair": 10,
+    "size": 15,
+    "gen": "balanced",
+    "paired": false,
+    "mode": "normal"
+  },
+  "pairs": [
+    {
+      "ai0": "flatmc",
+      "ai1": "flatmc",
+      "n": 10,
+      "p0_winrate": 0.5,
+      "p1_winrate": 0.5,
+      "conquests": 1,
+      "constructions": 0,
+      "tiebreaks": 9,
+      "avg_turns": 99.4,
+      "avg_dead": 57.8
+    },
+    {
+      "ai0": "flatmc",
+      "ai1": "random",
+      "n": 10,
+      "p0_winrate": 0.9,
+      "p1_winrate": 0.1,
+      "conquests": 5,
+      "constructions": 0,
+      "tiebreaks": 5,
+      "avg_turns": 82.5,
+      "avg_dead": 42.7
+    },
+    {
+      "ai0": "random",
+      "ai1": "flatmc",
+      "n": 10,
+      "p0_winrate": 0.1,
+      "p1_winrate": 0.9,
+      "conquests": 3,
+      "constructions": 1,
+      "tiebreaks": 6,
+      "avg_turns": 77.3,
+      "avg_dead": 44.5
+    },
+    {
+      "ai0": "random",
+      "ai1": "random",
+      "n": 10,
+      "p0_winrate": 0.6,
+      "p1_winrate": 0.4,
+      "conquests": 10,
+      "constructions": 0,
+      "tiebreaks": 0,
+      "avg_turns": 20.9,
+      "avg_dead": 9.7
+    }
+  ],
+  "total_seeds": 40,
+  "total_games": 40,
+  "elapsed_s": 179.4
+}

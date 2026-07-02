@@ -1,5 +1,5 @@
-# prototype/ai_greedy.py — 贪心AI v4: 战略意识+部队协调+自适应
-# Built on v2's tactical code with v3 strategic awareness + v4 force coordination
+# prototype/ai_greedy_v3.py — 贪心AI v3: 战略意识+自适应策略
+# Builds on v2 tactical code, adds strategic assessment + opponent modeling
 import random as _random
 from prototype.movement import get_single_step_moves
 from prototype.mapgen import get_terrain
@@ -8,32 +8,29 @@ from prototype.constants import UNIT_COST, TECH_TREE as _TECH_TREE
 TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
 
 
-# === Module-level state for opponent modeling (persists across calls) ===
-_OPPONENT_HISTORY = {}  # keyed by gs.seed
+# === Module-level state for opponent modeling ===
+_OPPONENT_HISTORY = {}
 
 
 def _get_opponent_model(gs):
-    """Get or create opponent model for this game."""
     key = gs.seed
     if key not in _OPPONENT_HISTORY:
         _OPPONENT_HISTORY[key] = {
-            "history": [],  # list of (turn, aggression_score)
-            "aggression": 0.5,  # 0=passive, 1=aggressive
-            "enemy_unit_types": {},  # count of enemy unit types seen
+            "history": [],
+            "aggression": 0.5,
+            "enemy_unit_types": {},
         }
     return _OPPONENT_HISTORY[key]
 
 
 def _clean_opponent_history(gs):
-    """Remove stale entries from opponent history."""
     global _OPPONENT_HISTORY
-    # Keep only entries from the last 10 seeds to prevent memory leak
     if len(_OPPONENT_HISTORY) > 100:
         _OPPONENT_HISTORY = {k: v for k, v in list(_OPPONENT_HISTORY.items())[-50:]}
 
 
 def ai_decide(gs, pid: int, rng=None) -> list[dict]:
-    """贪心AI v4: 战略意识+部队协调+自适应对手"""
+    """贪心AI v3: 战略意识+自适应策略（无部队协调）"""
     if rng is None:
         rng = _random.Random(gs.seed + gs.turn * 1000 + pid)
     units = [u for u in gs.units if u.player_id == pid and u.alive]
@@ -45,31 +42,27 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
     actions = []
     done_units = set()
 
-    # === Strategic Assessment (v3) ===
+    # Strategic assessment
     assessment = _strategic_assess(gs, pid)
 
-    # === Opponent Modeling (v3) ===
+    # Opponent modeling
     opp_model = _get_opponent_model(gs)
     _update_opponent_model(opp_model, gs, pid)
 
-    # === Adaptive Strategy Selection (v3) ===
+    # Adaptive strategy selection
     strategy = _select_strategy(gs, pid, assessment, opp_model)
 
-    # === Tactical Priority ===
+    # Tactical priority
     archers = [u for u in units if u.unit_type == "archer"]
     fighters = [u for u in units if u.unit_type != "archer" and u.unit_type != "worker"]
     workers = [u for u in units if u.unit_type == "worker"]
     scouts = [u for u in units if u.unit_type == "scout"]
 
-    # === Force Coordination (v4) ===
-    rally_point, wave_ready = _compute_force_coordination(gs, pid, assessment)
-    production_counter = _compute_adaptive_counter(gs, pid, opp_model)
-
     for u in archers + fighters + scouts:
         ui = units.index(u)
         if ui in done_units:
             continue
-        act = _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_point, wave_ready, rng)
+        act = _greedy_combat_v3(u, ui, gs, pid, opp_city, strategy, assessment, rng)
         if act:
             actions.append(act)
             done_units.add(ui)
@@ -83,19 +76,19 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
             actions.append(act)
             done_units.add(ui)
 
-    # === Research (v3: strategy-aware) ===
+    # Research (strategy-aware)
     if tech.researching is None:
-        _do_research(gs, pid, strategy, actions)
+        _do_research_v3(gs, pid, strategy, actions)
 
-    # === Production (v4: adaptive countering + strategy-aware) ===
-    _do_production(gs, pid, strategy, production_counter, assessment, actions)
+    # Production (strategy-aware)
+    _do_production_v3(gs, pid, strategy, assessment, actions)
 
     _clean_opponent_history(gs)
     return actions
 
 
 # =============================================================================
-# v3: Strategic Assessment
+# Strategic Assessment
 # =============================================================================
 
 def _td(a, b, s):
@@ -103,11 +96,9 @@ def _td(a, b, s):
 
 
 def _strategic_assess(gs, pid) -> dict:
-    """Comprehensive strategic assessment of the battlefield."""
     opp = 1 - pid
     size = gs.size
 
-    # Unit counts
     my_combat = [u for u in gs.units if u.player_id == pid and u.alive
                  and u.unit_type not in ("worker",)]
     opp_combat = [u for u in gs.units if u.player_id == opp and u.alive
@@ -116,23 +107,19 @@ def _strategic_assess(gs, pid) -> dict:
     opp_count = len(opp_combat)
     unit_ratio = my_count / max(opp_count, 1)
 
-    # Resource advantage
     my_econ = gs.economies[pid]
     opp_econ = gs.economies[opp]
     my_total_res = my_econ.food + my_econ.wood + my_econ.gold
     opp_total_res = opp_econ.food + opp_econ.wood + opp_econ.gold
     res_ratio = my_total_res / max(opp_total_res, 1)
 
-    # Tech lead
     my_techs = len(gs.techs[pid].completed)
     opp_techs = len(gs.techs[opp].completed)
     tech_lead = my_techs - opp_techs
 
-    # City HP
     my_city_hp = gs.cities[pid].hp
     opp_city_hp = gs.cities[opp].hp
 
-    # Frontline: units near enemy city
     opp_city = gs.cities[opp]
     my_frontline = [u for u in my_combat
                     if _td(u.x, opp_city.x, size) + _td(u.y, opp_city.y, size) <= 6]
@@ -140,11 +127,9 @@ def _strategic_assess(gs, pid) -> dict:
     opp_frontline = [u for u in opp_combat
                      if _td(u.x, my_city.x, size) + _td(u.y, my_city.y, size) <= 6]
 
-    # Enemy density around their city (for weak point detection)
     opp_near_their_city = [u for u in opp_combat
                            if _td(u.x, opp_city.x, size) + _td(u.y, opp_city.y, size) <= 4]
 
-    # Find weak point: direction around enemy city with fewest enemies
     weak_point = None
     min_enemies = 999
     for dx, dy in [(3, 0), (-3, 0), (0, 3), (0, -3), (2, 2), (-2, 2), (2, -2), (-2, -2)]:
@@ -154,11 +139,8 @@ def _strategic_assess(gs, pid) -> dict:
             min_enemies = nearby
             weak_point = (wx, wy)
 
-    # Power (total ATK)
     my_power = sum(u.atk for u in my_combat)
     opp_power = sum(u.atk for u in opp_combat)
-
-    # Is city threatened?
     city_threatened = any(
         _td(eu.x, my_city.x, size) + _td(eu.y, my_city.y, size) <= 2
         for eu in opp_combat
@@ -186,18 +168,14 @@ def _strategic_assess(gs, pid) -> dict:
 
 
 def _update_opponent_model(opp_model, gs, pid):
-    """Update opponent model based on current turn's observations."""
     opp = 1 - pid
     size = gs.size
-
-    # Count enemy units near my city vs near their city
     my_city = gs.cities[pid]
     opp_city = gs.cities[opp]
 
     opp_combat = [u for u in gs.units if u.player_id == opp and u.alive
                   and u.unit_type not in ("worker",)]
 
-    # Enemy aggression: ratio of units near my city vs total
     near_my_city = sum(1 for u in opp_combat
                        if _td(u.x, my_city.x, size) + _td(u.y, my_city.y, size) <= 6)
     near_their_city = sum(1 for u in opp_combat
@@ -205,28 +183,23 @@ def _update_opponent_model(opp_model, gs, pid):
 
     total = len(opp_combat)
     if total > 0:
-        # Aggression = proportion of enemy units that are forward deployed
         aggression = near_my_city / max(total, 1) - near_their_city / max(total, 1)
-        aggression = max(-1, min(1, aggression))  # clamp
-        aggression = (aggression + 1) / 2  # normalize to [0, 1]
+        aggression = max(-1, min(1, aggression))
+        aggression = (aggression + 1) / 2
     else:
         aggression = 0.5
 
     opp_model["history"].append((gs.turn, aggression))
-    # Keep last 10 turns
     opp_model["history"] = [h for h in opp_model["history"] if h[0] > gs.turn - 10]
 
-    # Compute rolling average
     if opp_model["history"]:
         opp_model["aggression"] = sum(h[1] for h in opp_model["history"]) / len(opp_model["history"])
 
-    # Track enemy unit types
     for u in opp_combat:
         opp_model["enemy_unit_types"][u.unit_type] = opp_model["enemy_unit_types"].get(u.unit_type, 0) + 1
 
 
 def _select_strategy(gs, pid, assessment, opp_model):
-    """Select strategy based on assessment and opponent model."""
     unit_ratio = assessment["unit_ratio"]
     my_count = assessment["my_count"]
     opp_count = assessment["opp_count"]
@@ -240,97 +213,32 @@ def _select_strategy(gs, pid, assessment, opp_model):
     if my_count == 0 and opp_count == 0:
         return "balanced"
 
-    # Winning militarily
     if unit_ratio > 1.3 and my_count >= 3:
         return "aggressive"
-
     # Only turtle if enemy actually has units near our city
     if assessment["city_threatened"] and my_count < opp_count:
         return "defensive"
     if unit_ratio < 0.6 and opp_count > 2:
         return "defensive"
-
-    # Stalemate: >50 turns and nobody has taken damage
     if gs.turn > 50 and assessment["opp_city_hp"] >= 95 and assessment["my_city_hp"] >= 95:
         return "construction"
-
-    # Opponent modeling (only after early game stabilizes)
     if aggressiveness > 0.65 and gs.turn > 15:
-        # Enemy is aggressive -> play defensive + go for construction
         if gs.turn > 30:
             return "defensive_construction"
         return "defensive"
     elif aggressiveness < 0.35 and gs.turn > 15:
-        # Enemy is passive -> rush them
         return "aggressive"
-
-    # Default: balanced
     return "balanced"
 
 
 # =============================================================================
-# v4: Force Coordination
-# =============================================================================
-
-def _compute_force_coordination(gs, pid, assessment):
-    """Compute rally point near enemy city and check if wave is ready."""
-    opp_city = gs.cities[1 - pid]
-    size = gs.size
-
-    # Rally point: weak_point from assessment, or directly at enemy city
-    if assessment.get("weak_point") and assessment.get("opp_count", 0) >= 3:
-        rally_point = assessment["weak_point"]
-    else:
-        rally_point = (opp_city.x, opp_city.y)
-
-    # Count units near rally point (within 3 tiles)
-    my_combat = [u for u in gs.units if u.player_id == pid and u.alive
-                 and u.unit_type not in ("worker",)]
-    wave_units = [u for u in my_combat
-                  if _td(u.x, rally_point[0], size) + _td(u.y, rally_point[1], size) <= 4]
-
-    wave_ready = len(wave_units) >= 2
-
-    return rally_point, wave_ready
-
-
-def _compute_adaptive_counter(gs, pid, opp_model):
-    """Determine what unit type to produce based on enemy composition."""
-    enemy_types = opp_model["enemy_unit_types"]
-    total = sum(enemy_types.values())
-
-    if total < 3:
-        return None  # Not enough data
-
-    archer_count = enemy_types.get("archer", 0)
-    cavalry_count = enemy_types.get("cavalry", 0)
-    infantry_count = enemy_types.get("infantry", 0)
-
-    # If many archers -> produce cavalry (fast, close distance)
-    if archer_count >= 2 and archer_count >= cavalry_count and archer_count >= infantry_count:
-        return "cavalry"
-
-    # If many cavalry -> produce infantry (high DEF, stand on mountains)
-    if cavalry_count >= 2 and cavalry_count >= archer_count and cavalry_count >= infantry_count:
-        return "infantry"
-
-    # If building construction -> cheap infantry to stall
-    if infantry_count >= 2:
-        return "infantry"
-
-    return None
-
-
-# =============================================================================
-# v3: Worker with strategy awareness
+# v2 preserved helpers + v3 strategy-aware combat
 # =============================================================================
 
 def _greedy_worker_v3(w, ui, gs, pid, strategy, rng):
-    """Worker: build missing facilities > produce > move to resource"""
     terrain = get_terrain(gs.grid, w.x, w.y)
     buildable = terrain_buildable(terrain)
     facility = gs.grid[w.y][w.x].get("facility")
-
     if facility and facility.player_id == pid:
         return {"unit_idx": ui, "type": "produce"}
     if buildable and not facility:
@@ -341,18 +249,14 @@ def _greedy_worker_v3(w, ui, gs, pid, strategy, rng):
     return {"unit_idx": ui, "type": "end_turn"}
 
 
-# =============================================================================
-# v4: Combat with force coordination + strategy awareness
-# =============================================================================
-
-def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_point, wave_ready, rng):
-    """Combat unit v4: strategic awareness + force coordination + tactical v2 base."""
+def _greedy_combat_v3(u, ui, gs, pid, opp_city, strategy, assessment, rng):
+    """v2 tactical combat + v3 strategic awareness."""
     my_city = gs.cities[pid]
     size = gs.size
     max_hp = 100 if u.unit_type == "infantry" else (80 if u.unit_type == "cavalry" else (60 if u.unit_type == "archer" else 40))
     hp_pct = u.hp / max_hp
 
-    # === v2: Retreat when low HP ===
+    # v2: Retreat when low HP
     if hp_pct < 0.3:
         near_enemy = False
         for eu in gs.units:
@@ -364,7 +268,7 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
         if near_enemy:
             return _move_to(u, ui, gs, (my_city.x, my_city.y), rng, prefer_defense=True)
 
-    # === v2: Archer range discipline ===
+    # v2: Archer range discipline
     if u.ranged:
         nearest_enemy = None
         nearest_dist = 999
@@ -383,7 +287,7 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
                 return _approach_archer(u, ui, gs, nearest_enemy, rng)
         return _move_to(u, ui, gs, (opp_city.x, opp_city.y), rng)
 
-    # === v2: City defense ===
+    # v2: City defense
     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         nx, ny = (u.x + dx) % size, (u.y + dy) % size
         if nx == my_city.x and ny == my_city.y:
@@ -393,14 +297,12 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
             if target:
                 return {"unit_idx": ui, "type": "move", "dx": dx, "dy": dy}
 
-    # Intercept enemies near city
     for eu in gs.units:
         if eu.alive and eu.player_id != pid:
             d = _td(eu.x, my_city.x, size) + _td(eu.y, my_city.y, size)
             if d <= 2:
                 return _move_to(u, ui, gs, (eu.x, eu.y), rng)
 
-    # Attack adjacent enemy
     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         nx, ny = (u.x + dx) % size, (u.y + dy) % size
         target = next((eu for eu in gs.units
@@ -409,36 +311,13 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
         if target:
             return {"unit_idx": ui, "type": "move", "dx": dx, "dy": dy}
 
-    # === v3: Strategic positioning ===
+    # v3: Strategic positioning
     if strategy == "defensive" or strategy == "defensive_construction":
-        # Turtle: stay near city, don't push far
         dist_to_my_city = _td(u.x, my_city.x, size) + _td(u.y, my_city.y, size)
         if dist_to_my_city > 3:
             return _move_to(u, ui, gs, (my_city.x, my_city.y), rng, prefer_defense=True)
 
-    # === v4: Force coordination ===
-    # If wave is ready: all units rush the enemy city
-    if wave_ready:
-        return _move_to(u, ui, gs, (opp_city.x, opp_city.y), rng)
-
-    # If close to rally point AND we have at least 2 friends nearby, wait briefly
-    # otherwise keep pushing
-    rpx, rpy = rally_point
-    dist_to_rally = _td(u.x, rpx, size) + _td(u.y, rpy, size)
-    if dist_to_rally <= 2:
-        # Very close to rally point: check if there are other units nearby
-        friends_nearby = 0
-        for other in gs.units:
-            if other.alive and other.player_id == pid and other is not u:
-                if _td(other.x, u.x, size) + _td(other.y, u.y, size) <= 2:
-                    friends_nearby += 1
-                    if friends_nearby >= 2:
-                        break
-        if friends_nearby >= 2:
-            # Wait for the squad to form
-            return {"unit_idx": ui, "type": "end_turn"}
-
-    # Default: push toward enemy city
+    # Push toward enemy city
     return _move_to(u, ui, gs, (opp_city.x, opp_city.y), rng)
 
 
@@ -446,35 +325,31 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
 # v3: Strategy-aware research
 # =============================================================================
 
-def _do_research(gs, pid, strategy, actions):
-    """Research decision based on strategy."""
+def _do_research_v3(gs, pid, strategy, actions):
     tech = gs.techs[pid]
     econ = gs.economies[pid]
     avail = tech.available_to_research()
 
     if strategy == "aggressive":
-        # Military priority: M-line first
         order = ["M1", "M2", "M3", "M4", "C1", "E1", "E2", "E3", "E4", "C2", "C3", "C4", "C5"]
         for t in order:
             if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                 break
     elif strategy == "defensive" or strategy == "defensive_construction":
-        # Economic priority: E-line first to catch up
         order = ["E1", "E2", "E3", "E4", "C1", "M1", "M2", "M3", "M4", "C2", "C3", "C4", "C5"]
         for t in order:
             if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                 break
     elif strategy == "construction":
-        # Construction priority: C-line first
         order = ["C1", "C2", "C3", "C4", "C5", "E1", "E2", "E3", "E4", "M1", "M2", "M3", "M4"]
         for t in order:
             if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                 break
     else:
-        # Balanced: v2-style, pick most expensive available (prioritizes M-line)
+        # Balanced: v2-style, pick most expensive available
         avail.sort(key=lambda t: -sum(TECH_TREE_COST.get(t, (0, 0, 0))))
         for t in avail:
             if econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
@@ -483,42 +358,26 @@ def _do_research(gs, pid, strategy, actions):
 
 
 # =============================================================================
-# v4: Strategy-aware production with adaptive countering
+# v3: Strategy-aware production
 # =============================================================================
 
-def _do_production(gs, pid, strategy, production_counter, assessment, actions):
-    """Production decision based on strategy and adaptive countering."""
+def _do_production_v3(gs, pid, strategy, assessment, actions):
     econ = gs.economies[pid]
-    size = gs.size
-
-    # v4: Adaptive counter production
-    if production_counter:
-        if econ.can_afford(UNIT_COST[production_counter]):
-            # Only counter-produce if we have at least some resources
-            if econ.food > 8:
-                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": production_counter})
-                return
 
     if strategy == "aggressive":
         for ut in ["cavalry", "archer", "infantry"]:
             if econ.can_afford(UNIT_COST[ut]):
                 actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
                 break
-
     elif strategy == "defensive" or strategy == "defensive_construction":
-        # Produce defensive units (infantry first for city defense)
         for ut in ["infantry", "archer", "cavalry"]:
             if econ.can_afford(UNIT_COST[ut]):
                 actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
                 break
-
     elif strategy == "construction":
-        # Cheap infantry to stall while teching
         if econ.can_afford(UNIT_COST["infantry"]):
             actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
-
     else:
-        # Balanced: same as v2 greedy
         for ut in ["cavalry", "archer", "infantry"]:
             if econ.can_afford(UNIT_COST[ut]):
                 actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
@@ -526,22 +385,10 @@ def _do_production(gs, pid, strategy, production_counter, assessment, actions):
 
 
 # =============================================================================
-# v2: Helper utilities (preserved from v2)
+# v2 Helper utilities
 # =============================================================================
 
-def _city_is_safe(gs, pid) -> bool:
-    """Check if our city is safe (no enemies within 2 tiles)."""
-    my_city = gs.cities[pid]
-    for eu in gs.units:
-        if eu.alive and eu.player_id != pid:
-            d = _td(eu.x, my_city.x, gs.size) + _td(eu.y, my_city.y, gs.size)
-            if d <= 2:
-                return False
-    return True
-
-
 def _retreat_from(unit, ui, gs, enemy, rng):
-    """Move one step away from enemy."""
     legal = get_single_step_moves(unit, gs.grid)
     if not legal:
         return {"unit_idx": ui, "type": "end_turn"}
@@ -559,7 +406,6 @@ def _retreat_from(unit, ui, gs, enemy, rng):
 
 
 def _approach_archer(unit, ui, gs, target, rng):
-    """Archer approaches target keeping optimal range (2 tiles)."""
     legal = get_single_step_moves(unit, gs.grid)
     if not legal:
         return {"unit_idx": ui, "type": "end_turn"}
@@ -580,7 +426,6 @@ def _approach_archer(unit, ui, gs, target, rng):
 
 
 def _nearest_buildable(unit, gs, pid):
-    """Find nearest buildable resource tile."""
     best, best_d = None, 999
     for y in range(gs.size):
         for x in range(gs.size):
@@ -597,7 +442,6 @@ def _nearest_buildable(unit, gs, pid):
 
 
 def _move_to(unit, ui, gs, target, rng, prefer_defense=False):
-    """Move one step toward target with terrain preference."""
     legal = get_single_step_moves(unit, gs.grid)
     if not legal:
         return {"unit_idx": ui, "type": "end_turn"}

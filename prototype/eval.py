@@ -10,6 +10,12 @@ AI_MODULES = {
     "greedy":     "prototype.ai_greedy",
     "aggressive": "prototype.ai_aggressive",
     "flatmc":     "prototype.ai_flatmc",
+    "evo":        "prototype.ai_evo",
+    "dqn":        "prototype.ai_dqn",
+    "greedy_v1":  "prototype.ai_greedy_v1",
+    "greedy_v2":  "prototype.ai_greedy_v2",
+    "greedy_v3":  "prototype.ai_greedy_v3",
+    "hybrid":     "prototype.ai_hybrid",
 }
 
 

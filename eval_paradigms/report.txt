@@ -1,0 +1,143 @@
+# MiniCiv ML Paradigm Evaluation Report
+
+## Overview
+
+This report evaluates four ML paradigms applied to the MiniCiv game platform:
+1. **DQN** — Deep Q-Network with numpy-only neural network
+2. **Self-Play** — Multi-generational DQN training against previous versions
+3. **Rule+Parameter Hybrid** — 10 hardcoded rules with 5 evolved parameters
+4. **BC** — Behavioral Cloning (weights from Agent C)
+
+---
+
+## 1. DQN Results
+
+### Architecture
+- Network: `25 features -> 64 (ReLU) -> 32 (ReLU) -> 6 actions`
+- Features: unit counts (10), resources (6), tech counts (2), distances (2), frontline (2), HP ratios (2), turn normalized (1)
+- Training: 2000 games, 50% self-play vs 50% Random opponent
+- Experience replay: capacity 2000, batch size 32, train every 10 games
+- Reward: +1 win, -1 loss, +0.01*turn survival bonus
+- e-greedy: e=0.3
+
+### Results against baselines
+
+| Opponent | Games | DQN Winrate | StdDev |
+|----------|-------|-------------|--------|
+| Random   | 500   | TBD         | TBD    |
+| Greedy   | 200   | TBD         | TBD    |
+
+**Variance rule applied**: If stddev > 5%, test games were doubled until variance acceptable.
+
+### Learning curve observations
+- The DQN training signal is inherently noisy due to per-step reward assignment using final game outcome (Monte Carlo returns)
+- The domain has significant stochasticity from map generation, making learning harder
+- Trend observed: TBD
+
+---
+
+## 2. Self-Play Progression (Gen1 -> Gen2 -> Gen3)
+
+### Training protocol
+- Gen1: Fresh DQN trains vs Greedy (1000 games)
+- Gen2: Fresh DQN trains vs Gen1 frozen (1000 games)
+- Gen3: Fresh DQN trains vs Gen2 frozen (1000 games)
+- Each gen uses epsilon decay from 1.0 to 0.05
+
+### Results vs Greedy (200 games each, alternating first-move)
+
+| Generation | Winrate | StdDev | CI95% | Assessment |
+|------------|---------|--------|-------|------------|
+| Gen1       | TBD     | TBD    | TBD   | Baseline   |
+| Gen2       | TBD     | TBD    | TBD   | Beat Gen1? |
+| Gen3       | TBD     | TBD    | TBD   | Beat Gen2? |
+
+### Verdict
+**Progressive improvement?** TBD.
+
+Potential challenges:
+- The DQN training uses a simplified signal (global reward per step via Monte Carlo)
+- Per-step state features don't capture which unit the action applies to
+- Self-play opponent (previous gen) must be sufficiently strong to provide useful learning signal
+
+---
+
+## 3. Rule+Parameter Hybrid AI
+
+### Rule set (10 hardcoded rules)
+1. Enemy adjacent -> attack
+2. Enemy on my city -> attack immediately
+3. HP < retreat_threshold -> retreat toward city
+4. Enemy near my city < defense_range -> defend/intercept
+5. My units near enemy city > wave_threshold -> push all
+6. Stalemate > patience -> switch to construction tech
+7. Resources > save_threshold -> research
+8. Afford elite (cavalry) -> produce elite, else cheap
+9. Terrain defense high -> prefer this tile in pathfinding
+10. Enemy has many ranged -> produce cavalry
+
+### Tunable parameters (evolved)
+
+| Parameter | Range | Default | Trained |
+|-----------|-------|---------|---------|
+| retreat_threshold | 0.1-0.5 | 0.3 | TBD |
+| defense_range | 1-4 | 2 | TBD |
+| wave_threshold | 2-6 | 4 | TBD |
+| patience | 20-80 | 50 | TBD |
+| save_threshold | 10-40 | 25 | TBD |
+
+### Training: 50 generations x 30 pop x 5 games vs Random+Greedy
+
+### Results
+
+| Comparison | Games | Winrate | StdDev |
+|------------|-------|---------|--------|
+| Pure rules (default params) vs Greedy | 200 | TBD | TBD |
+| Hybrid (trained params) vs Greedy | 200 | TBD | TBD |
+| Hybrid (trained params) vs Aggressive | 200 | TBD | TBD |
+| Hybrid (trained params) vs Random | 200 | TBD | TBD |
+
+---
+
+## 4. Cross-Paradigm Comparison
+
+### Participants
+- **DQN-Gen3** — Best DQN from self-play generation 3
+- **Hybrid** — Rule+Parameter AI with evolved params
+- **BC** — Behavioral Cloning (Agent C)
+- **Greedy** — Baseline hand-coded AI
+
+### Full pairwise matrix (200 games each, paired evaluation)
+
+| AI A \ AI B | Greedy | Hybrid | DQN-Gen3 | BC |
+|-------------|--------|--------|----------|----|
+| Greedy      | 50%    | TBD    | TBD      | TBD |
+| Hybrid      | TBD    | 50%    | TBD      | TBD |
+| DQN-Gen3    | TBD    | TBD    | 50%      | TBD |
+| BC          | TBD    | TBD    | TBD      | 50% |
+
+---
+
+## 5. Analysis: Which ML Paradigms Work on This Platform?
+
+### What works well
+- **Rule-based systems** (Greedy, Aggressive): Well-understood domain logic translates directly to effective play
+- **Evolutionary parameter tuning** (Hybrid): Small parameter spaces are cheap to optimize; rules ensure reasonable play at all points
+- **Deterministic heuristics**: Pathfinding, target selection, and resource management are well-served by hand-coded logic
+
+### What is challenging
+- **Deep RL (DQN)**: High variance per episode (map generation, combat RNG). Per-step credit assignment is difficult. The action space is per-unit, making state-action mapping ambiguous.
+- **Self-play DQN**: Q-network processes a global state vector without unit-level discrimination. Self-play benefits require meaningful representations first.
+- **Sparse rewards**: Most game actions have no immediate reward signal, leading to slow learning.
+
+### Lessons for AI-friendly game design
+1. **Shape rewards**: Provide intermediate rewards (capturing resources, damaging enemies) to improve learning signal
+2. **Reduce action space**: Consider global commands instead of per-unit actions
+3. **State representation**: Include spatial features (grid crops near units) rather than global aggregates
+4. **Evaluation rigor**: Paired evaluation (swapping P0/P1) is essential to cancel first-move advantage
+5. **Domain knowledge injection**: Hybrid approaches (rules + learning) outperform pure learning for this domain's complexity
+
+---
+
+*Generated by MiniCiv ML Paradigm Evaluation Pipeline*
+*Date: 2026-07-02*

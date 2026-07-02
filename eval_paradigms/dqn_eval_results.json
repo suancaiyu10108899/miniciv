@@ -1,0 +1,20 @@
+{
+  "vs_random": {
+    "games": 500,
+    "dqn_wins": 461,
+    "opp_wins": 39,
+    "ties": 0,
+    "winrate_pct": 92.2,
+    "stddev_pct": 1.2,
+    "avg_turns": 27.5
+  },
+  "vs_greedy": {
+    "games": 200,
+    "dqn_wins": 183,
+    "opp_wins": 17,
+    "ties": 0,
+    "winrate_pct": 91.5,
+    "stddev_pct": 1.97,
+    "avg_turns": 84.3
+  }
+}

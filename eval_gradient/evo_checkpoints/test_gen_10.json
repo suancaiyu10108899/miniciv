@@ -1,0 +1,12 @@
+{
+  "label": "gen_10",
+  "winrate": 0.895,
+  "stddev_pct": 2.1676600286945367,
+  "wins": 179,
+  "games": 200,
+  "avg_turns": 41.965,
+  "conquests": 18,
+  "constructions": 150,
+  "tiebreaks": 32,
+  "elapsed_s": 7.2
+}

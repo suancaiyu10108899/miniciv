@@ -1,7 +1,22 @@
-# prototype/combat.py — 战斗结算（固定伤害，非随机）
+# prototype/combat.py — 战斗结算（可选随机伤害）
+#
+# 全局标志 RANDOM_COMBAT:
+#   False (默认) → 固定伤害 (GDD 公式, 原有行为)
+#   True         → 固定伤害 ±3 随机扰动, 最小 1
+# 外部脚本可在 combat 引入后修改此标志：from prototype.combat import RANDOM_COMBAT; RANDOM_COMBAT = True
 
+import random as _random
 from prototype.terrain import Terrain, terrain_def_bonus
 from prototype.constants import CAVALRY_CHARGE_BONUS
+
+RANDOM_COMBAT = False  # 全局标志, 外部可改写
+
+
+def _maybe_randomize(base_damage: int) -> int:
+    """若 RANDOM_COMBAT 为 True, 在 base_damage 上加 ±3 随机扰动, 最小保底 1"""
+    if not RANDOM_COMBAT:
+        return base_damage
+    return max(1, base_damage + _random.randint(-3, 3))
 
 
 def resolve_melee(attacker, defender, terrain_att: Terrain, terrain_def: Terrain,
@@ -9,6 +24,7 @@ def resolve_melee(attacker, defender, terrain_att: Terrain, terrain_def: Terrain
     """
     近战结算：双方互打。
     GDD公式: damage = max(1, ATK + terrain_bonus(攻方地形) - DEF - terrain_bonus(守方地形))
+    可选: ±3 随机伤害 (全局 RANDOM_COMBAT 控制)
 
     返回: {"att_damage", "def_damage", "attacker_alive", "defender_alive"}
     """
@@ -17,6 +33,8 @@ def resolve_melee(attacker, defender, terrain_att: Terrain, terrain_def: Terrain
 
     att_damage = max(1, attacker.atk + att_bonus - defender.def_ - def_bonus)
     def_damage = max(1, defender.atk + def_bonus - attacker.def_ - att_bonus)
+    att_damage = _maybe_randomize(att_damage)
+    def_damage = _maybe_randomize(def_damage)
 
     # 骑兵冲锋加成
     if attacker.unit_type == "cavalry" and attacker_just_charged:

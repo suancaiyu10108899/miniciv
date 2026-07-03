@@ -6242,6 +6242,15 @@ function setReplayData(data) {
   render(0);
 }
 
+function detectFileType(data) {
+  // Return format description for error messages
+  if (data.turns && Array.isArray(data.turns)) return 'replay';
+  if (Array.isArray(data) && data.length > 0 && data[0].winner !== undefined) return 'eval_results';
+  if (data.format_version) return 'unknown_replay_format';
+  if (data.config && data.result) return 'replay_no_turns';
+  return 'unknown';
+}
+
 function handleFileSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -6249,13 +6258,27 @@ function handleFileSelect(e) {
   reader.onload = function(ev) {
     try {
       const data = JSON.parse(ev.target.result);
+      const ftype = detectFileType(data);
+      if (ftype === 'eval_results') {
+        showError('格式不匹配',
+          '这是批量评估结果文件（每局摘要），不是回放文件。\n\n回放文件在 experiments/.../replays/ 目录下，文件名包含 seed 和回合数。\n\n当前文件包含 ' + data.length + ' 局评估数据。');
+        return;
+      }
+      if (ftype === 'replay') {
+        setReplayData(data);
+        return;
+      }
       if (!data.turns || !Array.isArray(data.turns) || data.turns.length === 0) {
-        showError('文件格式错误', 'JSON 文件缺少 turns 数组');
+        showError('文件格式错误',
+          'JSON 缺少 turns 数组（逐回合快照）。\n\n' +
+          '顶层字段: ' + Object.keys(data).join(', ') + '\n' +
+          '这不是回放文件。回放文件在 experiments/.../replays/ 目录下。\n' +
+          '如果这是评估结果，请加载 replays/ 子目录中的文件。');
         return;
       }
       setReplayData(data);
     } catch(err) {
-      showError('文件解析失败', err.message);
+      showError('JSON 解析失败', err.message + '\n\n请确认文件是有效的 JSON 格式。');
     }
   };
   reader.readAsText(file);
@@ -6290,13 +6313,24 @@ function handleDrop(e) {
     reader.onload = function(ev) {
       try {
         const data = JSON.parse(ev.target.result);
+        const ftype = detectFileType(data);
+        if (ftype === 'eval_results') {
+          showError('格式不匹配',
+            '这是批量评估结果文件，不是回放文件。\n\n回放文件在 experiments/.../replays/ 目录下。\n当前文件包含 ' + data.length + ' 局评估数据。');
+          return;
+        }
+        if (ftype === 'replay') {
+          setReplayData(data);
+          return;
+        }
         if (!data.turns || !Array.isArray(data.turns) || data.turns.length === 0) {
-          showError('文件格式错误', 'JSON 文件缺少 turns 数组');
+          showError('文件格式错误',
+            'JSON 缺少 turns 数组。\n顶层字段: ' + Object.keys(data).join(', ') + '\n回放文件在 experiments/.../replays/ 目录下。');
           return;
         }
         setReplayData(data);
       } catch(err) {
-        showError('文件解析失败', err.message);
+        showError('JSON 解析失败', err.message + '\n\n请确认文件是有效的 JSON 格式。');
       }
     };
     reader.readAsText(file);

@@ -1,0 +1,98 @@
+[
+  {
+    "c5_multiplier": 1,
+    "c5_cost": [
+      3,
+      3,
+      3
+    ],
+    "opponent": "greedy",
+    "evo_winrate": 82.0,
+    "construction_winrate": 72.5,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 1,
+    "c5_cost": [
+      3,
+      3,
+      3
+    ],
+    "opponent": "flatmc",
+    "evo_winrate": 84.0,
+    "construction_winrate": 72.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 2,
+    "c5_cost": [
+      6,
+      6,
+      6
+    ],
+    "opponent": "greedy",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 2,
+    "c5_cost": [
+      6,
+      6,
+      6
+    ],
+    "opponent": "flatmc",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 3,
+    "c5_cost": [
+      9,
+      9,
+      9
+    ],
+    "opponent": "greedy",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 3,
+    "c5_cost": [
+      9,
+      9,
+      9
+    ],
+    "opponent": "flatmc",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 5,
+    "c5_cost": [
+      15,
+      15,
+      15
+    ],
+    "opponent": "greedy",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  },
+  {
+    "c5_multiplier": 5,
+    "c5_cost": [
+      15,
+      15,
+      15
+    ],
+    "opponent": "flatmc",
+    "evo_winrate": 0.0,
+    "construction_winrate": 0.0,
+    "total_games": 200
+  }
+]

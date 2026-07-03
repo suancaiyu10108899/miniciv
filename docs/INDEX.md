@@ -42,8 +42,15 @@
 
 | 文档 | 内容 |
 |------|------|
+| [planning/2026-07-03-next-execution.md](planning/2026-07-03-next-execution.md) | **下一步执行计划** — Phase M1: 方法论文基础设施 + UI 试点，含 Agent 分工/验收/风险 |
 | [planning/2026-07-03-wrapup.md](planning/2026-07-03-wrapup.md) | **原型收尾评估** — 已验证/未验证审计 + 收尾执行计划 |
 | [planning/2026-07-03.md](planning/2026-07-03.md) | 建设胜利平衡 + Rust 前最后一轮规划 |
+
+## 归档
+
+| 文档 | 内容 |
+|------|------|
+| [archive/2026-07-03-methodology-discussion.md](archive/2026-07-03-methodology-discussion.md) | 方法论讨论归档 — 灵活性/可延展性/子Agent协作 |
 
 ## 实验数据
 

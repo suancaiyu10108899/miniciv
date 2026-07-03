@@ -6,6 +6,7 @@
 |------|------|--------|
 | [../CLAUDE.md](../CLAUDE.md) | 当前阶段 + 当前任务 | **每个 session 开始** |
 | [VISION.md](VISION.md) | 长远愿景（项目"宪法"） | 做设计决策时、需要回顾"为什么做这个项目"时 |
+| [INFRASTRUCTURE.md](INFRASTRUCTURE.md) | 开发基础设施待解决问题与标准 | 思考"游戏之外还要做什么"时 |
 | [GAME.md](GAME.md) | 当前游戏参数（唯一真相源） | 参数相关操作时 |
 | [DECISIONS.md](DECISIONS.md) | 设计决策日志 | 需要知道"为什么"时 |
 | [WORKFLOW.md](WORKFLOW.md) | 开发纪律 + Agent 规范 | 写代码/跑实验/用 Agent 前 |

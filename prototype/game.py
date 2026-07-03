@@ -36,6 +36,7 @@ class GameState:
     fog: list = field(default_factory=list)  # per-player fog state, lazy init
     dead_units: list[Unit] = field(default_factory=list)  # 已死单位（回放用）
     action_log: list[dict] = field(default_factory=list)  # 动作序列
+    turn_snapshots: list[dict] = field(default_factory=list)  # 每回合快照（GameReplay格式）
 
 
 def init_game(seed: int, size: int = DEFAULT_SIZE,
@@ -193,6 +194,10 @@ def step_game(gs: GameState, actions_p0: list[dict],
     gs.dead_units.extend([u for u in gs.units if not u.alive])
     gs.units = [u for u in gs.units if u.alive]
 
+    # 记录回放快照
+    from prototype.snapshot import snapshot_turn
+    gs.turn_snapshots.append(snapshot_turn(gs))
+
     return {"turn": gs.turn, "winner": gs.winner, "victory_type": gs.victory_type}
 
 
@@ -273,3 +278,9 @@ def _tiebreak(gs: GameState):
 
 from prototype.constants import TECH_TREE as _TECH_TREE
 TECH_TREE_COST = {k: v["cost"] for k, v in _TECH_TREE.items()}
+
+
+def export_replay(gs, seed: int = 0) -> dict:
+    """导出完整 GameReplay JSON。从已完成的 GameState 生成。"""
+    from prototype.snapshot import create_replay
+    return create_replay(gs, seed)

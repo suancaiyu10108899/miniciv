@@ -124,3 +124,166 @@ def dict_to_game(d: dict) -> GameState:
 
 def json_to_game(s: str) -> GameState:
     return dict_to_game(json.loads(s))
+
+
+# ─── GameReplay format ────────────────────────────────
+# 轻量级回放格式：每回合只存变化量（units摘要 + economies + techs + events），
+# 不存完整grid（地形不变）。用于 HTML 回放浏览器。
+
+def snapshot_turn(gs) -> dict:
+    """单回合状态快照——只存摘要，不存完整grid。
+    返回 dict，符合 GameReplay turns[] 格式。
+    """
+    # Units summary
+    units = []
+    for u in gs.units:
+        if u.alive:
+            units.append({
+                "type": u.unit_type,
+                "pid": u.player_id,
+                "x": u.x, "y": u.y,
+                "hp": u.hp, "atk": u.atk, "def": u.def_,
+            })
+
+    # Cities
+    cities = []
+    for c in gs.cities:
+        cities.append({
+            "pid": c.player_id,
+            "x": c.x, "y": c.y,
+            "hp": c.hp,
+        })
+
+    # Economies
+    economies = []
+    for e in gs.economies:
+        economies.append({
+            "pid": e.pid,
+            "food": e.food, "wood": e.wood, "gold": e.gold,
+        })
+
+    # Techs
+    techs = []
+    for t in gs.techs:
+        techs.append({
+            "pid": t.pid,
+            "completed": sorted(list(t.completed)),
+            "researching": t.researching,
+            "research_ticks": t.research_ticks,
+        })
+
+    # Facilities count per player
+    from prototype.mapgen import get_facility
+    facility_count = {0: 0, 1: 0}
+    for y in range(gs.size):
+        for x in range(gs.size):
+            f = get_facility(gs.grid, x, y)
+            if f is not None:
+                facility_count[f.player_id] += 1
+
+    # Events from action_log (last entry = this turn)
+    events = []
+    if gs.action_log:
+        last = gs.action_log[-1]
+        if last.get("turn") == gs.turn:
+            # Parse action_log into events
+            for pid_key, actions in [("p0", last.get("p0", [])), ("p1", last.get("p1", []))]:
+                p = 0 if pid_key == "p0" else 1
+                for act in actions:
+                    atype = act.get("type", "")
+                    if atype == "build":
+                        u = _find_unit_in_snapshot(units, p, act)
+                        if u:
+                            events.append({
+                                "type": "build",
+                                "pid": p,
+                                "x": u["x"], "y": u["y"],
+                                "detail": "built facility",
+                            })
+                    elif atype == "move":
+                        u = _find_unit_in_snapshot(units, p, act)
+                        if u:
+                            events.append({
+                                "type": "move",
+                                "pid": p,
+                                "x": u["x"], "y": u["y"],
+                                "detail": f"moved to ({u['x']},{u['y']})",
+                            })
+                    elif atype == "research" and act.get("tech_id"):
+                        events.append({
+                            "type": "research",
+                            "pid": p,
+                            "detail": f"started {act['tech_id']}",
+                        })
+                    elif atype == "produce_unit" and act.get("unit_type"):
+                        events.append({
+                            "type": "produce_unit",
+                            "pid": p,
+                            "detail": f"produced {act['unit_type']}",
+                        })
+
+    return {
+        "turn": gs.turn,
+        "units": units,
+        "cities": cities,
+        "economies": economies,
+        "techs": techs,
+        "facility_count": facility_count,
+        "events": events,
+    }
+
+
+def _find_unit_in_snapshot(units: list, pid: int, act: dict) -> dict | None:
+    """从当前回合的 units snapshot 中找到执行动作的单位（基于 unit_idx）。"""
+    ui = act.get("unit_idx", -1)
+    # Count units belonging to pid
+    pid_units = [u for u in units if u["pid"] == pid]
+    if 0 <= ui < len(pid_units):
+        return pid_units[ui]
+    return None
+
+
+def create_replay(gs, seed: int = 0) -> dict:
+    """从已完成的 GameState 创建 GameReplay JSON。
+    注意：当前 snapshot.py 只支持"终局快照"模式。
+    要支持逐回合回放，需要在 game.py step_game() 中每回合调用 snapshot_turn()。
+    此函数处理"已收集每回合快照"的情况。
+    """
+    turns = getattr(gs, "turn_snapshots", [])
+
+    # Encode terrain grid (doesn't change during game, store once)
+    terrain_grid = []
+    from prototype.terrain import Terrain
+    terrain_map = {Terrain.PLAIN: 0, Terrain.FOREST: 1, Terrain.MOUNTAIN: 2,
+                   Terrain.WATER: 3, Terrain.CITY: 4}
+    for y in range(gs.size):
+        row = []
+        for x in range(gs.size):
+            t = gs.grid[y][x]["terrain"]
+            row.append(terrain_map.get(t, 0))
+        terrain_grid.append(row)
+
+    return {
+        "format_version": "1.0",
+        "config": {
+            "size": gs.size,
+            "gen": gs.generator_id,
+            "max_turns": 100,
+            "seed": seed,
+            "terrain_grid": terrain_grid,
+        },
+        "turns": turns,
+        "result": {
+            "winner": gs.winner,
+            "victory_type": gs.victory_type,
+            "final_turn": gs.turn,
+        },
+    }
+
+
+def save_replay(gs, filepath: str, seed: int = 0):
+    """保存 GameReplay JSON 到文件。"""
+    replay = create_replay(gs, seed)
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(replay, f, indent=2, ensure_ascii=False)
+    return replay

@@ -10,6 +10,7 @@ import argparse, json, os, random, sys, time, math
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from prototype.game import init_game, step_game
 from prototype.eval import load_ai, AI_MODULES
+import prototype.cleanup  # atexit handler for orphan process cleanup
 from prototype.constants import CITY_HP, CITY_DAMAGE
 
 

@@ -9,6 +9,7 @@
 import json, os, sys, time, math, random
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
+import prototype.cleanup  # atexit handler for orphan process cleanup
 
 # ─── 配置 ──────────────────────────────────────────
 SIZE = 15

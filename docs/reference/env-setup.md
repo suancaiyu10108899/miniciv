@@ -9,7 +9,9 @@
 Claude Code 通过 DeepSeek API 运行。**只需要在 PowerShell profile 中设置：**
 
 ```powershell
-$env:ANTHROPIC_AUTH_TOKEN = "sk-bc94dc839b6c4fbb9806ca3f758f721f"
+# 从 .env 文件加载（不会进 git）
+# .env 模板见项目根目录 .env.example
+$env:ANTHROPIC_AUTH_TOKEN = "<your-key-here>"
 $env:ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
 $env:ANTHROPIC_MODEL = "deepseek-v4-pro[1m]"
 ```

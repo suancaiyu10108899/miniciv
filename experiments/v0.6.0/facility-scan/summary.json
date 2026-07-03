@@ -1,0 +1,485 @@
+{
+  "experiment": "facility-scan",
+  "date": "2026-07-04",
+  "config": {
+    "sizes": [
+      15
+    ],
+    "seeds_per_test": 100,
+    "paired": true
+  },
+  "results_by_facility": {
+    "fac3": [
+      {
+        "ai_a": "greedy",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.49,
+        "ai_b_wr": 0.51,
+        "p0_wr": 0.52,
+        "conquest": 0.015,
+        "construction": 0.0,
+        "tiebreak": 0.985,
+        "avg_turns": 99.4,
+        "ai_a_facs": 3.0,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 14.72,
+            "dead": 12.86
+          },
+          "cavalry": {
+            "alive": 0.82,
+            "dead": 0.18
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.61,
+            "dead": 0.39
+          },
+          "worker": {
+            "alive": 2.42,
+            "dead": 0.58
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 15.26,
+            "dead": 13.35
+          },
+          "cavalry": {
+            "alive": 0.35,
+            "dead": 0.14
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.56,
+            "dead": 0.43
+          },
+          "worker": {
+            "alive": 2.44,
+            "dead": 0.56
+          }
+        }
+      },
+      {
+        "ai_a": "evo",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.92,
+        "ai_b_wr": 0.08,
+        "p0_wr": 0.5,
+        "conquest": 0.005,
+        "construction": 0.83,
+        "tiebreak": 0.165,
+        "avg_turns": 33.5,
+        "ai_a_facs": 4.5,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 6.1,
+            "dead": 2.59
+          },
+          "cavalry": {
+            "alive": 4.76,
+            "dead": 1.51
+          },
+          "archer": {
+            "alive": 0.21,
+            "dead": 0.04
+          },
+          "scout": {
+            "alive": 0.78,
+            "dead": 0.23
+          },
+          "worker": {
+            "alive": 2.74,
+            "dead": 0.26
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 12.55,
+            "dead": 3.15
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.88,
+            "dead": 0.12
+          },
+          "worker": {
+            "alive": 3.0,
+            "dead": 0.0
+          }
+        }
+      }
+    ],
+    "fac4": [
+      {
+        "ai_a": "greedy",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.495,
+        "ai_b_wr": 0.505,
+        "p0_wr": 0.525,
+        "conquest": 0.015,
+        "construction": 0.0,
+        "tiebreak": 0.985,
+        "avg_turns": 99.3,
+        "ai_a_facs": 3.0,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 16.73,
+            "dead": 13.78
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.62,
+            "dead": 0.38
+          },
+          "worker": {
+            "alive": 2.42,
+            "dead": 0.58
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 16.5,
+            "dead": 13.79
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.56,
+            "dead": 0.44
+          },
+          "worker": {
+            "alive": 2.41,
+            "dead": 0.59
+          }
+        }
+      },
+      {
+        "ai_a": "evo",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.915,
+        "ai_b_wr": 0.085,
+        "p0_wr": 0.495,
+        "conquest": 0.01,
+        "construction": 0.765,
+        "tiebreak": 0.225,
+        "avg_turns": 38.8,
+        "ai_a_facs": 4.5,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 6.18,
+            "dead": 2.87
+          },
+          "cavalry": {
+            "alive": 4.74,
+            "dead": 2.55
+          },
+          "archer": {
+            "alive": 0.24,
+            "dead": 0.18
+          },
+          "scout": {
+            "alive": 0.76,
+            "dead": 0.24
+          },
+          "worker": {
+            "alive": 2.67,
+            "dead": 0.33
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 13.19,
+            "dead": 4.23
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.85,
+            "dead": 0.15
+          },
+          "worker": {
+            "alive": 3.0,
+            "dead": 0.0
+          }
+        }
+      }
+    ],
+    "fac5": [
+      {
+        "ai_a": "greedy",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.495,
+        "ai_b_wr": 0.505,
+        "p0_wr": 0.525,
+        "conquest": 0.015,
+        "construction": 0.0,
+        "tiebreak": 0.985,
+        "avg_turns": 99.3,
+        "ai_a_facs": 3.0,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 16.73,
+            "dead": 13.78
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.62,
+            "dead": 0.38
+          },
+          "worker": {
+            "alive": 2.42,
+            "dead": 0.58
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 16.5,
+            "dead": 13.79
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.56,
+            "dead": 0.44
+          },
+          "worker": {
+            "alive": 2.41,
+            "dead": 0.59
+          }
+        }
+      },
+      {
+        "ai_a": "evo",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.915,
+        "ai_b_wr": 0.085,
+        "p0_wr": 0.495,
+        "conquest": 0.01,
+        "construction": 0.455,
+        "tiebreak": 0.535,
+        "avg_turns": 64.1,
+        "ai_a_facs": 4.5,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 5.95,
+            "dead": 3.9
+          },
+          "cavalry": {
+            "alive": 4.88,
+            "dead": 6.33
+          },
+          "archer": {
+            "alive": 0.25,
+            "dead": 0.3
+          },
+          "scout": {
+            "alive": 0.69,
+            "dead": 0.3
+          },
+          "worker": {
+            "alive": 2.5,
+            "dead": 0.51
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 15.37,
+            "dead": 7.8
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.8,
+            "dead": 0.2
+          },
+          "worker": {
+            "alive": 3.0,
+            "dead": 0.0
+          }
+        }
+      }
+    ],
+    "fac6": [
+      {
+        "ai_a": "greedy",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.495,
+        "ai_b_wr": 0.505,
+        "p0_wr": 0.525,
+        "conquest": 0.015,
+        "construction": 0.0,
+        "tiebreak": 0.985,
+        "avg_turns": 99.3,
+        "ai_a_facs": 3.0,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 16.73,
+            "dead": 13.78
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.62,
+            "dead": 0.38
+          },
+          "worker": {
+            "alive": 2.42,
+            "dead": 0.58
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 16.5,
+            "dead": 13.79
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.56,
+            "dead": 0.44
+          },
+          "worker": {
+            "alive": 2.41,
+            "dead": 0.59
+          }
+        }
+      },
+      {
+        "ai_a": "evo",
+        "ai_b": "greedy",
+        "n": 200,
+        "ai_a_wr": 0.91,
+        "ai_b_wr": 0.09,
+        "p0_wr": 0.5,
+        "conquest": 0.015,
+        "construction": 0.015,
+        "tiebreak": 0.97,
+        "avg_turns": 98.3,
+        "ai_a_facs": 4.5,
+        "ai_b_facs": 3.0,
+        "ai_a_units": {
+          "infantry": {
+            "alive": 5.49,
+            "dead": 5.61
+          },
+          "cavalry": {
+            "alive": 5.22,
+            "dead": 11.22
+          },
+          "archer": {
+            "alive": 0.27,
+            "dead": 0.34
+          },
+          "scout": {
+            "alive": 0.63,
+            "dead": 0.37
+          },
+          "worker": {
+            "alive": 2.23,
+            "dead": 0.77
+          }
+        },
+        "ai_b_units": {
+          "infantry": {
+            "alive": 18.09,
+            "dead": 12.88
+          },
+          "cavalry": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "archer": {
+            "alive": 0.0,
+            "dead": 0.0
+          },
+          "scout": {
+            "alive": 0.72,
+            "dead": 0.28
+          },
+          "worker": {
+            "alive": 3.0,
+            "dead": 0.0
+          }
+        }
+      }
+    ]
+  }
+}

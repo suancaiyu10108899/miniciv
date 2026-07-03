@@ -5,6 +5,7 @@
 import json, os, random, time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
+import prototype.cleanup  # atexit orphan process cleanup
 
 from prototype.game import init_game, step_game
 from prototype.ai_evo import ai_decide, random_weights, mutate_weights, crossover_weights, DEFAULT_WEIGHTS

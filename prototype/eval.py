@@ -3,6 +3,7 @@
 
 import argparse, json, os, random, sys, importlib, time
 from prototype.game import init_game, step_game
+import prototype.cleanup  # atexit orphan process cleanup
 
 
 AI_MODULES = {

@@ -1,0 +1,1826 @@
+{
+  "c_turns": {
+    "C1": [
+      4,
+      3,
+      4,
+      3,
+      3,
+      3,
+      4,
+      3,
+      3,
+      3,
+      4,
+      3,
+      3,
+      4,
+      3,
+      3,
+      3,
+      4,
+      4,
+      3,
+      3,
+      4,
+      4,
+      3,
+      3,
+      27,
+      4,
+      3,
+      4,
+      3,
+      3,
+      4,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      3,
+      3,
+      4,
+      4,
+      4,
+      3,
+      3,
+      3,
+      4
+    ],
+    "C2": [
+      5,
+      4,
+      5,
+      5,
+      4,
+      4,
+      5,
+      4,
+      4,
+      4,
+      5,
+      4,
+      75,
+      5,
+      4,
+      4,
+      4,
+      5,
+      5,
+      5,
+      4,
+      5,
+      5,
+      4,
+      5,
+      28,
+      5,
+      5,
+      5,
+      4,
+      5,
+      5,
+      5,
+      4,
+      5,
+      5,
+      5,
+      5,
+      5,
+      4,
+      5,
+      4,
+      4,
+      5,
+      5,
+      5,
+      4,
+      4,
+      4,
+      5
+    ],
+    "C3": [
+      18,
+      12,
+      20,
+      10,
+      11,
+      7,
+      6,
+      9,
+      28,
+      20,
+      14,
+      15,
+      6,
+      7,
+      17,
+      8,
+      27,
+      39,
+      12,
+      16,
+      11,
+      14,
+      30,
+      25,
+      16,
+      37,
+      7,
+      36,
+      30,
+      19,
+      8,
+      12,
+      9,
+      15,
+      20,
+      13,
+      7,
+      7,
+      25,
+      22,
+      12,
+      6,
+      12,
+      24,
+      12
+    ],
+    "C4": [
+      19,
+      5,
+      13,
+      11,
+      5,
+      9,
+      7,
+      14,
+      6,
+      5,
+      6,
+      5,
+      16,
+      8,
+      13,
+      5,
+      28,
+      12,
+      5,
+      22,
+      17,
+      5,
+      15,
+      31,
+      26,
+      17,
+      38,
+      8,
+      8,
+      31,
+      13,
+      5,
+      9,
+      13,
+      18,
+      10,
+      16,
+      5,
+      14,
+      10,
+      12,
+      26,
+      8,
+      9,
+      10,
+      25,
+      13
+    ],
+    "C5": [
+      20,
+      13,
+      21,
+      12,
+      12,
+      10,
+      15,
+      10,
+      30,
+      21,
+      15,
+      17,
+      10,
+      14,
+      18,
+      29,
+      18,
+      12,
+      16,
+      32,
+      27,
+      18,
+      39,
+      10,
+      32,
+      25,
+      11,
+      15,
+      12,
+      17,
+      21,
+      15,
+      11,
+      13,
+      27,
+      23,
+      10,
+      13,
+      26,
+      14
+    ]
+  },
+  "all": [
+    {
+      "seed": 42,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 20,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          18,
+          "C3"
+        ],
+        [
+          19,
+          "C4"
+        ],
+        [
+          20,
+          "C5"
+        ]
+      ],
+      "evo_food": 59,
+      "evo_wood": 28,
+      "evo_gold": 2,
+      "evo_units_produced": 23,
+      "evo_construction": 5
+    },
+    {
+      "seed": 1042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 13,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          12,
+          "C3"
+        ],
+        [
+          13,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 28,
+      "evo_gold": 6,
+      "evo_units_produced": 16,
+      "evo_construction": 5
+    },
+    {
+      "seed": 2042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 21,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          13,
+          "C4"
+        ],
+        [
+          20,
+          "C3"
+        ],
+        [
+          21,
+          "C5"
+        ]
+      ],
+      "evo_food": 77,
+      "evo_wood": 12,
+      "evo_gold": 4,
+      "evo_units_produced": 24,
+      "evo_construction": 5
+    },
+    {
+      "seed": 3042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 12,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          10,
+          "C3"
+        ],
+        [
+          11,
+          "C4"
+        ],
+        [
+          12,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 20,
+      "evo_gold": 5,
+      "evo_units_produced": 14,
+      "evo_construction": 5
+    },
+    {
+      "seed": 4042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 12,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          11,
+          "C3"
+        ],
+        [
+          12,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 12,
+      "evo_gold": 3,
+      "evo_units_produced": 15,
+      "evo_construction": 5
+    },
+    {
+      "seed": 5042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 10,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          7,
+          "C3"
+        ],
+        [
+          9,
+          "C4"
+        ],
+        [
+          10,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 20,
+      "evo_gold": 5,
+      "evo_units_produced": 10,
+      "evo_construction": 5
+    },
+    {
+      "seed": 6042,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          7,
+          "C4"
+        ]
+      ],
+      "evo_food": 333,
+      "evo_wood": 372,
+      "evo_gold": 2,
+      "evo_units_produced": 99,
+      "evo_construction": 3
+    },
+    {
+      "seed": 7042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 15,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          6,
+          "C3"
+        ],
+        [
+          14,
+          "C4"
+        ],
+        [
+          15,
+          "C5"
+        ]
+      ],
+      "evo_food": 45,
+      "evo_wood": 16,
+      "evo_gold": 2,
+      "evo_units_produced": 18,
+      "evo_construction": 5
+    },
+    {
+      "seed": 8042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 10,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          6,
+          "C4"
+        ],
+        [
+          9,
+          "C3"
+        ],
+        [
+          10,
+          "C5"
+        ]
+      ],
+      "evo_food": 6,
+      "evo_wood": 13,
+      "evo_gold": 15,
+      "evo_units_produced": 12,
+      "evo_construction": 5
+    },
+    {
+      "seed": 9042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 30,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          28,
+          "C3"
+        ],
+        [
+          30,
+          "C5"
+        ]
+      ],
+      "evo_food": 93,
+      "evo_wood": 9,
+      "evo_gold": 20,
+      "evo_units_produced": 34,
+      "evo_construction": 5
+    },
+    {
+      "seed": 10042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 21,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          6,
+          "C4"
+        ],
+        [
+          20,
+          "C3"
+        ],
+        [
+          21,
+          "C5"
+        ]
+      ],
+      "evo_food": 10,
+      "evo_wood": 24,
+      "evo_gold": 6,
+      "evo_units_produced": 24,
+      "evo_construction": 5
+    },
+    {
+      "seed": 11042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 15,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          14,
+          "C3"
+        ],
+        [
+          15,
+          "C5"
+        ]
+      ],
+      "evo_food": 34,
+      "evo_wood": 36,
+      "evo_gold": 3,
+      "evo_units_produced": 19,
+      "evo_construction": 5
+    },
+    {
+      "seed": 12042,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          75,
+          "C2"
+        ]
+      ],
+      "evo_food": 2,
+      "evo_wood": 252,
+      "evo_gold": 818,
+      "evo_units_produced": 36,
+      "evo_construction": 2
+    },
+    {
+      "seed": 13042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 17,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          15,
+          "C3"
+        ],
+        [
+          16,
+          "C4"
+        ],
+        [
+          17,
+          "C5"
+        ]
+      ],
+      "evo_food": 35,
+      "evo_wood": 12,
+      "evo_gold": 2,
+      "evo_units_produced": 20,
+      "evo_construction": 5
+    },
+    {
+      "seed": 14042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 10,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          6,
+          "C3"
+        ],
+        [
+          8,
+          "C4"
+        ],
+        [
+          10,
+          "C5"
+        ]
+      ],
+      "evo_food": 8,
+      "evo_wood": 20,
+      "evo_gold": 6,
+      "evo_units_produced": 12,
+      "evo_construction": 5
+    },
+    {
+      "seed": 15042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 14,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          7,
+          "C3"
+        ],
+        [
+          13,
+          "C4"
+        ],
+        [
+          14,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 48,
+      "evo_gold": 5,
+      "evo_units_produced": 14,
+      "evo_construction": 5
+    },
+    {
+      "seed": 16042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 18,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          17,
+          "C3"
+        ],
+        [
+          18,
+          "C5"
+        ]
+      ],
+      "evo_food": 34,
+      "evo_wood": 12,
+      "evo_gold": 4,
+      "evo_units_produced": 22,
+      "evo_construction": 5
+    },
+    {
+      "seed": 17042,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          8,
+          "C3"
+        ]
+      ],
+      "evo_food": 5,
+      "evo_wood": 379,
+      "evo_gold": 98,
+      "evo_units_produced": 102,
+      "evo_construction": 3
+    },
+    {
+      "seed": 18042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 29,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          27,
+          "C3"
+        ],
+        [
+          28,
+          "C4"
+        ],
+        [
+          29,
+          "C5"
+        ]
+      ],
+      "evo_food": 147,
+      "evo_wood": 12,
+      "evo_gold": 2,
+      "evo_units_produced": 32,
+      "evo_construction": 5
+    },
+    {
+      "seed": 19042,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          12,
+          "C4"
+        ],
+        [
+          39,
+          "C3"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 2,
+      "evo_gold": 2,
+      "evo_units_produced": 86,
+      "evo_construction": 4
+    },
+    {
+      "seed": 20042,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          12,
+          "C3"
+        ]
+      ],
+      "evo_food": 255,
+      "evo_wood": 1,
+      "evo_gold": 273,
+      "evo_units_produced": 102,
+      "evo_construction": 4
+    },
+    {
+      "seed": 21042,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          22,
+          "C4"
+        ]
+      ],
+      "evo_food": 708,
+      "evo_wood": 0,
+      "evo_gold": 140,
+      "evo_units_produced": 103,
+      "evo_construction": 3
+    },
+    {
+      "seed": 22042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 18,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          16,
+          "C3"
+        ],
+        [
+          17,
+          "C4"
+        ],
+        [
+          18,
+          "C5"
+        ]
+      ],
+      "evo_food": 47,
+      "evo_wood": 20,
+      "evo_gold": 2,
+      "evo_units_produced": 21,
+      "evo_construction": 5
+    },
+    {
+      "seed": 23042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 12,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          11,
+          "C3"
+        ],
+        [
+          12,
+          "C5"
+        ]
+      ],
+      "evo_food": 16,
+      "evo_wood": 24,
+      "evo_gold": 3,
+      "evo_units_produced": 16,
+      "evo_construction": 5
+    },
+    {
+      "seed": 24042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 16,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          14,
+          "C3"
+        ],
+        [
+          15,
+          "C4"
+        ],
+        [
+          16,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 40,
+      "evo_gold": 5,
+      "evo_units_produced": 18,
+      "evo_construction": 5
+    },
+    {
+      "seed": 25042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 32,
+      "tech_timeline": [
+        [
+          27,
+          "C1"
+        ],
+        [
+          28,
+          "C2"
+        ],
+        [
+          30,
+          "C3"
+        ],
+        [
+          31,
+          "C4"
+        ],
+        [
+          32,
+          "C5"
+        ]
+      ],
+      "evo_food": 184,
+      "evo_wood": 31,
+      "evo_gold": 4,
+      "evo_units_produced": 29,
+      "evo_construction": 5
+    },
+    {
+      "seed": 26042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 27,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          25,
+          "C3"
+        ],
+        [
+          26,
+          "C4"
+        ],
+        [
+          27,
+          "C5"
+        ]
+      ],
+      "evo_food": 67,
+      "evo_wood": 68,
+      "evo_gold": 2,
+      "evo_units_produced": 30,
+      "evo_construction": 5
+    },
+    {
+      "seed": 27042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 18,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          16,
+          "C3"
+        ],
+        [
+          17,
+          "C4"
+        ],
+        [
+          18,
+          "C5"
+        ]
+      ],
+      "evo_food": 63,
+      "evo_wood": 0,
+      "evo_gold": 2,
+      "evo_units_produced": 21,
+      "evo_construction": 5
+    },
+    {
+      "seed": 28042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 39,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          37,
+          "C3"
+        ],
+        [
+          38,
+          "C4"
+        ],
+        [
+          39,
+          "C5"
+        ]
+      ],
+      "evo_food": 183,
+      "evo_wood": 44,
+      "evo_gold": 2,
+      "evo_units_produced": 42,
+      "evo_construction": 5
+    },
+    {
+      "seed": 29042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 10,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          7,
+          "C3"
+        ],
+        [
+          8,
+          "C4"
+        ],
+        [
+          10,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 17,
+      "evo_gold": 10,
+      "evo_units_produced": 11,
+      "evo_construction": 5
+    },
+    {
+      "seed": 30042,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          8,
+          "C4"
+        ],
+        [
+          36,
+          "C3"
+        ]
+      ],
+      "evo_food": 353,
+      "evo_wood": 322,
+      "evo_gold": 2,
+      "evo_units_produced": 103,
+      "evo_construction": 4
+    },
+    {
+      "seed": 31042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 32,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          30,
+          "C3"
+        ],
+        [
+          31,
+          "C4"
+        ],
+        [
+          32,
+          "C5"
+        ]
+      ],
+      "evo_food": 16,
+      "evo_wood": 41,
+      "evo_gold": 48,
+      "evo_units_produced": 35,
+      "evo_construction": 5
+    },
+    {
+      "seed": 32042,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          13,
+          "C4"
+        ]
+      ],
+      "evo_food": 329,
+      "evo_wood": 232,
+      "evo_gold": 0,
+      "evo_units_produced": 89,
+      "evo_construction": 3
+    },
+    {
+      "seed": 33042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 25,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          19,
+          "C3"
+        ],
+        [
+          25,
+          "C5"
+        ]
+      ],
+      "evo_food": 33,
+      "evo_wood": 17,
+      "evo_gold": 31,
+      "evo_units_produced": 29,
+      "evo_construction": 5
+    },
+    {
+      "seed": 34042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 11,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          8,
+          "C3"
+        ],
+        [
+          9,
+          "C4"
+        ],
+        [
+          11,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 16,
+      "evo_gold": 6,
+      "evo_units_produced": 12,
+      "evo_construction": 5
+    },
+    {
+      "seed": 35042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 15,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          12,
+          "C3"
+        ],
+        [
+          13,
+          "C4"
+        ],
+        [
+          15,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 28,
+      "evo_gold": 12,
+      "evo_units_produced": 15,
+      "evo_construction": 5
+    },
+    {
+      "seed": 36042,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          18,
+          "C4"
+        ]
+      ],
+      "evo_food": 692,
+      "evo_wood": 0,
+      "evo_gold": 148,
+      "evo_units_produced": 103,
+      "evo_construction": 3
+    },
+    {
+      "seed": 37042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 12,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          9,
+          "C3"
+        ],
+        [
+          10,
+          "C4"
+        ],
+        [
+          12,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 24,
+      "evo_gold": 6,
+      "evo_units_produced": 13,
+      "evo_construction": 5
+    },
+    {
+      "seed": 38042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 17,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          15,
+          "C3"
+        ],
+        [
+          16,
+          "C4"
+        ],
+        [
+          17,
+          "C5"
+        ]
+      ],
+      "evo_food": 19,
+      "evo_wood": 36,
+      "evo_gold": 2,
+      "evo_units_produced": 20,
+      "evo_construction": 5
+    },
+    {
+      "seed": 39042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 21,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          5,
+          "C4"
+        ],
+        [
+          20,
+          "C3"
+        ],
+        [
+          21,
+          "C5"
+        ]
+      ],
+      "evo_food": 70,
+      "evo_wood": 60,
+      "evo_gold": 3,
+      "evo_units_produced": 25,
+      "evo_construction": 5
+    },
+    {
+      "seed": 40042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 15,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          13,
+          "C3"
+        ],
+        [
+          14,
+          "C4"
+        ],
+        [
+          15,
+          "C5"
+        ]
+      ],
+      "evo_food": 43,
+      "evo_wood": 0,
+      "evo_gold": 2,
+      "evo_units_produced": 18,
+      "evo_construction": 5
+    },
+    {
+      "seed": 41042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 11,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          7,
+          "C3"
+        ],
+        [
+          10,
+          "C4"
+        ],
+        [
+          11,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 24,
+      "evo_gold": 5,
+      "evo_units_produced": 11,
+      "evo_construction": 5
+    },
+    {
+      "seed": 42042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 13,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          7,
+          "C3"
+        ],
+        [
+          12,
+          "C4"
+        ],
+        [
+          13,
+          "C5"
+        ]
+      ],
+      "evo_food": 4,
+      "evo_wood": 24,
+      "evo_gold": 5,
+      "evo_units_produced": 13,
+      "evo_construction": 5
+    },
+    {
+      "seed": 43042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 27,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          25,
+          "C3"
+        ],
+        [
+          26,
+          "C4"
+        ],
+        [
+          27,
+          "C5"
+        ]
+      ],
+      "evo_food": 103,
+      "evo_wood": 40,
+      "evo_gold": 2,
+      "evo_units_produced": 30,
+      "evo_construction": 5
+    },
+    {
+      "seed": 44042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 23,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          8,
+          "C4"
+        ],
+        [
+          22,
+          "C3"
+        ],
+        [
+          23,
+          "C5"
+        ]
+      ],
+      "evo_food": 46,
+      "evo_wood": 12,
+      "evo_gold": 6,
+      "evo_units_produced": 26,
+      "evo_construction": 5
+    },
+    {
+      "seed": 45042,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          12,
+          "C3"
+        ]
+      ],
+      "evo_food": 535,
+      "evo_wood": 2,
+      "evo_gold": 165,
+      "evo_units_produced": 103,
+      "evo_construction": 3
+    },
+    {
+      "seed": 46042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 10,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          6,
+          "C3"
+        ],
+        [
+          9,
+          "C4"
+        ],
+        [
+          10,
+          "C5"
+        ]
+      ],
+      "evo_food": 5,
+      "evo_wood": 4,
+      "evo_gold": 2,
+      "evo_units_produced": 13,
+      "evo_construction": 5
+    },
+    {
+      "seed": 47042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 13,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          10,
+          "C4"
+        ],
+        [
+          12,
+          "C3"
+        ],
+        [
+          13,
+          "C5"
+        ]
+      ],
+      "evo_food": 7,
+      "evo_wood": 6,
+      "evo_gold": 4,
+      "evo_units_produced": 16,
+      "evo_construction": 5
+    },
+    {
+      "seed": 48042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 26,
+      "tech_timeline": [
+        [
+          3,
+          "C1"
+        ],
+        [
+          4,
+          "C2"
+        ],
+        [
+          24,
+          "C3"
+        ],
+        [
+          25,
+          "C4"
+        ],
+        [
+          26,
+          "C5"
+        ]
+      ],
+      "evo_food": 50,
+      "evo_wood": 81,
+      "evo_gold": 2,
+      "evo_units_produced": 28,
+      "evo_construction": 5
+    },
+    {
+      "seed": 49042,
+      "winner": 0,
+      "victory_type": "construction",
+      "turns": 14,
+      "tech_timeline": [
+        [
+          4,
+          "C1"
+        ],
+        [
+          5,
+          "C2"
+        ],
+        [
+          12,
+          "C3"
+        ],
+        [
+          13,
+          "C4"
+        ],
+        [
+          14,
+          "C5"
+        ]
+      ],
+      "evo_food": 19,
+      "evo_wood": 16,
+      "evo_gold": 2,
+      "evo_units_produced": 17,
+      "evo_construction": 5
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "experiment_dir": "experiments/v0.5.0/facility-8-verify",
+  "generated": "2026-07-03 23:45",
+  "replays": [
+    {
+      "file": "paired_dqn_trained_vs_dqn_trained_seed159_P0_conquest_t80.json",
+      "ai_a": "dqn_trained",
+      "ai_b": "dqn_trained",
+      "seed": 159,
+      "winner": "P0",
+      "victory_type": "conquest",
+      "turns": 80,
+      "size_kb": 1185.2
+    },
+    {
+      "file": "paired_dqn_trained_vs_dqn_trained_seed193_P1_conquest_t81.json",
+      "ai_a": "dqn_trained",
+      "ai_b": "dqn_trained",
+      "seed": 193,
+      "winner": "P1",
+      "victory_type": "conquest",
+      "turns": 81,
+      "size_kb": 1319.9
+    },
+    {
+      "file": "paired_evo_vs_dqn_trained_seed102_P0_tiebreak_construction_t100.json",
+      "ai_a": "evo",
+      "ai_b": "dqn_trained",
+      "seed": 102,
+      "winner": "P0",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 3131.2
+    },
+    {
+      "file": "paired_evo_vs_dqn_trained_seed96_P0_tiebreak_construction_t100.json",
+      "ai_a": "evo",
+      "ai_b": "dqn_trained",
+      "seed": 96,
+      "winner": "P0",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 2968.7
+    },
+    {
+      "file": "paired_evo_vs_evo_seed100_P1_tiebreak_construction_t100.json",
+      "ai_a": "evo",
+      "ai_b": "evo",
+      "seed": 100,
+      "winner": "P1",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 3368.3
+    },
+    {
+      "file": "paired_evo_vs_evo_seed98_P1_tiebreak_random_t100.json",
+      "ai_a": "evo",
+      "ai_b": "evo",
+      "seed": 98,
+      "winner": "P1",
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "size_kb": 3486.7
+    },
+    {
+      "file": "paired_evo_vs_flatmc_seed45_P1_tiebreak_random_t100.json",
+      "ai_a": "evo",
+      "ai_b": "flatmc",
+      "seed": 45,
+      "winner": "P1",
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "size_kb": 1788.5
+    },
+    {
+      "file": "paired_evo_vs_flatmc_seed88_P0_tiebreak_construction_t100.json",
+      "ai_a": "evo",
+      "ai_b": "flatmc",
+      "seed": 88,
+      "winner": "P0",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 2195.1
+    },
+    {
+      "file": "paired_evo_vs_greedy_seed44_P1_tiebreak_random_t100.json",
+      "ai_a": "evo",
+      "ai_b": "greedy",
+      "seed": 44,
+      "winner": "P1",
+      "victory_type": "tiebreak_random",
+      "turns": 100,
+      "size_kb": 2917.3
+    },
+    {
+      "file": "paired_evo_vs_greedy_seed88_P0_tiebreak_construction_t100.json",
+      "ai_a": "evo",
+      "ai_b": "greedy",
+      "seed": 88,
+      "winner": "P0",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 2251.1
+    },
+    {
+      "file": "paired_greedy_vs_dqn_trained_seed105_P1_conquest_t44.json",
+      "ai_a": "greedy",
+      "ai_b": "dqn_trained",
+      "seed": 105,
+      "winner": "P1",
+      "victory_type": "conquest",
+      "turns": 44,
+      "size_kb": 435.9
+    },
+    {
+      "file": "paired_greedy_vs_dqn_trained_seed61_P1_tiebreak_construction_t100.json",
+      "ai_a": "greedy",
+      "ai_b": "dqn_trained",
+      "seed": 61,
+      "winner": "P1",
+      "victory_type": "tiebreak_construction",
+      "turns": 100,
+      "size_kb": 2157.3
+    },
+    {
+      "file": "paired_greedy_vs_flatmc_seed79_P0_tiebreak_city_hp_t100.json",
+      "ai_a": "greedy",
+      "ai_b": "flatmc",
+      "seed": 79,
+      "winner": "P0",
+      "victory_type": "tiebreak_city_hp",
+      "turns": 100,
+      "size_kb": 1428.8
+    }
+  ]
+}

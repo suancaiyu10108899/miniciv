@@ -26,5 +26,6 @@ data/models/*.pt
 data/models/*.zip
 data/trajectories/*.json
 eval_paradigms/
+experiments/**/replays/paired_*.json
 prototype/bc_training_data.json
 venv/

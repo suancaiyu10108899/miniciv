@@ -116,14 +116,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 <div id="app">
   <!-- Control Bar -->
   <div id="control-bar">
-    <button id="btn-prev" title="上一回合 (←)">← Prev</button>
-    <button id="btn-next" title="下一回合 (→)">Next →</button>
-    <button id="btn-auto" title="自动播放 (Space)">Auto</button>
+    <button id="btn-prev" title="上一回合 (←)">← 上一回合</button>
+    <button id="btn-next" title="下一回合 (→)">下一回合 →</button>
+    <button id="btn-auto" title="自动播放 (Space)">自动播放</button>
     <button id="speed-1x" class="speed-btn active">1x</button>
     <button id="speed-2x" class="speed-btn">2x</button>
     <button id="speed-5x" class="speed-btn">5x</button>
-    <span id="turn-display">Turn: --</span>
+    <button id="btn-file" title="加载回放文件">📂 加载回放</button>
+    <button id="btn-sample" title="打开内置示例">📂 示例回放</button>
+    <span id="turn-display">回合: --</span>
     <span id="winner-display"></span>
+    <input type="file" id="file-input" accept=".json" style="display:none">
   </div>
 
   <!-- Main Content -->
@@ -5593,6 +5596,7 @@ const TECH_LINE_ORDER = ['M1','M2','M3','M4','E1','E2','E3','E4','C1','C2','C3',
 
 // ===== STATE =====
 let replayData = null;
+let embeddedReplayData = null;
 let terrainGrid = null;
 let currentTurnIdx = 0;
 let autoPlaying = false;
@@ -5618,6 +5622,9 @@ const winnerDisplay = $('winner-display');
 const btnPrev = $('btn-prev');
 const btnNext = $('btn-next');
 const btnAuto = $('btn-auto');
+const btnFile = $('btn-file');
+const btnSample = $('btn-sample');
+const fileInput = $('file-input');
 const speedBtns = [$('speed-1x'), $('speed-2x'), $('speed-5x')];
 const SPEED_MAP = {'speed-1x':500,'speed-2x':250,'speed-5x':100};
 
@@ -5628,17 +5635,18 @@ function loadReplayData() {
   if (dataScript) {
     try {
       replayData = JSON.parse(dataScript.textContent);
+      embeddedReplayData = replayData;
     } catch(e) {
-      showError('Error: invalid replay data', e.message);
+      showError('错误: 回放数据无效', e.message);
       return false;
     }
   }
   if (!replayData) {
-    showError('Error: no replay data found');
+    showError('错误: 未找到回放数据');
     return false;
   }
   if (!replayData.turns || replayData.turns.length === 0) {
-    showError('Error: no turns in replay');
+    showError('错误: 回放中没有回合数据');
     return false;
   }
   // Get terrain: from config.terrain_grid or terrain-data script tag
@@ -5837,25 +5845,25 @@ function renderSidePanel(turnIdx) {
     const cScore = cTechs.length;
 
     // Semantic annotations
-    const facAnnotation = fc > 0 ? '(need 8 for C5 victory)' : '';
-    const cAnnotation = cScore > 0 ? '(C1-C5: ' + cTechs.join(' ') + ' done)' : '(none)';
+    const facAnnotation = fc > 0 ? '(C5胜利需8设施)' : '';
+    const cAnnotation = cScore > 0 ? '(已完成: ' + cTechs.join(' ') + ')' : '(无)';
 
     // Start resources (from turn 1)
     const turn1 = replayData.turns[0];
     const startEco = turn1.economies ? turn1.economies.find(e => e.pid === pid) : null;
-    const startStr = startEco ? '(start: ' + startEco.food + '/' + startEco.wood + '/' + startEco.gold + ')' : '';
+    const startStr = startEco ? '(起始: ' + startEco.food + '/' + startEco.wood + '/' + startEco.gold + ')' : '';
 
     let html = '<h3 class="' + titleClass + '">' + label + '</h3>';
 
     if (eco) {
-      html += '<div class="side-resources"><span class="side-res-item">Food: ' + eco.food + '</span>';
-      html += '<span class="side-res-item">Wood: ' + eco.wood + '</span>';
-      html += '<span class="side-res-item">Gold: ' + eco.gold + '</span></div>';
+      html += '<div class="side-resources"><span class="side-res-item">粮食: ' + eco.food + '</span>';
+      html += '<span class="side-res-item">木材: ' + eco.wood + '</span>';
+      html += '<span class="side-res-item">金币: ' + eco.gold + '</span></div>';
       if (startStr) html += '<div class="side-annotation">' + startStr + '</div>';
     }
 
     // Techs
-    html += '<div class="side-label">Techs completed: <b>' + completedTechs.length + '</b>';
+    html += '<div class="side-label">已完成科技: <b>' + completedTechs.length + '</b>';
     if (completedTechs.length > 0) {
       const names = completedTechs.map(t => TECH_INFO[t] ? t + '(' + TECH_INFO[t].name + ')' : t).join(', ');
       html += ' <span class="side-annotation">(' + names + ')</span>';
@@ -5864,35 +5872,35 @@ function renderSidePanel(turnIdx) {
 
     if (researching) {
       const rName = TECH_INFO[researching] ? researching + '(' + TECH_INFO[researching].name + ')' : researching;
-      html += '<div class="side-label">Researching: <b>' + rName + '</b></div>';
+      html += '<div class="side-label">研究中: <b>' + rName + '</b></div>';
     } else {
-      html += '<div class="side-label">Researching: <span class="side-annotation">none</span></div>';
+      html += '<div class="side-label">研究中: <span class="side-annotation">无</span></div>';
     }
 
     // Facilities
-    html += '<div class="side-label">Facilities: <b>' + fc + '</b> <span class="side-annotation">' + facAnnotation + '</span></div>';
+    html += '<div class="side-label">设施: <b>' + fc + '</b> <span class="side-annotation">' + facAnnotation + '</span></div>';
 
     // Units
-    html += '<div class="side-label">Units alive: <b>' + units.length + '</b>';
+    html += '<div class="side-label">存活单位: <b>' + units.length + '</b>';
     if (unitBreakdown) html += ' <span class="side-annotation">(' + unitBreakdown + ')</span>';
     html += '</div>';
 
     // Construction score
-    html += '<div class="side-label">Construction score: <b>' + cScore + '</b> <span class="side-annotation">' + cAnnotation + '</span></div>';
+    html += '<div class="side-label">建设分数: <b>' + cScore + '</b> <span class="side-annotation">' + cAnnotation + '</span></div>';
 
     return html;
   }
 
   let html = '';
-  html += '<div id="p0-info">' + renderPlayerInfo(0, 'P0 (Blue)', 'p0-title') + '</div>';
+  html += '<div id="p0-info">' + renderPlayerInfo(0, 'P0 (蓝方)', 'p0-title') + '</div>';
   html += '<hr>';
-  html += '<div id="p1-info">' + renderPlayerInfo(1, 'P1 (Red)', 'p1-title') + '</div>';
+  html += '<div id="p1-info">' + renderPlayerInfo(1, 'P1 (红方)', 'p1-title') + '</div>';
 
   // Events
   html += '<div id="events-panel">';
   const evts = turn.events || [];
   if (evts.length > 0) {
-    html += '<h4>Turn ' + turn.turn + ' events:</h4>';
+    html += '<h4>第' + turn.turn + '回合事件:</h4>';
     evts.forEach(ev => {
       const pidClass = ev.pid === 0 ? 'ev-p0' : 'ev-p1';
       const pidLabel = 'P' + ev.pid;
@@ -5916,7 +5924,7 @@ function render(turnIdx) {
   const total = replayData.turns.length;
   const maxTurns = replayData.config ? replayData.config.max_turns : total;
 
-  turnDisplay.textContent = 'Turn: ' + turn.turn + ' / ' + maxTurns;
+  turnDisplay.textContent = '回合: ' + turn.turn + ' / ' + maxTurns;
 
   // Winner display
   if (replayData.result && replayData.result.winner !== null && replayData.result.winner !== undefined) {
@@ -5925,7 +5933,7 @@ function render(turnIdx) {
     const finalT = replayData.result.final_turn || '';
     // Only show winner when at or near the last turn
     if (turnIdx === replayData.turns.length - 1) {
-      winnerDisplay.textContent = 'Winner: P' + w + ' (' + vType + ', T' + finalT + ')';
+      winnerDisplay.textContent = '胜者: P' + w + ' (' + vType + ', T' + finalT + ')';
     } else {
       winnerDisplay.textContent = '';
     }
@@ -5958,7 +5966,7 @@ function prevTurn() {
 // ===== AUTO PLAY =====
 function toggleAutoPlay() {
   autoPlaying = !autoPlaying;
-  btnAuto.textContent = autoPlaying ? 'Stop' : 'Auto';
+  btnAuto.textContent = autoPlaying ? '停止' : '自动播放';
   btnAuto.classList.toggle('active', autoPlaying);
   if (autoPlaying) {
     if (currentTurnIdx >= replayData.turns.length - 1) {
@@ -5979,7 +5987,7 @@ function toggleAutoPlay() {
 function stopAutoPlay() {
   autoPlaying = false;
   if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  btnAuto.textContent = 'Auto';
+  btnAuto.textContent = '自动播放';
   btnAuto.classList.remove('active');
 }
 
@@ -6047,7 +6055,7 @@ function showTooltip(e, cell) {
     if (bonuses.def > 0) html += '+' + bonuses.def;
     if (bonuses.details.length > 0) html += '<br><span style="color:#81c784;font-size:11px">' + bonuses.details.join(', ') + '</span>';
     if (units.length > 1) {
-      html += '<br><span style="color:#ffb74d">+' + (units.length - 1) + ' more unit(s) on this tile</span>';
+      html += '<br><span style="color:#ffb74d">本格还有 ' + (units.length - 1) + ' 个单位</span>';
     }
   } else {
     html += '<div class="tt-title">' + tInfo.name + '</div>';
@@ -6119,7 +6127,7 @@ function showDetailCard(unit, e) {
     });
   }
 
-  html += '<div class="dc-section-title">成本</div>';
+  html += '<div class="dc-section-title">生产成本</div>';
   html += '<div class="dc-cost">' + stats.cost + '</div>';
 
   if (stats.special.length > 0) {
@@ -6154,6 +6162,9 @@ function setupControls() {
   btnPrev.addEventListener('click', prevTurn);
   btnNext.addEventListener('click', nextTurn);
   btnAuto.addEventListener('click', toggleAutoPlay);
+  btnFile.addEventListener('click', function() { fileInput.click(); });
+  btnSample.addEventListener('click', loadSampleData);
+  fileInput.addEventListener('change', handleFileSelect);
   speedBtns.forEach(function(b) {
     b.addEventListener('click', function() { setSpeed(b.id); });
   });
@@ -6204,6 +6215,92 @@ function setupControls() {
       detailCard.style.display = 'none';
     }
   });
+
+  // Drag-and-drop
+  const app = document.getElementById('app');
+  app.addEventListener('dragover', handleDragOver);
+  app.addEventListener('drop', handleDrop);
+}
+
+// ===== File Loading =====
+function setReplayData(data) {
+  stopAutoPlay();
+  replayData = data;
+  terrainGrid = (data.config && data.config.terrain_grid) ? data.config.terrain_grid : null;
+  mapSize = (data.config && data.config.size) || 15;
+  if (!terrainGrid) {
+    terrainGrid = Array.from({length: mapSize}, () => Array(mapSize).fill(0));
+  }
+  if (!replayData.turns || replayData.turns.length === 0) {
+    showError('错误: 回放中没有回合数据');
+    return;
+  }
+  currentTurnIdx = 0;
+  hideTooltip();
+  detailCard.style.display = 'none';
+  renderBottomBar();
+  render(0);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.turns || !Array.isArray(data.turns) || data.turns.length === 0) {
+        showError('文件格式错误', 'JSON 文件缺少 turns 数组');
+        return;
+      }
+      setReplayData(data);
+    } catch(err) {
+      showError('文件解析失败', err.message);
+    }
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+}
+
+function loadSampleData() {
+  if (!embeddedReplayData) {
+    showError('错误', '无内置示例数据');
+    return;
+  }
+  setReplayData(JSON.parse(JSON.stringify(embeddedReplayData)));
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'copy';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    const file = files[0];
+    if (!file.name.endsWith('.json')) {
+      showError('文件格式错误', '请拖入 .json 文件');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.turns || !Array.isArray(data.turns) || data.turns.length === 0) {
+          showError('文件格式错误', 'JSON 文件缺少 turns 数组');
+          return;
+        }
+        setReplayData(data);
+      } catch(err) {
+        showError('文件解析失败', err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
 }
 
 // ===== INIT =====

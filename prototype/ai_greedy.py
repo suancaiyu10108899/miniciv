@@ -250,18 +250,35 @@ def _select_strategy(gs, pid, assessment, opp_model):
     if unit_ratio < 0.6 and opp_count > 2:
         return "defensive"
 
-    # Stalemate: >50 turns and nobody has taken damage
-    if gs.turn > 50 and assessment["opp_city_hp"] >= 95 and assessment["my_city_hp"] >= 95:
+    # v5: Construction triggers — require minimum game time for combat window
+    # Don't allow construction before turn 20 — gives combat strategies a window
+    if gs.turn < 20:
+        if unit_ratio > 1.3 and my_count >= 3:
+            return "aggressive"
+        if assessment["city_threatened"] and my_count < opp_count:
+            return "defensive"
+        return "balanced"
+
+    # 1. Already on C-line: if we have C1, continue construction path
+    if "C1" in gs.techs[pid].completed:
+        if gs.turn > 25:
+            return "construction"
+
+    # 2. Safe + established
+    my_total_res = sum([gs.economies[pid].food, gs.economies[pid].wood, gs.economies[pid].gold])
+    if gs.turn > 30 and my_total_res > 35 and not assessment.get("city_threatened", False):
+        return "construction"
+
+    # 3. Stalemate
+    if gs.turn > 35 and assessment["opp_city_hp"] >= 85 and assessment["my_city_hp"] >= 85:
         return "construction"
 
     # Opponent modeling (only after early game stabilizes)
     if aggressiveness > 0.65 and gs.turn > 15:
-        # Enemy is aggressive -> play defensive + go for construction
         if gs.turn > 30:
             return "defensive_construction"
         return "defensive"
     elif aggressiveness < 0.35 and gs.turn > 15:
-        # Enemy is passive -> rush them
         return "aggressive"
 
     # Default: balanced
@@ -326,12 +343,23 @@ def _compute_adaptive_counter(gs, pid, opp_model):
 # =============================================================================
 
 def _greedy_worker_v3(w, ui, gs, pid, strategy, rng):
-    """Worker: build missing facilities > produce > move to resource"""
+    """Worker v5: build new facilities > produce on existing ones.
+    If C5 is researched or we're in construction mode, prioritize expansion."""
     terrain = get_terrain(gs.grid, w.x, w.y)
     buildable = terrain_buildable(terrain)
     facility = gs.grid[w.y][w.x].get("facility")
 
+    # v5: Need more facilities for construction victory → prioritize building
+    c5_done = "C5" in gs.techs[pid].completed
+    in_construction = strategy in ("construction", "defensive_construction")
+    need_expansion = c5_done or in_construction
+
     if facility and facility.player_id == pid:
+        if need_expansion:
+            # Move to find a new buildable tile instead of staying here
+            best = _nearest_buildable(w, gs, pid)
+            if best:
+                return _move_to(w, ui, gs, best, rng)
         return {"unit_idx": ui, "type": "produce"}
     if buildable and not facility:
         return {"unit_idx": ui, "type": "build"}
@@ -452,6 +480,14 @@ def _do_research(gs, pid, strategy, actions):
     econ = gs.economies[pid]
     avail = tech.available_to_research()
 
+    # v5: C5 available → research it after combat window (turn > 20)
+    # or immediately if already in construction strategy
+    in_construction = strategy in ("construction", "defensive_construction")
+    if "C5" in avail and econ.can_afford(TECH_TREE_COST.get("C5", (99,99,99))):
+        if in_construction or gs.turn > 20:
+            actions.append({"unit_idx": -1, "type": "research", "tech_id": "C5"})
+            return
+
     if strategy == "aggressive":
         # Military priority: M-line first
         order = ["M1", "M2", "M3", "M4", "C1", "E1", "E2", "E3", "E4", "C2", "C3", "C4", "C5"]
@@ -474,7 +510,13 @@ def _do_research(gs, pid, strategy, actions):
                 actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                 break
     else:
-        # Balanced: v2-style, pick most expensive available (prioritizes M-line)
+        # v5 Balanced: mid-game bias toward C-line, otherwise most expensive first
+        if gs.turn > 15:
+            # Prioritize C-line techs to unlock construction path
+            for ct in ["C2", "C3", "C4", "C5", "C1"]:
+                if ct in avail and econ.can_afford(TECH_TREE_COST.get(ct, (99,99,99))):
+                    actions.append({"unit_idx": -1, "type": "research", "tech_id": ct})
+                    return
         avail.sort(key=lambda t: -sum(TECH_TREE_COST.get(t, (0, 0, 0))))
         for t in avail:
             if econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
@@ -513,12 +555,43 @@ def _do_production(gs, pid, strategy, production_counter, assessment, actions):
                 break
 
     elif strategy == "construction":
-        # Cheap infantry to stall while teching
+        # v5: Diverse defense while teching — not just infantry
+        my_combat = [u for u in gs.units if u.player_id == pid and u.alive
+                     and u.unit_type not in ("worker",)]
+        n_cav = sum(1 for u in my_combat if u.unit_type == "cavalry")
+        n_arc = sum(1 for u in my_combat if u.unit_type == "archer")
+        n_inf = sum(1 for u in my_combat if u.unit_type == "infantry")
+        n_total = len(my_combat)
+
+        # Produce worker if we have < 4 and economy is strong
+        n_workers = sum(1 for u in gs.units if u.player_id == pid and u.alive and u.unit_type == "worker")
+        if n_workers < 4 and econ.food >= 15 and n_total >= 3:
+            if econ.can_afford(UNIT_COST["worker"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "worker"})
+                return
+
+        # Cavalry if gold-rich and cavalry underrepresented
+        if econ.gold >= 10 and (n_cav < n_inf or n_total <= 5):
+            if econ.can_afford(UNIT_COST["cavalry"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+                return
+        # Archer if wood-rich and archer underrepresented
+        if econ.wood >= 8 and (n_arc < n_inf or n_total <= 5):
+            if econ.can_afford(UNIT_COST["archer"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
+                return
+        # Infantry as fallback
         if econ.can_afford(UNIT_COST["infantry"]):
             actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
 
     else:
-        # Balanced: same as v2 greedy
+        # v5 Balanced: occasional worker + diverse combat units
+        n_workers = sum(1 for u in gs.units if u.player_id == pid and u.alive and u.unit_type == "worker")
+        n_combat = sum(1 for u in gs.units if u.player_id == pid and u.alive and u.unit_type != "worker")
+        if n_workers < 4 and econ.food >= 15 and n_combat >= 3:
+            if econ.can_afford(UNIT_COST["worker"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "worker"})
+                return
         for ut in ["cavalry", "archer", "infantry"]:
             if econ.can_afford(UNIT_COST[ut]):
                 actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})

@@ -53,7 +53,13 @@ def _run_one_game(args):
             if f is not None:
                 facility_count[f.player_id] += 1
 
-    return {
+    # Per-unit-type alive counts
+    def _count_ut(units, pid, ut, alive_only=True):
+        if alive_only:
+            return sum(1 for u in units if u.player_id == pid and u.alive and u.unit_type == ut)
+        return sum(1 for u in units if u.player_id == pid and u.unit_type == ut)
+
+    result = {
         "seed": seed,
         "winner": gs.winner,
         "victory_type": gs.victory_type,
@@ -74,6 +80,13 @@ def _run_one_game(args):
         "_ai1": ai1_name,
         "_tag": tag,
     }
+    # Per-unit-type stats
+    for ut in ["infantry", "cavalry", "archer", "scout", "worker"]:
+        result[f"p0_{ut}_alive"] = _count_ut(gs.units, 0, ut, True)
+        result[f"p1_{ut}_alive"] = _count_ut(gs.units, 1, ut, True)
+        result[f"p0_{ut}_dead"] = _count_ut(gs.dead_units, 0, ut, False)
+        result[f"p1_{ut}_dead"] = _count_ut(gs.dead_units, 1, ut, False)
+    return result
 
 
 def run_paired_pair(ai_a, ai_b, n_seeds):

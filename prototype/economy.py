@@ -99,17 +99,26 @@ def produce_unit(grid, city, economy: Economy, unit_type: str,
     if not economy.can_afford(cost):
         return False
 
+    # 单位类别判定
+    def _is_civilian(utype): return utype == "worker"
+    cat_is_civilian = _is_civilian(unit_type)
+    max_per_tile = 1  # 每格最多1战斗+1平民
+
     H, W = len(grid), len(grid[0])
-    # 找四邻空地（没有被己方/敌方单位占据）
     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         nx, ny = (city.x + dx) % W, (city.y + dy) % H
-        # 检查地形可通行
         terrain = get_terrain(grid, nx, ny)
         if terrain == Terrain.WATER:
             continue
-        # 检查是否有单位
-        occupied = any(u.alive and u.x == nx and u.y == ny for u in all_units)
-        if occupied:
+        # 敌方单位占据→跳过
+        if any(u.alive and u.player_id != economy.pid and u.x == nx and u.y == ny for u in all_units):
+            continue
+        # 己方同类别单位已达上限→跳过
+        same_cat_count = sum(1 for u in all_units
+                            if u.alive and u.player_id == economy.pid
+                            and u.x == nx and u.y == ny
+                            and _is_civilian(u.unit_type) == cat_is_civilian)
+        if same_cat_count >= max_per_tile:
             continue
 
         economy.spend(cost)

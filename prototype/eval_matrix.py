@@ -156,10 +156,30 @@ def _apply_econ_only_patch():
     combat_mod.city_occupation_damage = _noop_occupy
 
 
+def _count_units_by_type(units, pid, unit_type, alive_only=True):
+    """统计指定类型单位数量。"""
+    if alive_only:
+        return sum(1 for u in units if u.player_id == pid and u.alive and u.unit_type == unit_type)
+    return sum(1 for u in units if u.player_id == pid and u.unit_type == unit_type)
+
+
+def _count_facilities(gs, pid):
+    """统计某方设施数。"""
+    from prototype.mapgen import get_facility
+    count = 0
+    for y in range(gs.size):
+        for x in range(gs.size):
+            f = get_facility(gs.grid, x, y)
+            if f is not None and f.player_id == pid:
+                count += 1
+    return count
+
+
 def _extract_result(gs, seed, ai0_name, ai1_name):
-    """Extract result dict from a finished game state."""
+    """Extract result dict from a finished game state (with per-unit-type stats)."""
     e0, e1 = gs.economies
-    return {
+    unit_types = ["infantry", "cavalry", "archer", "scout", "worker"]
+    result = {
         "seed": seed, "ai0": ai0_name, "ai1": ai1_name,
         "winner": gs.winner, "victory_type": gs.victory_type or "tiebreak",
         "turns": gs.turn,
@@ -177,10 +197,18 @@ def _extract_result(gs, seed, ai0_name, ai1_name):
         "p1_total_resources": e1.food + e1.wood + e1.gold,
         "p0_construction": gs.techs[0].construction_count(),
         "p1_construction": gs.techs[1].construction_count(),
-        # Composite: total units produced = alive + dead
         "p0_units_produced": sum(1 for u in gs.units if u.player_id == 0 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 0),
         "p1_units_produced": sum(1 for u in gs.units if u.player_id == 1 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 1),
+        "p0_facilities": _count_facilities(gs, 0),
+        "p1_facilities": _count_facilities(gs, 1),
     }
+    # Per-unit-type stats
+    for ut in unit_types:
+        result[f"p0_{ut}_alive"] = _count_units_by_type(gs.units, 0, ut, alive_only=True)
+        result[f"p1_{ut}_alive"] = _count_units_by_type(gs.units, 1, ut, alive_only=True)
+        result[f"p0_{ut}_dead"] = _count_units_by_type(gs.dead_units, 0, ut, alive_only=False)
+        result[f"p1_{ut}_dead"] = _count_units_by_type(gs.dead_units, 1, ut, alive_only=False)
+    return result
 
 
 def _run_one_paired(args):

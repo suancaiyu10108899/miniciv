@@ -124,6 +124,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
     <button id="speed-5x" class="speed-btn">5x</button>
     <button id="btn-file" title="加载回放文件">📂 加载回放</button>
     <button id="btn-sample" title="打开内置示例">📂 示例回放</button>
+    <span id="ai-names" style="font-weight:700;color:#e0e0e0;margin-right:16px"></span>
     <span id="turn-display">回合: --</span>
     <span id="winner-display"></span>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -5747,6 +5748,15 @@ function renderMap(turnIdx) {
     unitGrid[key].push(u);
   });
 
+  // Facility map (from turn.facilities if present)
+  const facilityMap = {};
+  if (turn.facilities && Array.isArray(turn.facilities)) {
+    turn.facilities.forEach(f => {
+      const key = f.y + ',' + f.x;
+      facilityMap[key] = f;
+    });
+  }
+
   // Render grid
   mapGrid.style.gridTemplateColumns = 'repeat(' + mapSize + ',32px)';
   mapGrid.innerHTML = '';
@@ -5807,6 +5817,20 @@ function renderMap(turnIdx) {
           badge.textContent = cellUnits.length;
           cell.appendChild(badge);
         }
+      }
+
+      // Facility symbol
+      const facKey = y + ',' + x;
+      const facility = facilityMap[facKey];
+      if (facility) {
+        const facEl = document.createElement('div');
+        facEl.className = 'facility-symbol';
+        // F=农场, L=伐木场, M=矿山
+        const facLabels = {farm: 'F', lumbermill: 'L', mine: 'M'};
+        facEl.textContent = facLabels[facility.type] || '?';
+        facEl.style.cssText = 'position:absolute;bottom:1px;right:2px;font-size:10px;font-weight:bold;' +
+          'color:' + (facility.pid === 0 ? '#1565c0' : '#c62828') + ';pointer-events:none;z-index:3';
+        cell.appendChild(facEl);
       }
 
       // Store terrain/coord data for tooltip
@@ -5923,6 +5947,14 @@ function render(turnIdx) {
   const turn = replayData.turns[turnIdx];
   const total = replayData.turns.length;
   const maxTurns = replayData.config ? replayData.config.max_turns : total;
+
+  // AI names (set once from config)
+  const aiNames = document.getElementById('ai-names');
+  if (aiNames && replayData.config) {
+    const a = replayData.config.ai_a || 'P0';
+    const b = replayData.config.ai_b || 'P1';
+    aiNames.textContent = a + ' (蓝方) vs ' + b + ' (红方)';
+  }
 
   turnDisplay.textContent = '回合: ' + turn.turn + ' / ' + maxTurns;
 

@@ -172,14 +172,20 @@ def snapshot_turn(gs) -> dict:
             "research_ticks": t.research_ticks,
         })
 
-    # Facilities count per player
+    # Facilities count + positions
     from prototype.mapgen import get_facility
     facility_count = {0: 0, 1: 0}
+    facilities = []  # list of {pid, type, x, y}
     for y in range(gs.size):
         for x in range(gs.size):
             f = get_facility(gs.grid, x, y)
             if f is not None:
                 facility_count[f.player_id] += 1
+                facilities.append({
+                    "pid": f.player_id,
+                    "type": f.facility_type,
+                    "x": x, "y": y
+                })
 
     # Events from action_log (last entry = this turn)
     events = []
@@ -229,6 +235,7 @@ def snapshot_turn(gs) -> dict:
         "economies": economies,
         "techs": techs,
         "facility_count": facility_count,
+        "facilities": facilities,
         "events": events,
     }
 
@@ -243,11 +250,9 @@ def _find_unit_in_snapshot(units: list, pid: int, act: dict) -> dict | None:
     return None
 
 
-def create_replay(gs, seed: int = 0) -> dict:
+def create_replay(gs, seed: int = 0, ai_a: str = "P0", ai_b: str = "P1") -> dict:
     """从已完成的 GameState 创建 GameReplay JSON。
-    注意：当前 snapshot.py 只支持"终局快照"模式。
-    要支持逐回合回放，需要在 game.py step_game() 中每回合调用 snapshot_turn()。
-    此函数处理"已收集每回合快照"的情况。
+    ai_a/ai_b: AI 名称（用于回放显示）。
     """
     turns = getattr(gs, "turn_snapshots", [])
 
@@ -271,6 +276,8 @@ def create_replay(gs, seed: int = 0) -> dict:
             "max_turns": 100,
             "seed": seed,
             "terrain_grid": terrain_grid,
+            "ai_a": ai_a,
+            "ai_b": ai_b,
         },
         "turns": turns,
         "result": {

@@ -118,6 +118,10 @@ def run_and_save_replay(ai_a, ai_b, seed, output_dir, size=15, gen="balanced", m
         step_game(gs, ai0_fn(gs, 0, rng0), ai1_fn(gs, 1, rng1))
 
     replay = export_replay(gs, seed=seed)
+    # Inject AI names for display
+    if "config" in replay:
+        replay["config"]["ai_a"] = ai_a
+        replay["config"]["ai_b"] = ai_b
 
     # Filename with metadata
     winner_str = f"P{gs.winner}" if gs.winner is not None else "draw"

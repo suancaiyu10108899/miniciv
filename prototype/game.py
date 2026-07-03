@@ -201,8 +201,34 @@ def step_game(gs: GameState, actions_p0: list[dict],
     return {"turn": gs.turn, "winner": gs.winner, "victory_type": gs.victory_type}
 
 
+def _unit_category(unit_type: str) -> str:
+    """返回单位类别: 'combat' 或 'civilian'"""
+    if unit_type == "worker":
+        return "civilian"
+    return "combat"  # infantry, cavalry, archer, scout + future combat types
+
+
+def _count_friendly_at(gs: GameState, pid: int, x: int, y: int,
+                       category: str | None = None) -> int:
+    """统计目标格上己方存活单位数。category=None 统计全部。"""
+    count = 0
+    for u in gs.units:
+        if u.alive and u.player_id == pid and u.x == x and u.y == y:
+            if category is None or _unit_category(u.unit_type) == category:
+                count += 1
+    return count
+
+
+# 最大堆叠限制: 每个格子最多 1 战斗 + 1 平民
+MAX_COMBAT_PER_TILE = 1
+MAX_CIVILIAN_PER_TILE = 1
+
+
 def _do_move(unit: Unit, gs: GameState, dx: int, dy: int):
-    """执行单位移动+可能的战斗"""
+    """执行单位移动+可能的战斗。
+    堆叠限制: 己方每格最多1战斗单位+1平民单位。
+    敌方单位占据的格子需要通过战斗进入。
+    """
     if not unit.alive:
         return
     # 骑兵遇林检查
@@ -210,6 +236,13 @@ def _do_move(unit: Unit, gs: GameState, dx: int, dy: int):
 
     target_x = (unit.x + dx) % gs.size
     target_y = (unit.y + dy) % gs.size
+
+    # 堆叠检查: 目标格是否有己方同类别单位已达上限？
+    cat = _unit_category(unit.unit_type)
+    max_allowed = MAX_COMBAT_PER_TILE if cat == "combat" else MAX_CIVILIAN_PER_TILE
+    friendly_count = _count_friendly_at(gs, unit.player_id, target_x, target_y, cat)
+    if friendly_count >= max_allowed:
+        return  # 无法移入——该格己方同类别单位已满
 
     # 目标格有敌方单位？
     blocker = next((u for u in gs.units

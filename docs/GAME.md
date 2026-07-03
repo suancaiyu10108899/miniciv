@@ -2,8 +2,8 @@
 
 > **唯一真相源。** 与 `prototype/constants.py` 手工同步。参数变动时同步更新两个文件。
 
-*最后同步: 2026-07-03 | constants.py git: 73f0e32*
-*⚠️ 建设胜利规则已更新（需8设施），验证数据待跑，见 `docs/planning/2026-07-03-wrapup.md`*
+*最后同步: 2026-07-04 | constants.py git: 48a9d83*
+*v0.6.0-dev: facility门槛 8→5, Greedy v5已修复建设意图+兵种多样性, 堆叠限制已实装*
 
 ---
 

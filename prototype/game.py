@@ -153,10 +153,13 @@ def step_game(gs: GameState, actions_p0: list[dict],
     # 科技研究推进（双方同时，消除P0研究先手优势）
     for pid in (0, 1):
         completed = gs.techs[pid].tick_research()
-        if completed == "C5":
-            # Construction victory: must have built enough facilities first
-            from prototype.constants import CONSTRUCTION_VICTORY_REQUIRE_FACILITIES
-            from prototype.mapgen import get_facility
+
+    # 建设胜利检查（每回合，不只是C5完成的那一回合）
+    # 如果玩家已完成C5但在完成当时设施不够，后续建够设施后仍可获胜
+    from prototype.constants import CONSTRUCTION_VICTORY_REQUIRE_FACILITIES
+    from prototype.mapgen import get_facility
+    for pid in (0, 1):
+        if "C5" in gs.techs[pid].completed and gs.winner is None:
             facility_count = 0
             for y in range(gs.size):
                 for x in range(gs.size):
@@ -166,7 +169,6 @@ def step_game(gs: GameState, actions_p0: list[dict],
             if facility_count >= CONSTRUCTION_VICTORY_REQUIRE_FACILITIES:
                 gs.winner = pid
                 gs.victory_type = "construction"
-            # else: C5 researched but not enough facilities — no victory yet
 
     # 城市防守：每回合对占领者造成伤害
     for pid in (0, 1):

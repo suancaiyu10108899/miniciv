@@ -5802,20 +5802,37 @@ function renderMap(turnIdx) {
           box.dataset.type = u.type;
           cell.appendChild(box);
         } else {
-          // Stack: show first unit + count badge
-          const u = cellUnits[0];
-          const meta = UNIT_META[u.type] || {abbrev: '?'};
-          const box = document.createElement('div');
-          box.className = 'unit-box ' + (u.pid === 0 ? 'p0' : 'p1');
-          box.textContent = meta.abbrev;
-          box.dataset.uidx = currentUnits.indexOf(u);
-          box.dataset.pid = u.pid;
-          box.dataset.type = u.type;
-          cell.appendChild(box);
-          const badge = document.createElement('div');
-          badge.className = 'unit-stack-badge';
-          badge.textContent = cellUnits.length;
-          cell.appendChild(badge);
+          // Stack (max 2 under new rules: 1 combat + 1 civilian)
+          // Show both abbreviations — combat unit large, worker small
+          const combatU = cellUnits.find(u => u.type !== 'worker') || cellUnits[0];
+          const workerU = cellUnits.find(u => u.type === 'worker');
+
+          const cBox = document.createElement('div');
+          const cMeta = UNIT_META[combatU.type] || {abbrev: '?'};
+          cBox.className = 'unit-box ' + (combatU.pid === 0 ? 'p0' : 'p1');
+          cBox.textContent = cMeta.abbrev;
+          cBox.style.cssText += 'font-size:13px;line-height:14px;';
+          cBox.dataset.uidx = currentUnits.indexOf(combatU);
+          cBox.dataset.pid = combatU.pid;
+          cBox.dataset.type = combatU.type;
+          cell.appendChild(cBox);
+
+          if (workerU) {
+            const wBox = document.createElement('div');
+            wBox.className = 'unit-box ' + (workerU.pid === 0 ? 'p0' : 'p1');
+            wBox.textContent = 'W';
+            wBox.style.cssText += 'font-size:9px;line-height:10px;position:absolute;bottom:0;right:0;width:14px;height:14px;border-width:1px;';
+            wBox.dataset.uidx = currentUnits.indexOf(workerU);
+            wBox.dataset.pid = workerU.pid;
+            wBox.dataset.type = 'worker';
+            cell.appendChild(wBox);
+          } else if (cellUnits.length > 2) {
+            // Shouldn't happen under new rules, but fallback for old replays
+            const badge = document.createElement('div');
+            badge.className = 'unit-stack-badge';
+            badge.textContent = '+' + (cellUnits.length - 1);
+            cell.appendChild(badge);
+          }
         }
       }
 

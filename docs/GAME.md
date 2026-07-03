@@ -2,7 +2,8 @@
 
 > **唯一真相源。** 与 `prototype/constants.py` 手工同步。参数变动时同步更新两个文件。
 
-*最后同步: 2026-07-02 | constants.py git: e4bc103*
+*最后同步: 2026-07-03 | constants.py git: 73f0e32*
+*⚠️ 建设胜利规则已更新（需8设施），验证数据待跑，见 `docs/planning/2026-07-03-wrapup.md`*
 
 ---
 
@@ -86,7 +87,7 @@
 ## 胜利条件
 
 1. **征服**: 敌方城市 HP ≤ 0
-2. **建设**: 完成 C5 科技
+2. **建设**: 完成 C5 科技 **且** 已建造 ≥ `CONSTRUCTION_VICTORY_REQUIRE_FACILITIES`（当前=8）个设施
 3. **阶梯判定**（100回合）: construction_count → city_hp → **随机**判定
 
 ## 交替先手

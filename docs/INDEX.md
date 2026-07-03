@@ -5,6 +5,7 @@
 | 文档 | 内容 | 何时读 |
 |------|------|--------|
 | [../CLAUDE.md](../CLAUDE.md) | 当前阶段 + 当前任务 | **每个 session 开始** |
+| [VISION.md](VISION.md) | 长远愿景（项目"宪法"） | 做设计决策时、需要回顾"为什么做这个项目"时 |
 | [GAME.md](GAME.md) | 当前游戏参数（唯一真相源） | 参数相关操作时 |
 | [DECISIONS.md](DECISIONS.md) | 设计决策日志 | 需要知道"为什么"时 |
 | [WORKFLOW.md](WORKFLOW.md) | 开发纪律 + Agent 规范 | 写代码/跑实验/用 Agent 前 |
@@ -38,6 +39,7 @@
 
 | 文档 | 内容 |
 |------|------|
+| [planning/2026-07-03-wrapup.md](planning/2026-07-03-wrapup.md) | **原型收尾评估** — 已验证/未验证审计 + 收尾执行计划 |
 | [planning/2026-07-03.md](planning/2026-07-03.md) | 建设胜利平衡 + Rust 前最后一轮规划 |
 
 ## 实验数据

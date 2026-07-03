@@ -3,7 +3,7 @@
 
 # ─── 棋盘 ──────────────────────────────────────────
 MAP_SIZES = [15, 30, 50]
-DEFAULT_SIZE = 30
+DEFAULT_SIZE = 15  # 30/50 also supported; 15 is the balanced sweet spot per map-size comparison experiments
 MAX_TURNS = 100
 
 # ─── 地形比例（6种生成器）────────────────────────

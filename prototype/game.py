@@ -153,8 +153,19 @@ def step_game(gs: GameState, actions_p0: list[dict],
     for pid in (0, 1):
         completed = gs.techs[pid].tick_research()
         if completed == "C5":
-            gs.winner = pid
-            gs.victory_type = "construction"
+            # Construction victory: must have built enough facilities first
+            from prototype.constants import CONSTRUCTION_VICTORY_REQUIRE_FACILITIES
+            from prototype.mapgen import get_facility
+            facility_count = 0
+            for y in range(gs.size):
+                for x in range(gs.size):
+                    f = get_facility(gs.grid, x, y)
+                    if f is not None and f.player_id == pid:
+                        facility_count += 1
+            if facility_count >= CONSTRUCTION_VICTORY_REQUIRE_FACILITIES:
+                gs.winner = pid
+                gs.victory_type = "construction"
+            # else: C5 researched but not enough facilities — no victory yet
 
     # 城市防守：每回合对占领者造成伤害
     for pid in (0, 1):

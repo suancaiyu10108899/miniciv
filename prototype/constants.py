@@ -84,6 +84,7 @@ TECH_TREE = {
     "C4":  {"cost": (6, 3, 3),   "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
     "C5":  {"cost": (3, 3, 3),   "turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
 }
+CONSTRUCTION_VICTORY_REQUIRE_FACILITIES = 8  # must build this many facilities before C5 can win
 
 # ─── 迷雾 ──────────────────────────────────────────
 VISION_RANGE = {"infantry": 2, "cavalry": 2, "archer": 2, "scout": 3, "worker": 2}

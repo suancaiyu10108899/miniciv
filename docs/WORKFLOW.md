@@ -80,6 +80,9 @@ Bug调查 → Session日志（调查过程）→ git commit（修复）
 
 12. 如果新增/移动了文件 → 更新 `docs/INDEX.md`
 
+13. 清理残留进程 → `powershell -Command "Get-Process python* -ErrorAction SilentlyContinue | Stop-Process -Force"`
+    （实验脚本常留下孤儿进程，占用 CPU 影响后续实验）
+
 ---
 
 ## 三、实验规范

@@ -1,0 +1,6229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>miniciv Replay Viewer</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden;user-select:none}
+
+/* ===== Layout ===== */
+#app{display:flex;flex-direction:column;height:100vh;max-width:1200px;margin:0 auto}
+
+/* ===== Control Bar ===== */
+#control-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#16213e;border-bottom:1px solid #0f3460;flex-wrap:wrap}
+#control-bar button{padding:6px 14px;border:1px solid #0f3460;border-radius:4px;background:#1a3a5c;color:#e0e0e0;cursor:pointer;font-size:13px;transition:background .15s}
+#control-bar button:hover{background:#0f3460}
+#control-bar button.active{background:#e94560;border-color:#e94560;color:#fff}
+#turn-display{margin-left:auto;font-size:14px;color:#a0a0cb;white-space:nowrap}
+#winner-display{margin-left:12px;font-size:14px;font-weight:700;color:#ffd700;white-space:nowrap}
+
+/* ===== Main Content ===== */
+#main-content{display:flex;flex:1;overflow:hidden}
+#map-container{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow:auto;position:relative}
+
+/* ===== Map Grid ===== */
+#map-grid{display:grid;gap:0;border:2px solid #0f3460;background:#16213e;position:relative}
+.map-cell{width:32px;height:32px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:filter .15s}
+.map-cell:hover{filter:brightness(1.15);z-index:1}
+.map-cell.event-highlight{animation:eventPulse .6s ease-out}
+@keyframes eventPulse{0%{box-shadow:inset 0 0 0 3px #ffeb3b}100%{box-shadow:inset 0 0 0 0 transparent}}
+.map-cell .city-overlay{position:absolute;bottom:1px;right:1px;font-size:7px;line-height:1;padding:0 2px;border-radius:2px;background:rgba(0,0,0,.5);color:#fff}
+.map-cell .city-owner{position:absolute;top:1px;left:1px;width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,.5)}
+
+/* ===== Units ===== */
+.unit-box{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:14px;font-weight:700;border:2px solid;position:relative;z-index:2;transition:transform .1s}
+.unit-box:hover{transform:scale(1.1);z-index:5}
+.unit-box.p0{background:rgba(21,101,192,.2);border-color:#1565c0;color:#1565c0}
+.unit-box.p1{background:rgba(198,40,40,.2);border-color:#c62828;color:#c62828}
+.unit-stack-badge{position:absolute;top:-4px;right:-4px;background:#e94560;color:#fff;border-radius:50%;font-size:8px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:6}
+
+/* ===== Side Panel ===== */
+#side-panel{width:260px;min-width:260px;padding:10px 12px;background:#16213e;border-left:1px solid #0f3460;overflow-y:auto;font-size:13px;line-height:1.6}
+#side-panel h3{font-size:14px;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #0f3460}
+#side-panel .p0-title{color:#42a5f5}
+#side-panel .p1-title{color:#ef5350}
+#side-panel hr{border:none;border-top:1px solid #0f3460;margin:8px 0}
+.side-label{color:#a0a0cb}
+.side-annotation{color:#888;font-size:11px}
+.side-resources{display:flex;gap:8px;flex-wrap:wrap}
+.side-res-item{background:#0d1b2a;padding:2px 8px;border-radius:3px;font-size:12px}
+
+/* ===== Events Panel ===== */
+#events-panel{margin-top:8px;border-top:1px solid #0f3460;padding-top:6px}
+#events-panel h4{font-size:13px;color:#a0a0cb;margin-bottom:4px}
+.event-item{font-size:11px;padding:2px 4px;border-radius:2px;margin-bottom:2px;background:#0d1b2a;color:#b0b0b0}
+.event-item .ev-p0{color:#42a5f5}
+.event-item .ev-p1{color:#ef5350}
+
+/* ===== Bottom Reference Bar ===== */
+#bottom-bar{display:flex;border-top:1px solid #0f3460;background:#16213e;min-height:80px;font-size:10px;line-height:1.4;overflow-x:auto}
+.ref-section{padding:6px 10px;flex:1;min-width:200px;border-right:1px solid #0f3460}
+.ref-section:last-child{border-right:none}
+.ref-section h5{font-size:11px;color:#a0a0cb;margin-bottom:3px}
+.ref-table{width:100%;border-collapse:collapse}
+.ref-table td{padding:1px 4px;vertical-align:top;white-space:nowrap}
+.ref-table .td-abbrev{font-weight:700;width:16px;text-align:center}
+.ref-table .td-desc{color:#b0b0b0}
+.ref-table .p0-text{color:#42a5f5;font-weight:600}
+.ref-table .p1-text{color:#ef5350;font-weight:600}
+.tech-tree{font-size:9px;color:#b0b0b0;line-height:1.5}
+.tech-tree .tt-m{color:#ce93d8}
+.tech-tree .tt-e{color:#81c784}
+.tech-tree .tt-c{color:#ffb74d}
+.tech-tree .tt-done{color:#4caf50}
+.tech-tree .tt-name{color:#e0e0e0}
+
+/* ===== Tooltip ===== */
+#tooltip{position:fixed;padding:8px 10px;background:rgba(13,27,42,.95);border:1px solid #0f3460;border-radius:4px;font-size:12px;line-height:1.5;color:#e0e0e0;pointer-events:none;z-index:1000;max-width:280px;display:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#tooltip .tt-title{font-weight:700;margin-bottom:2px}
+#tooltip .tt-p0{color:#42a5f5}
+#tooltip .tt-p1{color:#ef5350}
+
+/* ===== Detail Card ===== */
+#detail-card{position:fixed;width:220px;background:rgba(13,27,42,.96);border:1px solid #e94560;border-radius:6px;padding:12px;font-size:12px;line-height:1.6;z-index:999;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+#detail-card .dc-close{float:right;cursor:pointer;color:#e94560;font-size:16px;line-height:1;padding:0 4px}
+#detail-card .dc-close:hover{color:#ff6b6b}
+#detail-card h4{font-size:14px;margin-bottom:6px;color:#e0e0e0}
+#detail-card .dc-row{display:flex;justify-content:space-between;padding:1px 0}
+#detail-card .dc-label{color:#a0a0cb}
+#detail-card .dc-value{color:#e0e0e0;font-weight:600}
+#detail-card .dc-tech-bonus{color:#81c784;font-size:11px}
+#detail-card .dc-section-title{font-size:11px;color:#a0a0cb;margin-top:6px;margin-bottom:2px;border-bottom:1px solid #0f3460;padding-bottom:1px}
+#detail-card .dc-special{color:#ffb74d;font-size:11px}
+#detail-card .dc-cost{color:#b0b0b0;font-size:11px}
+
+/* ===== Error ===== */
+#error-display{display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;padding:40px;color:#e94560;font-size:18px;text-align:center}
+#error-display .err-detail{font-size:14px;color:#a0a0cb}
+
+/* ===== Empty / No data ===== */
+.no-data-notice{color:#a0a0cb;font-size:13px;text-align:center;padding:24px}
+
+/* ===== Responsive ===== */
+@media(max-width:800px){
+  #main-content{flex-direction:column}
+  #side-panel{width:100%;min-width:auto;border-left:none;border-top:1px solid #0f3460;max-height:300px}
+  .map-cell{width:28px;height:28px}
+  .unit-box{width:24px;height:24px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Control Bar -->
+  <div id="control-bar">
+    <button id="btn-prev" title="上一回合 (←)">← Prev</button>
+    <button id="btn-next" title="下一回合 (→)">Next →</button>
+    <button id="btn-auto" title="自动播放 (Space)">Auto</button>
+    <button id="speed-1x" class="speed-btn active">1x</button>
+    <button id="speed-2x" class="speed-btn">2x</button>
+    <button id="speed-5x" class="speed-btn">5x</button>
+    <span id="turn-display">Turn: --</span>
+    <span id="winner-display"></span>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content">
+    <div id="map-container">
+      <div id="map-grid"></div>
+    </div>
+    <div id="side-panel"></div>
+  </div>
+
+  <!-- Bottom Reference Bar -->
+  <div id="bottom-bar"></div>
+</div>
+
+<!-- Tooltip & Detail Card -->
+<div id="tooltip"></div>
+<div id="detail-card"></div>
+
+<!-- ===== EMBEDDED REPLAY DATA ===== -->
+<script id="replay-data" type="application/json">
+{
+  "format_version": "1.0",
+  "config": {
+    "size": 15,
+    "gen": "balanced",
+    "max_turns": 100,
+    "seed": 42,
+    "terrain_grid": [
+      [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        2,
+        1,
+        0,
+        2,
+        3,
+        3,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        2,
+        0,
+        4,
+        0,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        0,
+        2,
+        2,
+        2,
+        2,
+        1,
+        0,
+        2,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        2,
+        2
+      ],
+      [
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        0,
+        0,
+        0,
+        2,
+        0,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        1,
+        0,
+        2,
+        2,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        3,
+        0,
+        2,
+        2
+      ],
+      [
+        3,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        3,
+        3,
+        3,
+        0,
+        2
+      ],
+      [
+        3,
+        3,
+        1,
+        0,
+        2,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        3,
+        1,
+        0,
+        3
+      ],
+      [
+        3,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        1,
+        1
+      ]
+    ]
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 16,
+          "wood": 20,
+          "gold": 19
+        },
+        {
+          "pid": 1,
+          "food": 16,
+          "wood": 20,
+          "gold": 19
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "build",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "built facility"
+        },
+        {
+          "type": "build",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "detail": "built facility"
+        },
+        {
+          "type": "build",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "built facility"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started C1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced cavalry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "build",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "detail": "built facility"
+        },
+        {
+          "type": "build",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "built facility"
+        },
+        {
+          "type": "build",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "detail": "built facility"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started C1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced cavalry"
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 19,
+          "wood": 15,
+          "gold": 11
+        },
+        {
+          "pid": 1,
+          "food": 24,
+          "wood": 15,
+          "gold": 14
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1"
+          ],
+          "researching": "C3",
+          "research_ticks": 1
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1"
+          ],
+          "researching": "C3",
+          "research_ticks": 1
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started C3"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced cavalry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started C3"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 3,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 27,
+          "wood": 15,
+          "gold": 11
+        },
+        {
+          "pid": 1,
+          "food": 37,
+          "wood": 15,
+          "gold": 14
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 4,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 29,
+          "wood": 12,
+          "gold": 8
+        },
+        {
+          "pid": 1,
+          "food": 39,
+          "wood": 12,
+          "gold": 11
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started C4"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started C4"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 31,
+          "wood": 9,
+          "gold": 8
+        },
+        {
+          "pid": 1,
+          "food": 41,
+          "wood": 9,
+          "gold": 11
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "M1"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "M1"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started M1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started M1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 6,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 33,
+          "wood": 1,
+          "gold": 5
+        },
+        {
+          "pid": 1,
+          "food": 48,
+          "wood": 1,
+          "gold": 8
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started M3"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started M3"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 7,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 40,
+          "wood": 1,
+          "gold": 5
+        },
+        {
+          "pid": 1,
+          "food": 53,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started E1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started M2"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 8,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 48,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 60,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "detail": "moved to (13,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "research",
+          "pid": 0,
+          "detail": "started E3"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "research",
+          "pid": 1,
+          "detail": "started E1"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 61,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 78,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "detail": "moved to (14,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "detail": "moved to (13,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 10,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 74,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 91,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "detail": "moved to (14,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "detail": "moved to (14,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "detail": "moved to (13,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 11,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 87,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 109,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 3,
+          "detail": "moved to (0,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "detail": "moved to (14,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "detail": "moved to (14,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "detail": "moved to (13,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 12,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 4,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 4,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 100,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 122,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 4,
+          "detail": "moved to (0,4)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 4,
+          "detail": "moved to (14,4)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 2,
+          "detail": "moved to (0,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "detail": "moved to (14,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 13,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 113,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 140,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 5,
+          "detail": "moved to (0,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "detail": "moved to (14,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 3,
+          "detail": "moved to (0,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 3,
+          "detail": "moved to (14,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "detail": "moved to (1,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 14,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 1,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 6,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 4,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 4,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 126,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 153,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 1,
+          "y": 5,
+          "detail": "moved to (1,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 6,
+          "detail": "moved to (14,6)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 4,
+          "detail": "moved to (0,4)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 4,
+          "detail": "moved to (14,4)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 13,
+          "y": 2,
+          "detail": "moved to (13,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 3,
+          "detail": "moved to (11,3)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    },
+    {
+      "turn": 15,
+      "units": [
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 10,
+          "y": 0,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 9,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "worker",
+          "pid": 1,
+          "x": 3,
+          "y": 8,
+          "hp": 10,
+          "atk": 0,
+          "def": 0
+        },
+        {
+          "type": "scout",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 40,
+          "atk": 15,
+          "def": 5
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "cavalry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 80,
+          "atk": 60,
+          "def": 15
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 2,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 0,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 0,
+          "x": 9,
+          "y": 1,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        },
+        {
+          "type": "infantry",
+          "pid": 1,
+          "x": 1,
+          "y": 8,
+          "hp": 100,
+          "atk": 45,
+          "def": 30
+        }
+      ],
+      "cities": [
+        {
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "hp": 100
+        },
+        {
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "hp": 100
+        }
+      ],
+      "economies": [
+        {
+          "pid": 0,
+          "food": 139,
+          "wood": 1,
+          "gold": 2
+        },
+        {
+          "pid": 1,
+          "food": 166,
+          "wood": 1,
+          "gold": 0
+        }
+      ],
+      "techs": [
+        {
+          "pid": 0,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "E3",
+            "M1",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        },
+        {
+          "pid": 1,
+          "completed": [
+            "C1",
+            "C3",
+            "C4",
+            "E1",
+            "M1",
+            "M2",
+            "M3"
+          ],
+          "researching": null,
+          "research_ticks": 0
+        }
+      ],
+      "facility_count": {
+        "0": 3,
+        "1": 3
+      },
+      "events": [
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 2,
+          "detail": "moved to (10,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 2,
+          "y": 5,
+          "detail": "moved to (2,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "detail": "moved to (14,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 0,
+          "y": 5,
+          "detail": "moved to (0,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 5,
+          "detail": "moved to (14,5)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 14,
+          "y": 2,
+          "detail": "moved to (14,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 12,
+          "y": 2,
+          "detail": "moved to (12,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 2,
+          "detail": "moved to (11,2)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 11,
+          "y": 1,
+          "detail": "moved to (11,1)"
+        },
+        {
+          "type": "move",
+          "pid": 0,
+          "x": 10,
+          "y": 1,
+          "detail": "moved to (10,1)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 0,
+          "detail": "produced infantry"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 7,
+          "detail": "moved to (2,7)"
+        },
+        {
+          "type": "move",
+          "pid": 1,
+          "x": 2,
+          "y": 8,
+          "detail": "moved to (2,8)"
+        },
+        {
+          "type": "produce_unit",
+          "pid": 1,
+          "detail": "produced infantry"
+        }
+      ]
+    }
+  ],
+  "result": {
+    "winner": 0,
+    "victory_type": "tiebreak_random",
+    "final_turn": 100
+  }
+}
+</script>
+
+<script>
+(function(){
+'use strict';
+
+// ===== CONSTANTS =====
+const TERRAIN = {
+  0: { name: '平原', color: '#c8e6c9', def: 0, build: '可建农场', pass: '全员通行', ballistic: '-' },
+  1: { name: '森林', color: '#388e3c', def: 10, build: '可建伐木场', pass: '骑兵遇林停', ballistic: '阻断弹道' },
+  2: { name: '山地', color: '#9e9e9e', def: 15, build: '可建矿山', pass: '骑兵禁入', ballistic: '阻断弹道' },
+  3: { name: '水域', color: '#64b5f6', def: 0, build: '不可建', pass: '全员禁行', ballistic: '穿透弹道' },
+  4: { name: '城市', color: '#8d6e63', def: 25, build: '不可建', pass: '己=通行 敌=攻击', ballistic: '-' }
+};
+
+const UNIT_META = {
+  infantry: { name: '步兵', abbrev: 'I', hp: 100, atk: 45, def: 30, move: 1, vision: 2, range: 1 },
+  cavalry:  { name: '骑兵', abbrev: 'C', hp: 80, atk: 60, def: 15, move: 2, vision: 2, range: 1 },
+  archer:   { name: '弓手', abbrev: 'A', hp: 60, atk: 50, def: 10, move: 1, vision: 2, range: 2 },
+  scout:    { name: '侦察兵', abbrev: 'S', hp: 40, atk: 15, def: 5, move: 2, vision: 3, range: 1 },
+  worker:   { name: '工人', abbrev: 'W', hp: 10, atk: 0, def: 0, move: 1, vision: 2, range: 1 }
+};
+
+const UNIT_COST = {
+  infantry: '5粮',
+  cavalry:  '5粮+3金',
+  archer:   '3粮+3木',
+  scout:    '3粮',
+  worker:   '3粮'
+};
+
+const UNIT_SPECIAL = {
+  infantry: ['可上山'],
+  cavalry:  ['禁山', '遇林停', '冲锋+10'],
+  archer:   ['射程2', '不还手', '不能占城'],
+  scout:    ['可上山', '无视地形'],
+  worker:   ['建+采+产']
+};
+
+const TECH_INFO = {
+  'M1': { name: '锻造', line: 'M', bonus: '步弓ATK+5', full: '步弓攻击力+5' },
+  'M2': { name: '骑兵', line: 'M', bonus: '冲锋+5', full: '冲锋伤害+5' },
+  'M3': { name: '筑垒', line: 'M', bonus: '林山DEF+10', full: '森林山地防御+10' },
+  'M4': { name: '精兵', line: 'M', bonus: '全军HP+10', full: '全体单位HP+10' },
+  'E1': { name: '耕作', line: 'E', bonus: '农场+1', full: '农场食物产出+1' },
+  'E2': { name: '伐木', line: 'E', bonus: '伐木场+1', full: '伐木场木材+1' },
+  'E3': { name: '采矿', line: 'E', bonus: '矿山+1', full: '矿山金币+1' },
+  'E4': { name: '物流', line: 'E', bonus: '移速+1', full: '工人移动速度+1' },
+  'C1': { name: '奠基', line: 'C', bonus: '开启建设', full: '开启建设系统' },
+  'C2': { name: '城墙', line: 'C', bonus: '城市+30HP', full: '城市生命值+30' },
+  'C3': { name: '学院', line: 'C', bonus: '研究/2', full: '研究时间减半' },
+  'C4': { name: '粮仓', line: 'C', bonus: '城市+2粮', full: '城市食物产出+2' },
+  'C5': { name: '纪念碑', line: 'C', bonus: '建设胜利', full: '建设胜利(需8设施)' }
+};
+
+const TECH_LINE_ORDER = ['M1','M2','M3','M4','E1','E2','E3','E4','C1','C2','C3','C4','C5'];
+
+// ===== STATE =====
+let replayData = null;
+let terrainGrid = null;
+let currentTurnIdx = 0;
+let autoPlaying = false;
+let autoSpeed = 500;
+let autoTimer = null;
+let mapSize = 15;
+let currentUnits = [];
+let currentCities = [];
+let currentEconomies = {0:null,1:null};
+let currentTechs = {0:null,1:null};
+let currentFacilityCount = {0:0,1:0};
+let currentEvents = [];
+
+// DOM refs
+const $ = id => document.getElementById(id);
+const mapGrid = $('map-grid');
+const sidePanel = $('side-panel');
+const bottomBar = $('bottom-bar');
+const tooltip = $('tooltip');
+const detailCard = $('detail-card');
+const turnDisplay = $('turn-display');
+const winnerDisplay = $('winner-display');
+const btnPrev = $('btn-prev');
+const btnNext = $('btn-next');
+const btnAuto = $('btn-auto');
+const speedBtns = [$('speed-1x'), $('speed-2x'), $('speed-5x')];
+const SPEED_MAP = {'speed-1x':500,'speed-2x':250,'speed-5x':100};
+
+// ===== DATA LOADING =====
+function loadReplayData() {
+  // Try replay-data script tag first
+  const dataScript = document.getElementById('replay-data');
+  if (dataScript) {
+    try {
+      replayData = JSON.parse(dataScript.textContent);
+    } catch(e) {
+      showError('Error: invalid replay data', e.message);
+      return false;
+    }
+  }
+  if (!replayData) {
+    showError('Error: no replay data found');
+    return false;
+  }
+  if (!replayData.turns || replayData.turns.length === 0) {
+    showError('Error: no turns in replay');
+    return false;
+  }
+  // Get terrain: from config.terrain_grid or terrain-data script tag
+  if (replayData.config && replayData.config.terrain_grid) {
+    terrainGrid = replayData.config.terrain_grid;
+    mapSize = replayData.config.size || 15;
+  } else {
+    const terrainScript = document.getElementById('terrain-data');
+    if (terrainScript) {
+      try { terrainGrid = JSON.parse(terrainScript.textContent); } catch(e) {}
+    }
+  }
+  if (!terrainGrid) {
+    // fallback: generate flat plain grid
+    terrainGrid = Array.from({length: mapSize}, () => Array(mapSize).fill(0));
+  }
+  return true;
+}
+
+// ===== ERROR DISPLAY =====
+function showError(title, detail) {
+  const mc = document.getElementById('map-container');
+  mc.innerHTML = '<div id="error-display"><div>' + escapeHtml(title) + '</div>' +
+    (detail ? '<div class="err-detail">' + escapeHtml(detail) + '</div>' : '') + '</div>';
+}
+
+function escapeHtml(s) {
+  if (typeof s !== 'string') s = String(s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== RENDER: BOTTOM BAR =====
+function renderBottomBar() {
+  bottomBar.innerHTML = `
+    <div class="ref-section">
+      <h5>兵种速查</h5>
+      <table class="ref-table">
+        <tr><td class="td-abbrev p0-text">I</td><td>步兵</td><td class="td-desc">HP100 ATK45 DEF30 移1 视2 5粮,可上山</td></tr>
+        <tr><td class="td-abbrev p1-text">C</td><td>骑兵</td><td class="td-desc">HP80 ATK60 DEF15 移2 视2 5粮+3金,禁山,遇林停,冲锋+10</td></tr>
+        <tr><td class="td-abbrev p0-text">A</td><td>弓手</td><td class="td-desc">HP60 ATK50 DEF10 移1 视2 3粮+3木,射程2,不还手</td></tr>
+        <tr><td class="td-abbrev p1-text">S</td><td>侦察兵</td><td class="td-desc">HP40 ATK15 DEF5 移2 视3 3粮,可上山,无视地形</td></tr>
+        <tr><td class="td-abbrev p0-text">W</td><td>工人</td><td class="td-desc">HP10 ATK0 DEF0 移1 视2 3粮,建+采+产</td></tr>
+      </table>
+    </div>
+    <div class="ref-section">
+      <h5>地形速查</h5>
+      <table class="ref-table">
+        <tr><td class="td-abbrev" style="color:#c8e6c9">■</td><td>平原</td><td class="td-desc">DEF0 可建农场 全员通行</td></tr>
+        <tr><td class="td-abbrev" style="color:#388e3c">■</td><td>森林</td><td class="td-desc">DEF10 可建伐木场 骑兵遇林停 阻断弹道</td></tr>
+        <tr><td class="td-abbrev" style="color:#9e9e9e">■</td><td>山地</td><td class="td-desc">DEF15 可建矿山 骑兵禁入 阻断弹道</td></tr>
+        <tr><td class="td-abbrev" style="color:#64b5f6">■</td><td>水域</td><td class="td-desc">DEF0 不可建 全员禁行 穿透弹道</td></tr>
+        <tr><td class="td-abbrev" style="color:#8d6e63">■</td><td>城市</td><td class="td-desc">DEF25 不可建 己=通行 敌=攻击</td></tr>
+      </table>
+    </div>
+    <div class="ref-section">
+      <h5>科技树缩略</h5>
+      <div class="tech-tree">
+        <div class="tt-m"><b class="tt-name">M线(军事):</b> M1→M2/M3→M4</div>
+        <div class="tt-m" style="font-size:8px;color:#b0b0b0"> M1锻造(步弓ATK+5), M2骑兵(冲锋+5), M3筑垒(林山DEF+10), M4精兵(全军HP+10)</div>
+        <div class="tt-e"><b class="tt-name">E线(经济):</b> E1→E2/E3→E4</div>
+        <div class="tt-e" style="font-size:8px;color:#b0b0b0"> E1耕作(农场+1), E2伐木(伐木场+1), E3采矿(矿山+1), E4物流(工人移速+1)</div>
+        <div class="tt-c"><b class="tt-name">C线(建设):</b> C1→C2/C3→C4→C5(胜利)</div>
+        <div class="tt-c" style="font-size:8px;color:#b0b0b0"> C1奠基(开启建设), C2城墙(城市+30HP), C3学院(研究/2), C4粮仓(城市+2粮), C5纪念碑(需8设施)</div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== RENDER: MAP =====
+function renderMap(turnIdx) {
+  const turn = replayData.turns[turnIdx];
+  currentUnits = turn.units || [];
+  currentCities = turn.cities || [];
+  currentEvents = turn.events || [];
+
+  // Build economy/tech lookup
+  (turn.economies || []).forEach(e => { currentEconomies[e.pid] = e; });
+  (turn.techs || []).forEach(t => { currentTechs[t.pid] = t; });
+  currentFacilityCount = turn.facility_count || {'0':0,'1':0};
+
+  // Collect event highlight positions
+  const eventCells = new Set();
+  currentEvents.forEach(ev => {
+    if (ev.x !== undefined && ev.y !== undefined) {
+      eventCells.add(ev.y + ',' + ev.x);
+    }
+  });
+
+  // Build city lookup map
+  const cityMap = {};
+  currentCities.forEach(c => { cityMap[c.y + ',' + c.x] = c; });
+
+  // Build unit grid (multi-unit per cell)
+  const unitGrid = {};
+  currentUnits.forEach(u => {
+    const key = u.y + ',' + u.x;
+    if (!unitGrid[key]) unitGrid[key] = [];
+    unitGrid[key].push(u);
+  });
+
+  // Render grid
+  mapGrid.style.gridTemplateColumns = 'repeat(' + mapSize + ',32px)';
+  mapGrid.innerHTML = '';
+
+  for (let y = 0; y < mapSize; y++) {
+    for (let x = 0; x < mapSize; x++) {
+      const cell = document.createElement('div');
+      cell.className = 'map-cell';
+      const tVal = (terrainGrid[y] && terrainGrid[y][x] !== undefined) ? terrainGrid[y][x] : 0;
+      const tInfo = TERRAIN[tVal] || TERRAIN[0];
+      cell.style.backgroundColor = tInfo.color;
+
+      // Event highlight
+      const evKey = y + ',' + x;
+      if (eventCells.has(evKey)) {
+        cell.classList.add('event-highlight');
+      }
+
+      // City overlay
+      const city = cityMap[evKey];
+      if (city) {
+        const owner = document.createElement('div');
+        owner.className = 'city-owner';
+        owner.style.backgroundColor = city.pid === 0 ? '#1565c0' : '#c62828';
+        cell.appendChild(owner);
+        const hpLabel = document.createElement('div');
+        hpLabel.className = 'city-overlay';
+        hpLabel.textContent = 'HP' + city.hp;
+        cell.appendChild(hpLabel);
+      }
+
+      // Units on this cell
+      const cellUnits = unitGrid[evKey];
+      if (cellUnits && cellUnits.length > 0) {
+        if (cellUnits.length === 1) {
+          const u = cellUnits[0];
+          const meta = UNIT_META[u.type] || {abbrev: '?'};
+          const box = document.createElement('div');
+          box.className = 'unit-box ' + (u.pid === 0 ? 'p0' : 'p1');
+          box.textContent = meta.abbrev;
+          box.dataset.uidx = currentUnits.indexOf(u);
+          box.dataset.pid = u.pid;
+          box.dataset.type = u.type;
+          cell.appendChild(box);
+        } else {
+          // Stack: show first unit + count badge
+          const u = cellUnits[0];
+          const meta = UNIT_META[u.type] || {abbrev: '?'};
+          const box = document.createElement('div');
+          box.className = 'unit-box ' + (u.pid === 0 ? 'p0' : 'p1');
+          box.textContent = meta.abbrev;
+          box.dataset.uidx = currentUnits.indexOf(u);
+          box.dataset.pid = u.pid;
+          box.dataset.type = u.type;
+          cell.appendChild(box);
+          const badge = document.createElement('div');
+          badge.className = 'unit-stack-badge';
+          badge.textContent = cellUnits.length;
+          cell.appendChild(badge);
+        }
+      }
+
+      // Store terrain/coord data for tooltip
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+      cell.dataset.terrain = tVal;
+      cell.dataset.hasUnits = (cellUnits && cellUnits.length > 0) ? '1' : '0';
+
+      mapGrid.appendChild(cell);
+    }
+  }
+}
+
+// ===== RENDER: SIDE PANEL =====
+function renderSidePanel(turnIdx) {
+  const turn = replayData.turns[turnIdx];
+
+  function renderPlayerInfo(pid, label, titleClass) {
+    const eco = turn.economies ? turn.economies.find(e => e.pid === pid) : null;
+    const tech = turn.techs ? turn.techs.find(t => t.pid === pid) : null;
+    const fc = turn.facility_count ? (turn.facility_count[pid] || 0) : 0;
+    const units = turn.units ? turn.units.filter(u => u.pid === pid) : [];
+    const completedTechs = (tech && tech.completed) || [];
+    const researching = (tech && tech.researching) || null;
+
+    // Unit breakdown
+    const unitCounts = {};
+    units.forEach(u => { unitCounts[u.type] = (unitCounts[u.type] || 0) + 1; });
+    const unitBreakdown = Object.keys(unitCounts).map(t => {
+      const abbr = (UNIT_META[t] || {abbrev:'?'}).abbrev;
+      return unitCounts[t] + abbr;
+    }).join(' ');
+
+    // Construction score
+    const cTechs = completedTechs.filter(t => t.startsWith('C'));
+    const cScore = cTechs.length;
+
+    // Semantic annotations
+    const facAnnotation = fc > 0 ? '(need 8 for C5 victory)' : '';
+    const cAnnotation = cScore > 0 ? '(C1-C5: ' + cTechs.join(' ') + ' done)' : '(none)';
+
+    // Start resources (from turn 1)
+    const turn1 = replayData.turns[0];
+    const startEco = turn1.economies ? turn1.economies.find(e => e.pid === pid) : null;
+    const startStr = startEco ? '(start: ' + startEco.food + '/' + startEco.wood + '/' + startEco.gold + ')' : '';
+
+    let html = '<h3 class="' + titleClass + '">' + label + '</h3>';
+
+    if (eco) {
+      html += '<div class="side-resources"><span class="side-res-item">Food: ' + eco.food + '</span>';
+      html += '<span class="side-res-item">Wood: ' + eco.wood + '</span>';
+      html += '<span class="side-res-item">Gold: ' + eco.gold + '</span></div>';
+      if (startStr) html += '<div class="side-annotation">' + startStr + '</div>';
+    }
+
+    // Techs
+    html += '<div class="side-label">Techs completed: <b>' + completedTechs.length + '</b>';
+    if (completedTechs.length > 0) {
+      const names = completedTechs.map(t => TECH_INFO[t] ? t + '(' + TECH_INFO[t].name + ')' : t).join(', ');
+      html += ' <span class="side-annotation">(' + names + ')</span>';
+    }
+    html += '</div>';
+
+    if (researching) {
+      const rName = TECH_INFO[researching] ? researching + '(' + TECH_INFO[researching].name + ')' : researching;
+      html += '<div class="side-label">Researching: <b>' + rName + '</b></div>';
+    } else {
+      html += '<div class="side-label">Researching: <span class="side-annotation">none</span></div>';
+    }
+
+    // Facilities
+    html += '<div class="side-label">Facilities: <b>' + fc + '</b> <span class="side-annotation">' + facAnnotation + '</span></div>';
+
+    // Units
+    html += '<div class="side-label">Units alive: <b>' + units.length + '</b>';
+    if (unitBreakdown) html += ' <span class="side-annotation">(' + unitBreakdown + ')</span>';
+    html += '</div>';
+
+    // Construction score
+    html += '<div class="side-label">Construction score: <b>' + cScore + '</b> <span class="side-annotation">' + cAnnotation + '</span></div>';
+
+    return html;
+  }
+
+  let html = '';
+  html += '<div id="p0-info">' + renderPlayerInfo(0, 'P0 (Blue)', 'p0-title') + '</div>';
+  html += '<hr>';
+  html += '<div id="p1-info">' + renderPlayerInfo(1, 'P1 (Red)', 'p1-title') + '</div>';
+
+  // Events
+  html += '<div id="events-panel">';
+  const evts = turn.events || [];
+  if (evts.length > 0) {
+    html += '<h4>Turn ' + turn.turn + ' events:</h4>';
+    evts.forEach(ev => {
+      const pidClass = ev.pid === 0 ? 'ev-p0' : 'ev-p1';
+      const pidLabel = 'P' + ev.pid;
+      let detail = ev.detail || ev.type;
+      if (ev.x !== undefined && ev.y !== undefined) {
+        // detail already may contain coordinates
+      }
+      html += '<div class="event-item"><span class="' + pidClass + '">' + pidLabel + '</span>: ' + escapeHtml(detail) + '</div>';
+    });
+  }
+  html += '</div>';
+
+  sidePanel.innerHTML = html;
+}
+
+// ===== RENDER: ALL =====
+function render(turnIdx) {
+  if (!replayData || !replayData.turns || turnIdx < 0 || turnIdx >= replayData.turns.length) return;
+  currentTurnIdx = turnIdx;
+  const turn = replayData.turns[turnIdx];
+  const total = replayData.turns.length;
+  const maxTurns = replayData.config ? replayData.config.max_turns : total;
+
+  turnDisplay.textContent = 'Turn: ' + turn.turn + ' / ' + maxTurns;
+
+  // Winner display
+  if (replayData.result && replayData.result.winner !== null && replayData.result.winner !== undefined) {
+    const w = replayData.result.winner;
+    const vType = replayData.result.victory_type || 'unknown';
+    const finalT = replayData.result.final_turn || '';
+    // Only show winner when at or near the last turn
+    if (turnIdx === replayData.turns.length - 1) {
+      winnerDisplay.textContent = 'Winner: P' + w + ' (' + vType + ', T' + finalT + ')';
+    } else {
+      winnerDisplay.textContent = '';
+    }
+  }
+
+  renderMap(turnIdx);
+  renderSidePanel(turnIdx);
+}
+
+// ===== NAVIGATION =====
+function goToTurn(idx) {
+  if (!replayData || !replayData.turns) return;
+  if (idx < 0) idx = 0;
+  if (idx >= replayData.turns.length) idx = replayData.turns.length - 1;
+  render(idx);
+}
+
+function nextTurn() {
+  if (currentTurnIdx < replayData.turns.length - 1) {
+    goToTurn(currentTurnIdx + 1);
+  }
+}
+
+function prevTurn() {
+  if (currentTurnIdx > 0) {
+    goToTurn(currentTurnIdx - 1);
+  }
+}
+
+// ===== AUTO PLAY =====
+function toggleAutoPlay() {
+  autoPlaying = !autoPlaying;
+  btnAuto.textContent = autoPlaying ? 'Stop' : 'Auto';
+  btnAuto.classList.toggle('active', autoPlaying);
+  if (autoPlaying) {
+    if (currentTurnIdx >= replayData.turns.length - 1) {
+      goToTurn(0);
+    }
+    autoTimer = setInterval(function() {
+      if (currentTurnIdx >= replayData.turns.length - 1) {
+        stopAutoPlay();
+        return;
+      }
+      nextTurn();
+    }, autoSpeed);
+  } else {
+    stopAutoPlay();
+  }
+}
+
+function stopAutoPlay() {
+  autoPlaying = false;
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  btnAuto.textContent = 'Auto';
+  btnAuto.classList.remove('active');
+}
+
+function setSpeed(speedId) {
+  speedBtns.forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById(speedId).classList.add('active');
+  autoSpeed = SPEED_MAP[speedId];
+  if (autoPlaying) {
+    stopAutoPlay();
+    toggleAutoPlay();
+  }
+}
+
+// ===== TOOLTIP =====
+function getUnitsAt(x, y) {
+  return currentUnits.filter(function(u) { return u.x === x && u.y === y; });
+}
+
+function computeTechBonuses(pid, unitType) {
+  const tech = currentTechs[pid];
+  if (!tech || !tech.completed) return {atk:0, def:0, hp:0, details:[]};
+  const completed = tech.completed;
+  const details = [];
+  let atkBonus = 0, defBonus = 0, hpBonus = 0;
+
+  if (completed.indexOf('M1') >= 0 && (unitType === 'infantry' || unitType === 'archer')) {
+    atkBonus += 5;
+    details.push('ATK+5 from M1 锻造');
+  }
+  if (completed.indexOf('M3') >= 0) {
+    defBonus += 10;
+    details.push('DEF+10 from M3 筑垒(林山)');
+  }
+  if (completed.indexOf('M4') >= 0) {
+    hpBonus += 10;
+    details.push('HP+10 from M4 精兵');
+  }
+  if (completed.indexOf('M2') >= 0 && unitType === 'cavalry') {
+    atkBonus += 5;
+    details.push('冲锋+5 from M2 骑兵');
+  }
+  return {atk: atkBonus, def: defBonus, hp: hpBonus, details: details};
+}
+
+function showTooltip(e, cell) {
+  const x = parseInt(cell.dataset.x);
+  const y = parseInt(cell.dataset.y);
+  const tVal = parseInt(cell.dataset.terrain);
+  const tInfo = TERRAIN[tVal] || TERRAIN[0];
+  const units = getUnitsAt(x, y);
+
+  let html = '';
+
+  if (units.length > 0) {
+    const u = units[0];
+    const meta = UNIT_META[u.type] || {name: '?'};
+    const pidClass = u.pid === 0 ? 'tt-p0' : 'tt-p1';
+    const bonuses = computeTechBonuses(u.pid, u.type);
+    html += '<div class="tt-title ' + pidClass + '">P' + u.pid + ' ' + meta.name + '</div>';
+    html += 'HP: ' + u.hp;
+    if (bonuses.hp > 0) html += '+' + bonuses.hp;
+    html += ' | ATK: ' + u.atk;
+    if (bonuses.atk > 0) html += '+' + bonuses.atk;
+    html += ' | DEF: ' + u.def;
+    if (bonuses.def > 0) html += '+' + bonuses.def;
+    if (bonuses.details.length > 0) html += '<br><span style="color:#81c784;font-size:11px">' + bonuses.details.join(', ') + '</span>';
+    if (units.length > 1) {
+      html += '<br><span style="color:#ffb74d">+' + (units.length - 1) + ' more unit(s) on this tile</span>';
+    }
+  } else {
+    html += '<div class="tt-title">' + tInfo.name + '</div>';
+    html += 'DEF+' + tInfo.def + ' | ' + tInfo.build + ' | ' + tInfo.pass;
+    if (tInfo.ballistic !== '-') html += ' | ' + tInfo.ballistic;
+  }
+
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  positionTooltip(e);
+}
+
+function positionTooltip(e) {
+  let x = e.clientX + 14;
+  let y = e.clientY + 14;
+  const rect = tooltip.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth - 10) x = e.clientX - rect.width - 10;
+  if (y + rect.height > window.innerHeight - 10) y = e.clientY - rect.height - 10;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ===== DETAIL CARD =====
+function getFullUnitStats(unit) {
+  const meta = UNIT_META[unit.type];
+  if (!meta) return null;
+  const bonuses = computeTechBonuses(unit.pid, unit.type);
+  return {
+    name: meta.name,
+    abbrev: meta.abbrev,
+    baseStats: meta,
+    currentStats: {
+      hp: meta.hp + bonuses.hp,
+      atk: meta.atk + bonuses.atk,
+      def: meta.def + bonuses.def,
+      move: meta.move,
+      vision: meta.vision,
+      range: meta.range
+    },
+    bonuses: bonuses,
+    cost: UNIT_COST[unit.type] || '?',
+    special: UNIT_SPECIAL[unit.type] || []
+  };
+}
+
+function showDetailCard(unit, e) {
+  const stats = getFullUnitStats(unit);
+  if (!stats) return;
+
+  let html = '<span class="dc-close" onclick="document.getElementById(\'detail-card\').style.display=\'none\'">&times;</span>';
+  html += '<h4 style="color:' + (unit.pid === 0 ? '#42a5f5' : '#ef5350') + '">P' + unit.pid + ' ' + stats.name + '</h4>';
+
+  html += '<div class="dc-section-title">属性</div>';
+  html += '<div class="dc-row"><span class="dc-label">HP</span><span class="dc-value">' + unit.hp + ' / ' + stats.baseStats.hp + (stats.bonuses.hp > 0 ? '<span class="dc-tech-bonus"> +' + stats.bonuses.hp + '</span>' : '') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">ATK</span><span class="dc-value">' + unit.atk + (stats.bonuses.atk > 0 ? '<span class="dc-tech-bonus"> +' + stats.bonuses.atk + '</span>' : '') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">DEF</span><span class="dc-value">' + unit.def + (stats.bonuses.def > 0 ? '<span class="dc-tech-bonus"> +' + stats.bonuses.def + '</span>' : '') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">移动力</span><span class="dc-value">' + stats.currentStats.move + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">视野</span><span class="dc-value">' + stats.currentStats.vision + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">射程</span><span class="dc-value">' + stats.currentStats.range + '</span></div>';
+
+  if (stats.bonuses.details.length > 0) {
+    html += '<div class="dc-section-title">科技加成</div>';
+    stats.bonuses.details.forEach(function(d) {
+      html += '<div class="dc-tech-bonus">' + d + '</div>';
+    });
+  }
+
+  html += '<div class="dc-section-title">成本</div>';
+  html += '<div class="dc-cost">' + stats.cost + '</div>';
+
+  if (stats.special.length > 0) {
+    html += '<div class="dc-section-title">特殊能力</div>';
+    stats.special.forEach(function(s) {
+      html += '<div class="dc-special">' + s + '</div>';
+    });
+  }
+
+  detailCard.innerHTML = html;
+  detailCard.style.display = 'block';
+
+  // Position near the click but on the side
+  let x = e.clientX + 10;
+  let y = e.clientY - 80;
+  const rect = detailCard.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth - 10) x = e.clientX - rect.width - 10;
+  if (y < 10) y = 10;
+  if (y + rect.height > window.innerHeight - 10) y = window.innerHeight - rect.height - 10;
+  detailCard.style.left = x + 'px';
+  detailCard.style.top = y + 'px';
+}
+
+function hideDetailCard(e) {
+  // Don't hide if clicking inside the card
+  if (detailCard.contains(e.target)) return;
+  detailCard.style.display = 'none';
+}
+
+// ===== SETUP EVENTS =====
+function setupControls() {
+  btnPrev.addEventListener('click', prevTurn);
+  btnNext.addEventListener('click', nextTurn);
+  btnAuto.addEventListener('click', toggleAutoPlay);
+  speedBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setSpeed(b.id); });
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevTurn(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); nextTurn(); }
+    else if (e.key === ' ') { e.preventDefault(); toggleAutoPlay(); }
+  });
+
+  // Map hover tooltip - event delegation
+  mapGrid.addEventListener('mouseover', function(e) {
+    const cell = e.target.closest('.map-cell');
+    if (cell) {
+      showTooltip(e, cell);
+    }
+  });
+  mapGrid.addEventListener('mousemove', function(e) {
+    if (tooltip.style.display === 'block') {
+      positionTooltip(e);
+    }
+  });
+  mapGrid.addEventListener('mouseout', function(e) {
+    const cell = e.target.closest('.map-cell');
+    if (cell && !cell.contains(e.relatedTarget)) {
+      hideTooltip();
+    }
+  });
+
+  // Click unit → detail card
+  mapGrid.addEventListener('click', function(e) {
+    const unitBox = e.target.closest('.unit-box');
+    if (unitBox) {
+      const idx = parseInt(unitBox.dataset.uidx);
+      if (!isNaN(idx) && currentUnits[idx]) {
+        showDetailCard(currentUnits[idx], e);
+        return;
+      }
+    }
+    // Click elsewhere: hide detail card
+    hideDetailCard(e);
+  });
+
+  // Click outside detail card to close
+  document.addEventListener('click', function(e) {
+    if (detailCard.style.display === 'block' && !detailCard.contains(e.target) && !e.target.closest('.unit-box')) {
+      detailCard.style.display = 'none';
+    }
+  });
+}
+
+// ===== INIT =====
+function init() {
+  if (!loadReplayData()) return;
+
+  renderBottomBar();
+  render(0);
+  setupControls();
+  console.log('miniciv Replay Viewer initialized. Turns:', replayData.turns.length);
+}
+
+// Run on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>

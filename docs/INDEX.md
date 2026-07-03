@@ -36,6 +36,8 @@
 | [sessions/2026-07-02.md](sessions/2026-07-02.md) | 调参 + AI 大军 + 文档重启 + Multi-Agent 试点 |
 | [sessions/2026-07-03.md](sessions/2026-07-03.md) | 全矩阵 + API 泄露 + 建设胜利发现 |
 
+| [UI-PLAN.md](UI-PLAN.md) | UI 开发计划——从回放浏览器到决策可视化 | UI 相关决策时 |
+
 ## 规划
 
 | 文档 | 内容 |

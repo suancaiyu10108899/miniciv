@@ -2,23 +2,24 @@
 
 ## 当前阶段
 
-**Python 原型收尾** — 建设胜利平衡是最后一道坎，然后进入 Rust 架构设计。
+**Python 原型收尾完成 → Rust 架构设计。**
 
 ## 当前任务（优先级排序）
 
-1. **建设胜利平衡** — Evo 75% 统治，需调 C5 成本/加 AI 拦截逻辑
-2. **20×20 验证** — 建设胜利是否地图越大越强
-3. **参数锁定** — GAME.md 标注 Rust 目标值
-4. **Rust 架构设计** — 模块树、trait、移植路径
+1. **Rust 架构设计** — 模块树、trait、Python→Rust 移植路径
+2. **参数锁定签字** — GAME.md + DECISIONS.md 标注 Rust 目标值
+3. **20×20 验证** — 建设胜利是否地图越大越强（可选，Rust 里跑更快）
 
 ## 上次做到哪了
 
-- **全矩阵 6×6 N=500 完成**：36,000 局，11h，完整数据在 `experiments/v0.5.0/full-matrix/`
-- **Evo 建设胜利统治**：75% 平均胜率，42 回合 C5，几乎不死兵
+- **Python 阶段完成**：全矩阵 36,000 局 + C5 成本扫描 + 设施前置条件修复
+- **建设胜利已修复**：C5 研究需先建 8 个设施（`CONSTRUCTION_VICTORY_REQUIRE_FACILITIES=8`），建设胜率 75%→0%
+- **Evo 仍靠阶梯判定赢**（旧参数不适用新规则），需 Rust 重训解决——不是设计问题
 - **API Key 泄露已处理**：旧 key 删除，新增 `.env.example` + gitignore
 - **eval_matrix 增强**：经济指标、checkpoint、种子确定性、30 workers
 - 详细 → `docs/sessions/2026-07-03.md`
 - 规划 → `docs/planning/2026-07-03.md`
+- Rust 架构草稿 → `docs/rust-architecture.md`
 
 ## 关键约束
 

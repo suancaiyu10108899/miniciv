@@ -1,0 +1,95 @@
+{
+  "mode": "paired",
+  "ai_a": "evo",
+  "ai_b": "dqn_trained",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 80,
+  "city_damage": 5,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.8725,
+  "ai_b_winrate": 0.1275,
+  "p0_winrate": 0.5175,
+  "p0_std": 0.2318,
+  "p0_ci95": 0.049,
+  "ai_a_std": 0.2404,
+  "ai_a_ci95": 0.0327,
+  "conquest_rate": 0.01,
+  "construction_rate": 0.645,
+  "tiebreak_rate": 0.345,
+  "avg_turns": 41.24,
+  "avg_dead": 2.98,
+  "ai_a_units_mean": 20.71,
+  "ai_a_units_std": 10.56,
+  "ai_b_units_mean": 12.81,
+  "ai_b_units_std": 3.05,
+  "ai_a_resources_mean": 401.0,
+  "ai_a_resources_std": 416.8,
+  "ai_b_resources_mean": 556.1,
+  "ai_b_resources_std": 413.3,
+  "ai_a_construction_mean": 4.64,
+  "ai_a_construction_std": 0.95,
+  "ai_b_construction_mean": 4.0,
+  "ai_b_construction_std": 0.0,
+  "ai_a_resource_efficiency": 2.17,
+  "ai_b_resource_efficiency": 0.23,
+  "ai_a_unit_composition": {
+    "infantry": {
+      "alive_mean": 13.68,
+      "dead_mean": 1.24
+    },
+    "cavalry": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "archer": {
+      "alive_mean": 1.79,
+      "dead_mean": 0.0
+    },
+    "scout": {
+      "alive_mean": 0.8,
+      "dead_mean": 0.2
+    },
+    "worker": {
+      "alive_mean": 3.0,
+      "dead_mean": 0.0
+    }
+  },
+  "ai_b_unit_composition": {
+    "infantry": {
+      "alive_mean": 7.9,
+      "dead_mean": 0.92
+    },
+    "cavalry": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "archer": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "scout": {
+      "alive_mean": 0.93,
+      "dead_mean": 0.07
+    },
+    "worker": {
+      "alive_mean": 2.45,
+      "dead_mean": 0.55
+    }
+  },
+  "p0_by_victory_type": {
+    "conquest": {
+      "p0_winrate": 1.0,
+      "n_games": 4
+    },
+    "construction": {
+      "p0_winrate": 0.4961,
+      "n_games": 258
+    },
+    "tiebreak": {
+      "p0_winrate": 0.5435,
+      "n_games": 138
+    }
+  }
+}

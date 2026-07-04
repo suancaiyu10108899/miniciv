@@ -1,0 +1,95 @@
+{
+  "mode": "paired",
+  "ai_a": "dqn_trained",
+  "ai_b": "flatmc",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 80,
+  "city_damage": 5,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.77,
+  "ai_b_winrate": 0.23,
+  "p0_winrate": 0.53,
+  "p0_std": 0.295,
+  "p0_ci95": 0.0489,
+  "ai_a_std": 0.3001,
+  "ai_a_ci95": 0.0412,
+  "conquest_rate": 0.0025,
+  "construction_rate": 0.175,
+  "tiebreak_rate": 0.8225,
+  "avg_turns": 68.58,
+  "avg_dead": 1.17,
+  "ai_a_units_mean": 10.09,
+  "ai_a_units_std": 2.09,
+  "ai_b_units_mean": 15.16,
+  "ai_b_units_std": 8.27,
+  "ai_a_resources_mean": 1114.8,
+  "ai_a_resources_std": 450.3,
+  "ai_b_resources_mean": 207.6,
+  "ai_b_resources_std": 359.8,
+  "ai_a_construction_mean": 4.0,
+  "ai_a_construction_std": 0.0,
+  "ai_b_construction_mean": 3.46,
+  "ai_b_construction_std": 0.77,
+  "ai_a_resource_efficiency": 0.69,
+  "ai_b_resource_efficiency": 1.1,
+  "ai_a_unit_composition": {
+    "infantry": {
+      "alive_mean": 5.74,
+      "dead_mean": 0.36
+    },
+    "cavalry": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "archer": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "scout": {
+      "alive_mean": 0.91,
+      "dead_mean": 0.1
+    },
+    "worker": {
+      "alive_mean": 2.79,
+      "dead_mean": 0.2
+    }
+  },
+  "ai_b_unit_composition": {
+    "infantry": {
+      "alive_mean": 3.08,
+      "dead_mean": 0.35
+    },
+    "cavalry": {
+      "alive_mean": 2.52,
+      "dead_mean": 0.01
+    },
+    "archer": {
+      "alive_mean": 5.09,
+      "dead_mean": 0.1
+    },
+    "scout": {
+      "alive_mean": 0.96,
+      "dead_mean": 0.04
+    },
+    "worker": {
+      "alive_mean": 2.99,
+      "dead_mean": 0.01
+    }
+  },
+  "p0_by_victory_type": {
+    "conquest": {
+      "p0_winrate": 1.0,
+      "n_games": 1
+    },
+    "construction": {
+      "p0_winrate": 0.6286,
+      "n_games": 70
+    },
+    "tiebreak": {
+      "p0_winrate": 0.5076,
+      "n_games": 329
+    }
+  }
+}

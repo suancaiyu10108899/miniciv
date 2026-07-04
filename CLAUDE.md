@@ -2,11 +2,12 @@
 
 ## 当前阶段
 
-**v0.6.0-dev — 自主迭代：从 facility 修复到完整矩阵。**
+**v0.6.2-dev — Multi-Agent 设计空间探索 + 工人经济修复。**
 
-> 主 Agent 自主执行四阶段：Facility 扫描 → AI 兵种修复 → 联合验证 → 完整矩阵。
-> 人类在矩阵结果产出后介入审核。
-> 详细 → `docs/planning/2026-07-04-autonomous-matrix.md`
+> 三轮矩阵完成（v0.6.0/0.6.1/0.6.2, 43,200 games）。
+> 下一步：工人经济多样化 → 弓手入场 → AI重训 → 验证矩阵。
+> 深夜自主执行：damage_dealt/taken + 工人经济修复 + Evo打表 + 完整矩阵。
+> 详细 → `docs/planning/2026-07-05-multi-agent-design-space.md`
 
 ## 当前任务（Phase 1 — 执行中）
 

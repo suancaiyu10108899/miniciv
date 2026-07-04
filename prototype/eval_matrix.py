@@ -246,7 +246,7 @@ def _run_one_paired(args):
         p1_alive = sum(1 for u in gs.units if u.player_id == 1 and u.alive)
         p0_dead = sum(1 for u in gs.dead_units if u.player_id == 0)
         p1_dead = sum(1 for u in gs.dead_units if u.player_id == 1)
-        return {
+        result = {
             "seed": seed, "ai0": ai0_name, "ai1": ai1_name,
             "winner": gs.winner, "victory_type": gs.victory_type or "tiebreak",
             "turns": gs.turn,
@@ -262,8 +262,17 @@ def _run_one_paired(args):
             "p1_construction": gs.techs[1].construction_count(),
             "p0_units_produced": p0_alive + p0_dead,
             "p1_units_produced": p1_alive + p1_dead,
+            "p0_facilities": _count_facilities(gs, 0),
+            "p1_facilities": _count_facilities(gs, 1),
             "ai_a_p0": ai_a_p0, "ai_b_p1": not ai_a_p0,
         }
+        # Per-unit-type stats
+        for ut in ["infantry", "cavalry", "archer", "scout", "worker"]:
+            result[f"p0_{ut}_alive"] = _count_units_by_type(gs.units, 0, ut, True)
+            result[f"p1_{ut}_alive"] = _count_units_by_type(gs.units, 1, ut, True)
+            result[f"p0_{ut}_dead"] = _count_units_by_type(gs.dead_units, 0, ut, False)
+            result[f"p1_{ut}_dead"] = _count_units_by_type(gs.dead_units, 1, ut, False)
+        return result
 
     g1 = _game_dict(gs1, e1_0, e1_1, ai_a_name, ai_b_name, seed, True)
     g2 = _game_dict(gs2, e2_0, e2_1, ai_b_name, ai_a_name, seed + 1_000_000, False)
@@ -560,14 +569,82 @@ def main():
             ai_a_efficiency = round(ai_a_wr / (ar_mean + 1) * 1000, 2) if ar_mean > 0 else 0
             ai_b_efficiency = round(ai_b_wr / (br_mean + 1) * 1000, 2) if br_mean > 0 else 0
 
+            # Per-unit-type aggregation
+            unit_types = ["infantry", "cavalry", "archer", "scout", "worker"]
+            ai_a_ut_alive = {ut: [] for ut in unit_types}
+            ai_a_ut_dead = {ut: [] for ut in unit_types}
+            ai_b_ut_alive = {ut: [] for ut in unit_types}
+            ai_b_ut_dead = {ut: [] for ut in unit_types}
+            for r in results:
+                g1, g2 = r["game1"], r["game2"]
+                for ut in unit_types:
+                    ai_a_ut_alive[ut].append(g1.get(f"p0_{ut}_alive", 0))
+                    ai_a_ut_alive[ut].append(g2.get(f"p1_{ut}_alive", 0))
+                    ai_a_ut_dead[ut].append(g1.get(f"p0_{ut}_dead", 0))
+                    ai_a_ut_dead[ut].append(g2.get(f"p1_{ut}_dead", 0))
+                    ai_b_ut_alive[ut].append(g1.get(f"p1_{ut}_alive", 0))
+                    ai_b_ut_alive[ut].append(g2.get(f"p0_{ut}_alive", 0))
+                    ai_b_ut_dead[ut].append(g1.get(f"p1_{ut}_dead", 0))
+                    ai_b_ut_dead[ut].append(g2.get(f"p0_{ut}_dead", 0))
+
+            ai_a_ut_summary = {}
+            ai_b_ut_summary = {}
+            for ut in unit_types:
+                ai_a_ut_summary[ut] = {
+                    "alive_mean": round(sum(ai_a_ut_alive[ut]) / len(ai_a_ut_alive[ut]), 2) if ai_a_ut_alive[ut] else 0,
+                    "dead_mean": round(sum(ai_a_ut_dead[ut]) / len(ai_a_ut_dead[ut]), 2) if ai_a_ut_dead[ut] else 0,
+                }
+                ai_b_ut_summary[ut] = {
+                    "alive_mean": round(sum(ai_b_ut_alive[ut]) / len(ai_b_ut_alive[ut]), 2) if ai_b_ut_alive[ut] else 0,
+                    "dead_mean": round(sum(ai_b_ut_dead[ut]) / len(ai_b_ut_dead[ut]), 2) if ai_b_ut_dead[ut] else 0,
+                }
+
+            # Per-victory-type P0
+            p0_by_vtype = {"conquest": {"p0": 0, "total": 0},
+                          "construction": {"p0": 0, "total": 0},
+                          "tiebreak": {"p0": 0, "total": 0}}
+            for r in results:
+                for gkey in ["game1", "game2"]:
+                    g = r[gkey]
+                    vt = str(g.get("victory_type", "") or "")
+                    if vt == "conquest":
+                        cat = "conquest"
+                    elif vt == "construction":
+                        cat = "construction"
+                    else:
+                        cat = "tiebreak"
+                    p0_by_vtype[cat]["total"] += 1
+                    if g["winner"] == 0:
+                        p0_by_vtype[cat]["p0"] += 1
+
+            p0_vtype_summary = {}
+            for cat in p0_by_vtype:
+                t = p0_by_vtype[cat]["total"]
+                p0_vtype_summary[cat] = {
+                    "p0_winrate": round(p0_by_vtype[cat]["p0"] / t, 4) if t > 0 else 0,
+                    "n_games": t,
+                }
+
             print(f"{ai_a:12s} {ai_b:12s} {ai_a_wr*100:6.1f}% {ai_a_ci*100:4.1f}% "
                   f"{ai_b_wr*100:6.1f}% {ai_b_ci*100:4.1f}% "
                   f"{p0_wr*100:6.1f}% {p0_ci*100:4.1f}% "
                   f"{cq_mean*100:4.1f}% {cs_mean*100:4.1f}% {tie_mean*100:4.1f}% "
                   f"{avg_t:6.1f} {avg_d:5.1f}")
+            # Print unit composition line
+            for ut in unit_types:
+                a_alive = ai_a_ut_summary[ut]["alive_mean"]
+                a_dead = ai_a_ut_summary[ut]["dead_mean"]
+                b_alive = ai_b_ut_summary[ut]["alive_mean"]
+                b_dead = ai_b_ut_summary[ut]["dead_mean"]
+                if a_alive + a_dead + b_alive + b_dead > 0.1:
+                    print(f"  {' ' * 12} {' ' * 12} {ut:>10}: "
+                          f"A={a_alive:.1f}/{a_dead:.1f} B={b_alive:.1f}/{b_dead:.1f}")
+            print(f"  {' ' * 12} {' ' * 12} P0_by_vtype: "
+                  f"Conq={p0_vtype_summary['conquest']['p0_winrate']:.1%} "
+                  f"Const={p0_vtype_summary['construction']['p0_winrate']:.1%} "
+                  f"Tie={p0_vtype_summary['tiebreak']['p0_winrate']:.1%}")
             print(f"  {' ' * 12} {' ' * 12} Econ: "
-                  f"A_units={au_mean:.1f}±{au_std:.1f} B_units={bu_mean:.1f}±{bu_std:.1f} "
-                  f"A_res={ar_mean:.0f}±{ar_std:.0f} B_res={br_mean:.0f}±{br_std:.0f} "
+                  f"A_res={ar_mean:.0f} B_res={br_mean:.0f} "
                   f"A_con={ac_mean:.1f} B_con={bc_mean:.1f} "
                   f"eff_A={ai_a_efficiency:.1f} eff_B={ai_b_efficiency:.1f}")
 
@@ -599,6 +676,11 @@ def main():
                 "ai_b_construction_mean": round(bc_mean, 2), "ai_b_construction_std": round(bc_std, 2),
                 "ai_a_resource_efficiency": ai_a_efficiency,
                 "ai_b_resource_efficiency": ai_b_efficiency,
+                # Per-unit-type composition
+                "ai_a_unit_composition": ai_a_ut_summary,
+                "ai_b_unit_composition": ai_b_ut_summary,
+                # Per-victory-type P0
+                "p0_by_victory_type": p0_vtype_summary,
             }
             if args.save_raw:
                 raw_data["seeds"] = [{

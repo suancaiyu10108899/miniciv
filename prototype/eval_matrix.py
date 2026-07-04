@@ -164,15 +164,20 @@ def _count_units_by_type(units, pid, unit_type, alive_only=True):
 
 
 def _count_facilities(gs, pid):
-    """统计某方设施数。"""
+    """统计某方设施数（总数 + 按类型）。"""
     from prototype.mapgen import get_facility
-    count = 0
+    total = 0
+    by_type = {"farm": 0, "lumbermill": 0, "mine": 0}
     for y in range(gs.size):
         for x in range(gs.size):
             f = get_facility(gs.grid, x, y)
             if f is not None and f.player_id == pid:
-                count += 1
-    return count
+                total += 1
+                ft = f.facility_type
+                if ft in by_type:
+                    by_type[ft] += 1
+    return {"total": total, "farm": by_type["farm"],
+            "lumbermill": by_type["lumbermill"], "mine": by_type["mine"]}
 
 
 def _extract_result(gs, seed, ai0_name, ai1_name):
@@ -199,8 +204,14 @@ def _extract_result(gs, seed, ai0_name, ai1_name):
         "p1_construction": gs.techs[1].construction_count(),
         "p0_units_produced": sum(1 for u in gs.units if u.player_id == 0 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 0),
         "p1_units_produced": sum(1 for u in gs.units if u.player_id == 1 and u.alive) + sum(1 for u in gs.dead_units if u.player_id == 1),
-        "p0_facilities": _count_facilities(gs, 0),
-        "p1_facilities": _count_facilities(gs, 1),
+        "p0_facilities": _count_facilities(gs, 0)["total"],
+        "p1_facilities": _count_facilities(gs, 1)["total"],
+        "p0_facility_farm": _count_facilities(gs, 0)["farm"],
+        "p0_facility_lumbermill": _count_facilities(gs, 0)["lumbermill"],
+        "p0_facility_mine": _count_facilities(gs, 0)["mine"],
+        "p1_facility_farm": _count_facilities(gs, 1)["farm"],
+        "p1_facility_lumbermill": _count_facilities(gs, 1)["lumbermill"],
+        "p1_facility_mine": _count_facilities(gs, 1)["mine"],
     }
     # Per-unit-type stats
     for ut in unit_types:
@@ -262,8 +273,14 @@ def _run_one_paired(args):
             "p1_construction": gs.techs[1].construction_count(),
             "p0_units_produced": p0_alive + p0_dead,
             "p1_units_produced": p1_alive + p1_dead,
-            "p0_facilities": _count_facilities(gs, 0),
-            "p1_facilities": _count_facilities(gs, 1),
+            "p0_facilities": _count_facilities(gs, 0)["total"],
+            "p1_facilities": _count_facilities(gs, 1)["total"],
+            "p0_facility_farm": _count_facilities(gs, 0)["farm"],
+            "p0_facility_lumbermill": _count_facilities(gs, 0)["lumbermill"],
+            "p0_facility_mine": _count_facilities(gs, 0)["mine"],
+            "p1_facility_farm": _count_facilities(gs, 1)["farm"],
+            "p1_facility_lumbermill": _count_facilities(gs, 1)["lumbermill"],
+            "p1_facility_mine": _count_facilities(gs, 1)["mine"],
             "ai_a_p0": ai_a_p0, "ai_b_p1": not ai_a_p0,
         }
         # Per-unit-type stats

@@ -583,6 +583,39 @@ def _do_production(gs, pid, strategy, production_counter, assessment, actions):
     econ = gs.economies[pid]
     size = gs.size
 
+    # === Archer-Defense Strategy (v6) ===
+    my_combat = [u for u in gs.units if u.player_id == pid and u.alive
+                 and u.unit_type not in ("worker",)]
+    n_arc = sum(1 for u in my_combat if u.unit_type == "archer")
+    n_inf = sum(1 for u in my_combat if u.unit_type == "infantry")
+    n_total = len(my_combat)
+
+    # Priority 1: Under attack — produce archers for ranged defense
+    my_city = gs.cities[pid]
+    enemy_near = any(
+        eu.alive and eu.player_id != pid and eu.unit_type != "worker"
+        and _td(eu.x, my_city.x, size) + _td(eu.y, my_city.y, size) <= 3
+        for eu in gs.units
+    )
+    if enemy_near and econ.wood >= 5:
+        if econ.can_afford(UNIT_COST["archer"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
+            return
+
+    # Priority 2: Wood-rich and archers are underrepresented vs infantry
+    if econ.wood >= 5 and n_arc < n_inf:
+        if econ.can_afford(UNIT_COST["archer"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
+            return
+
+    # Priority 3: Maintain ~30% archer ratio in combat units
+    if n_total > 2:
+        current_ratio = n_arc / n_total
+        if current_ratio < 0.3 and econ.wood >= 5:
+            if econ.can_afford(UNIT_COST["archer"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
+                return
+
     # v4: Adaptive counter production
     if production_counter:
         if econ.can_afford(UNIT_COST[production_counter]):

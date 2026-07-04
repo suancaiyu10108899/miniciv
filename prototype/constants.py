@@ -4,7 +4,7 @@
 # ─── 棋盘 ──────────────────────────────────────────
 MAP_SIZES = [15, 30, 50]
 DEFAULT_SIZE = 15  # 30/50 also supported; 15 is the balanced sweet spot per map-size comparison experiments
-MAX_TURNS = 100
+MAX_TURNS = 80  # v0.6.1: 100→80, reduce tiebreak rate
 
 # ─── 地形比例（6种生成器）────────────────────────
 # 格式: (平原, 森林, 山地, 水域)
@@ -84,7 +84,7 @@ TECH_TREE = {
     "C4":  {"cost": (6, 3, 3),   "turns": 1, "requires": ["C3","C2"],"effect": "city_food+2"},
     "C5":  {"cost": (3, 3, 3),   "turns": 2, "requires": ["C3","C4"],"effect": "construction_victory"},
 }
-CONSTRUCTION_VICTORY_REQUIRE_FACILITIES = 5  # v0.6.0: lowered from 8 after facility scan + Greedy v5 fix
+CONSTRUCTION_VICTORY_REQUIRE_FACILITIES = 4  # v0.6.1: 5→4, cooperate with max_turns=80
 
 # ─── 迷雾 ──────────────────────────────────────────
 VISION_RANGE = {"infantry": 2, "cavalry": 2, "archer": 2, "scout": 3, "worker": 2}

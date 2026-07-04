@@ -48,13 +48,18 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
         act = _aggro_worker(u, units.index(u), gs, pid, has_f, has_l, has_m, rng)
         if act: actions.append(act)
 
-    # === 研究: 僵局时走C线, 否则正常战斗顺序 ===
-    stalemate = (gs.turn > 50)
+    # === v3.4 研究: 军事优势时走C线, 否则战斗优先 ===
+    military_advantage = (assessment["my_power"] > assessment["opp_power"] * 0.8)
+    stalemate = (gs.turn > 45 and assessment.get("opp_frontline_count", 0) >= assessment.get("my_frontline_count", 1) * 0.8)
+    c5_done = "C5" in tech.completed
 
     if tech.researching is None:
-        if stalemate:
+        # C5 available → research immediately
+        avail = tech.available_to_research()
+        if "C5" in avail and econ.can_afford(TECH_TREE_COST.get("C5", (99,99,99))):
+            actions.append({"unit_idx": -1, "type": "research", "tech_id": "C5"})
+        elif stalemate or c5_done:
             # 建设模式: C线优先
-            avail = tech.available_to_research()
             c_avail = [t for t in avail if t.startswith("C")]
             c_avail.sort(key=lambda t: TECH_TREE_COST.get(t, (0,0,0))[0])
             for t in c_avail:
@@ -63,32 +68,42 @@ def ai_decide(gs, pid: int, rng=None) -> list[dict]:
                     break
         else:
             # 正常: 战斗+经济+建设混合顺序
-            avail = tech.available_to_research()
             order = ["M1", "C1", "M2", "E1", "C2", "M3", "E2", "C3", "M4", "E3", "C4", "E4", "C5"]
             for t in order:
                 if t in avail and econ.can_afford(TECH_TREE_COST.get(t, (99, 99, 99))):
                     actions.append({"unit_idx": -1, "type": "research", "tech_id": t})
                     break
 
-    # === 生产: 僵局时攒钱, 否则正常暴兵 ===
-    if stalemate:
-        if econ.can_afford(UNIT_COST["infantry"]) and assessment["my_frontline_count"] < 3:
+    # === v3.4 生产: worker补充 + 波浪进攻 ===
+    n_workers = len(workers)
+    n_combat = len(fighters) + len(archers)
+
+    # Worker production: maintain 4 for economy
+    if n_workers < 4 and econ.food >= 12 and n_combat >= 2:
+        if econ.can_afford(UNIT_COST["worker"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "worker"})
+
+    frontline = assessment["my_frontline_count"]
+    surge = assessment["enemy_defense_strong"] and frontline < 4
+
+    if stalemate or c5_done:
+        # Construction/defense: diverse units
+        if econ.can_afford(UNIT_COST["cavalry"]) and econ.gold >= 10:
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+        elif econ.can_afford(UNIT_COST["archer"]) and econ.wood >= 8:
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
+        elif econ.can_afford(UNIT_COST["infantry"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
+    elif surge:
+        if econ.can_afford(UNIT_COST["cavalry"]) and econ.food > 15:
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+        elif econ.can_afford(UNIT_COST["infantry"]) and frontline < 3:
             actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
     else:
-        # === 波浪进攻生产节奏 ===
-        frontline = assessment["my_frontline_count"]
-        surge = assessment["enemy_defense_strong"] and frontline < 4
-
-        if surge:
-            if econ.can_afford(UNIT_COST["cavalry"]) and econ.food > 15:
-                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
-            elif econ.can_afford(UNIT_COST["infantry"]) and frontline < 3:
-                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "infantry"})
-        else:
-            for ut in ["cavalry", "archer", "infantry"]:
-                if econ.can_afford(UNIT_COST[ut]):
-                    actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
-                    break
+        for ut in ["cavalry", "archer", "infantry"]:
+            if econ.can_afford(UNIT_COST[ut]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": ut})
+                break
 
     return actions
 
@@ -350,21 +365,52 @@ def _approach_ranged(u, ui, gs, target, rng):
 
 
 def _aggro_worker(w, ui, gs, pid, has_f, has_l, has_m, rng):
-    """进攻型工人：只建还没的设施，之后生产"""
+    """进攻型工人 v3.4: 建缺失设施 → C5后扩展 → 生产"""
     terrain = get_terrain(gs.grid, w.x, w.y)
     buildable = terrain_buildable(terrain)
     fac = gs.grid[w.y][w.x].get("facility")
+    c5_done = "C5" in gs.techs[pid].completed
+    stalemate = gs.turn > 35
+
+    # On existing facility: expand if construction mode, else produce
     if fac and fac.player_id == pid:
+        if c5_done or stalemate:
+            # Need more facilities for victory → find new buildable tile
+            target = _nearest_any_buildable(w, gs, pid)
+            if target:
+                return _move_to(w, ui, gs, target, rng)
         return {"unit_idx": ui, "type": "produce"}
+
+    # Build missing facility type first
     need = ((buildable == "farm" and not has_f) or
             (buildable == "lumbermill" and not has_l) or
             (buildable == "mine" and not has_m))
-    if buildable and not fac and need:
+    if buildable and not fac and (need or c5_done or stalemate):
         return {"unit_idx": ui, "type": "build"}
+
     target = _nearest_missing(w, gs, pid, has_f, has_l, has_m)
+    if not target and (c5_done or stalemate):
+        target = _nearest_any_buildable(w, gs, pid)
     if target:
         return _move_to(w, ui, gs, target, rng)
     return {"unit_idx": ui, "type": "end_turn"}
+
+
+def _nearest_any_buildable(unit, gs, pid):
+    """Find nearest buildable tile, regardless of facility type (for expansion)."""
+    best, best_d = None, 999
+    for y in range(gs.size):
+        for x in range(gs.size):
+            b = terrain_buildable(get_terrain(gs.grid, x, y))
+            if not b:
+                continue
+            if gs.grid[y][x].get("facility"):
+                continue
+            d = _td(unit.x, x, gs.size) + _td(unit.y, y, gs.size)
+            if d < best_d:
+                best_d = d
+                best = (x, y)
+    return best
 
 
 def _count_facs(gs, pid):

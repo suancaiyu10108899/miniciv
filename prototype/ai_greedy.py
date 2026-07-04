@@ -608,6 +608,29 @@ def _do_production(gs, pid, strategy, production_counter, assessment, actions):
             actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "archer"})
             return
 
+    # === Cavalry-Guerrilla Strategy (below archer defense, above archer ratio) ===
+    n_cav = sum(1 for u in my_combat if u.unit_type == "cavalry")
+
+    # 1. Cavalry raid: weak point detected on frontline → produce cavalry to exploit gap
+    if assessment.get("weak_point") and econ.gold >= 6:
+        if econ.can_afford(UNIT_COST["cavalry"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+            return
+
+    # 2. Gold-rich and cavalry underrepresented vs infantry
+    if econ.gold >= 8 and n_cav < n_inf:
+        if econ.can_afford(UNIT_COST["cavalry"]):
+            actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+            return
+
+    # 3. Maintain ~30% cavalry ratio in combat units
+    if n_total > 2:
+        cav_ratio = n_cav / n_total
+        if cav_ratio < 0.3 and econ.gold >= 6:
+            if econ.can_afford(UNIT_COST["cavalry"]):
+                actions.append({"unit_idx": -1, "type": "produce_unit", "unit_type": "cavalry"})
+                return
+
     # Priority 3: Maintain ~30% archer ratio in combat units
     if n_total > 2:
         current_ratio = n_arc / n_total

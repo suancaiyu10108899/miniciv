@@ -1,0 +1,95 @@
+{
+  "mode": "paired",
+  "ai_a": "flatmc",
+  "ai_b": "greedy",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 80,
+  "city_damage": 5,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.4775,
+  "ai_b_winrate": 0.5225,
+  "p0_winrate": 0.5425,
+  "p0_std": 0.4723,
+  "p0_ci95": 0.0488,
+  "ai_a_std": 0.1609,
+  "ai_a_ci95": 0.049,
+  "conquest_rate": 0.035,
+  "construction_rate": 0.03,
+  "tiebreak_rate": 0.935,
+  "avg_turns": 77.88,
+  "avg_dead": 25.56,
+  "ai_a_units_mean": 30.93,
+  "ai_a_units_std": 21.25,
+  "ai_b_units_mean": 31.32,
+  "ai_b_units_std": 20.55,
+  "ai_a_resources_mean": 958.9,
+  "ai_a_resources_std": 343.9,
+  "ai_b_resources_mean": 970.2,
+  "ai_b_resources_std": 337.0,
+  "ai_a_construction_mean": 3.04,
+  "ai_a_construction_std": 0.21,
+  "ai_b_construction_mean": 3.06,
+  "ai_b_construction_std": 0.25,
+  "ai_a_resource_efficiency": 0.5,
+  "ai_b_resource_efficiency": 0.54,
+  "ai_a_unit_composition": {
+    "infantry": {
+      "alive_mean": 14.49,
+      "dead_mean": 11.36
+    },
+    "cavalry": {
+      "alive_mean": 0.76,
+      "dead_mean": 0.28
+    },
+    "archer": {
+      "alive_mean": 0.02,
+      "dead_mean": 0.0
+    },
+    "scout": {
+      "alive_mean": 0.73,
+      "dead_mean": 0.27
+    },
+    "worker": {
+      "alive_mean": 2.38,
+      "dead_mean": 0.64
+    }
+  },
+  "ai_b_unit_composition": {
+    "infantry": {
+      "alive_mean": 14.93,
+      "dead_mean": 11.82
+    },
+    "cavalry": {
+      "alive_mean": 0.43,
+      "dead_mean": 0.12
+    },
+    "archer": {
+      "alive_mean": 0.01,
+      "dead_mean": 0.01
+    },
+    "scout": {
+      "alive_mean": 0.55,
+      "dead_mean": 0.45
+    },
+    "worker": {
+      "alive_mean": 2.4,
+      "dead_mean": 0.62
+    }
+  },
+  "p0_by_victory_type": {
+    "conquest": {
+      "p0_winrate": 0.5714,
+      "n_games": 14
+    },
+    "construction": {
+      "p0_winrate": 0.5833,
+      "n_games": 12
+    },
+    "tiebreak": {
+      "p0_winrate": 0.5401,
+      "n_games": 374
+    }
+  }
+}

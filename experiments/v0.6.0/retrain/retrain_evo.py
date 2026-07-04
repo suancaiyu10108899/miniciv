@@ -87,7 +87,8 @@ def main():
     old_weights = None
     if old_weights_path.exists():
         with open(old_weights_path) as f:
-            old_weights = json.load(f)
+            old_data = json.load(f)
+        old_weights = old_data.get("weights", old_data)
         old_wr = evaluate_weights(old_weights, "greedy", EVAL_GAMES)
         print(f"\nOld Evo weights vs Greedy: {old_wr:.1%}")
 

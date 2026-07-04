@@ -1,0 +1,95 @@
+{
+  "mode": "paired",
+  "ai_a": "greedy",
+  "ai_b": "aggressive",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 80,
+  "city_damage": 5,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.9875,
+  "ai_b_winrate": 0.0125,
+  "p0_winrate": 0.4975,
+  "p0_std": 0.0792,
+  "p0_ci95": 0.049,
+  "ai_a_std": 0.0783,
+  "ai_a_ci95": 0.0109,
+  "conquest_rate": 0.1825,
+  "construction_rate": 0.0125,
+  "tiebreak_rate": 0.805,
+  "avg_turns": 73.43,
+  "avg_dead": 16.04,
+  "ai_a_units_mean": 24.9,
+  "ai_a_units_std": 19.26,
+  "ai_b_units_mean": 21.25,
+  "ai_b_units_std": 17.44,
+  "ai_a_resources_mean": 839.5,
+  "ai_a_resources_std": 353.7,
+  "ai_b_resources_mean": 477.8,
+  "ai_b_resources_std": 114.6,
+  "ai_a_construction_mean": 3.01,
+  "ai_a_construction_std": 0.11,
+  "ai_b_construction_mean": 2.04,
+  "ai_b_construction_std": 0.32,
+  "ai_a_resource_efficiency": 1.17,
+  "ai_b_resource_efficiency": 0.03,
+  "ai_a_unit_composition": {
+    "infantry": {
+      "alive_mean": 14.71,
+      "dead_mean": 5.23
+    },
+    "cavalry": {
+      "alive_mean": 0.93,
+      "dead_mean": 0.04
+    },
+    "archer": {
+      "alive_mean": 0.0,
+      "dead_mean": 0.0
+    },
+    "scout": {
+      "alive_mean": 0.78,
+      "dead_mean": 0.22
+    },
+    "worker": {
+      "alive_mean": 2.88,
+      "dead_mean": 0.12
+    }
+  },
+  "ai_b_unit_composition": {
+    "infantry": {
+      "alive_mean": 3.85,
+      "dead_mean": 3.7
+    },
+    "cavalry": {
+      "alive_mean": 2.41,
+      "dead_mean": 1.2
+    },
+    "archer": {
+      "alive_mean": 0.17,
+      "dead_mean": 0.16
+    },
+    "scout": {
+      "alive_mean": 0.77,
+      "dead_mean": 0.23
+    },
+    "worker": {
+      "alive_mean": 3.61,
+      "dead_mean": 5.14
+    }
+  },
+  "p0_by_victory_type": {
+    "conquest": {
+      "p0_winrate": 0.5205,
+      "n_games": 73
+    },
+    "construction": {
+      "p0_winrate": 0.6,
+      "n_games": 5
+    },
+    "tiebreak": {
+      "p0_winrate": 0.4907,
+      "n_games": 322
+    }
+  }
+}

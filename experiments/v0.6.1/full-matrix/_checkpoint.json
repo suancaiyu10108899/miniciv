@@ -1,0 +1,186 @@
+{
+  "completed": 7000,
+  "total": 7200,
+  "pairs": {
+    "random_vs_random": {
+      "n": 200,
+      "ai_a_wins": 203,
+      "total_games": 400
+    },
+    "random_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 49,
+      "total_games": 400
+    },
+    "random_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 190,
+      "total_games": 400
+    },
+    "random_vs_flatmc": {
+      "n": 200,
+      "ai_a_wins": 23,
+      "total_games": 400
+    },
+    "random_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 39,
+      "total_games": 400
+    },
+    "random_vs_evo": {
+      "n": 200,
+      "ai_a_wins": 121,
+      "total_games": 400
+    },
+    "greedy_vs_random": {
+      "n": 200,
+      "ai_a_wins": 347,
+      "total_games": 400
+    },
+    "greedy_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 196,
+      "total_games": 400
+    },
+    "greedy_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 394,
+      "total_games": 400
+    },
+    "greedy_vs_flatmc": {
+      "n": 200,
+      "ai_a_wins": 196,
+      "total_games": 400
+    },
+    "greedy_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 18,
+      "total_games": 400
+    },
+    "greedy_vs_evo": {
+      "n": 200,
+      "ai_a_wins": 123,
+      "total_games": 400
+    },
+    "aggressive_vs_random": {
+      "n": 200,
+      "ai_a_wins": 200,
+      "total_games": 400
+    },
+    "aggressive_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 2,
+      "total_games": 400
+    },
+    "aggressive_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 196,
+      "total_games": 400
+    },
+    "aggressive_vs_flatmc": {
+      "n": 200,
+      "ai_a_wins": 5,
+      "total_games": 400
+    },
+    "aggressive_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 1,
+      "total_games": 400
+    },
+    "aggressive_vs_evo": {
+      "n": 200,
+      "ai_a_wins": 57,
+      "total_games": 400
+    },
+    "flatmc_vs_random": {
+      "n": 200,
+      "ai_a_wins": 361,
+      "total_games": 400
+    },
+    "flatmc_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 195,
+      "total_games": 400
+    },
+    "flatmc_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 397,
+      "total_games": 400
+    },
+    "flatmc_vs_flatmc": {
+      "n": 200,
+      "ai_a_wins": 208,
+      "total_games": 400
+    },
+    "flatmc_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 18,
+      "total_games": 400
+    },
+    "flatmc_vs_evo": {
+      "n": 200,
+      "ai_a_wins": 130,
+      "total_games": 400
+    },
+    "dqn_trained_vs_random": {
+      "n": 200,
+      "ai_a_wins": 353,
+      "total_games": 400
+    },
+    "dqn_trained_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 390,
+      "total_games": 400
+    },
+    "dqn_trained_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 400,
+      "total_games": 400
+    },
+    "dqn_trained_vs_flatmc": {
+      "n": 200,
+      "ai_a_wins": 392,
+      "total_games": 400
+    },
+    "dqn_trained_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 200,
+      "total_games": 400
+    },
+    "dqn_trained_vs_evo": {
+      "n": 200,
+      "ai_a_wins": 127,
+      "total_games": 400
+    },
+    "evo_vs_random": {
+      "n": 200,
+      "ai_a_wins": 281,
+      "total_games": 400
+    },
+    "evo_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 263,
+      "total_games": 400
+    },
+    "evo_vs_aggressive": {
+      "n": 200,
+      "ai_a_wins": 346,
+      "total_games": 400
+    },
+    "evo_vs_flatmc": {
+      "n": 174,
+      "ai_a_wins": 233,
+      "total_games": 348
+    },
+    "evo_vs_dqn_trained": {
+      "n": 200,
+      "ai_a_wins": 282,
+      "total_games": 400
+    },
+    "evo_vs_evo": {
+      "n": 26,
+      "ai_a_wins": 25,
+      "total_games": 52
+    }
+  }
+}

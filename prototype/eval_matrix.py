@@ -289,6 +289,12 @@ def _run_one_paired(args):
             result[f"p1_{ut}_alive"] = _count_units_by_type(gs.units, 1, ut, True)
             result[f"p0_{ut}_dead"] = _count_units_by_type(gs.dead_units, 0, ut, False)
             result[f"p1_{ut}_dead"] = _count_units_by_type(gs.dead_units, 1, ut, False)
+            # Damage dealt/taken (all units including dead)
+            all_units = gs.units + gs.dead_units
+            result[f"p0_{ut}_damage_dealt"] = sum(u.damage_dealt for u in all_units if u.player_id == 0 and u.unit_type == ut)
+            result[f"p1_{ut}_damage_dealt"] = sum(u.damage_dealt for u in all_units if u.player_id == 1 and u.unit_type == ut)
+            result[f"p0_{ut}_damage_taken"] = sum(u.damage_taken for u in all_units if u.player_id == 0 and u.unit_type == ut)
+            result[f"p1_{ut}_damage_taken"] = sum(u.damage_taken for u in all_units if u.player_id == 1 and u.unit_type == ut)
         return result
 
     g1 = _game_dict(gs1, e1_0, e1_1, ai_a_name, ai_b_name, seed, True)

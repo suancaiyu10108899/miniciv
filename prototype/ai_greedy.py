@@ -343,30 +343,80 @@ def _compute_adaptive_counter(gs, pid, opp_model):
 # =============================================================================
 
 def _greedy_worker_v3(w, ui, gs, pid, strategy, rng):
-    """Worker v5: build new facilities > produce on existing ones.
-    If C5 is researched or we're in construction mode, prioritize expansion."""
+    """Worker v6: diversify facility types (farm/lumbermill/mine), then expand."""
     terrain = get_terrain(gs.grid, w.x, w.y)
     buildable = terrain_buildable(terrain)
     facility = gs.grid[w.y][w.x].get("facility")
 
-    # v5: Need more facilities for construction victory → prioritize building
     c5_done = "C5" in gs.techs[pid].completed
     in_construction = strategy in ("construction", "defensive_construction")
     need_expansion = c5_done or in_construction
 
+    # Count existing facility types
+    from prototype.mapgen import get_facility
+    type_counts = {"farm": 0, "lumbermill": 0, "mine": 0}
+    for y in range(gs.size):
+        for x in range(gs.size):
+            f = get_facility(gs.grid, x, y)
+            if f is not None and f.player_id == pid:
+                if f.facility_type in type_counts:
+                    type_counts[f.facility_type] += 1
+
+    has_all_types = all(v >= 1 for v in type_counts.values())
+    total_facs = sum(type_counts.values())
+
+    # On existing facility: produce or move to diversify
     if facility and facility.player_id == pid:
-        if need_expansion:
-            # Move to find a new buildable tile instead of staying here
-            best = _nearest_buildable(w, gs, pid)
-            if best:
-                return _move_to(w, ui, gs, best, rng)
+        if need_expansion or not has_all_types:
+            # Expand: find new buildable tile, prioritizing missing types
+            target = _nearest_missing_type(w, gs, pid, type_counts)
+            if not target:
+                target = _nearest_buildable(w, gs, pid)
+            if target:
+                return _move_to(w, ui, gs, target, rng)
         return {"unit_idx": ui, "type": "produce"}
+
+    # Build what we're standing on — but prefer missing types
     if buildable and not facility:
-        return {"unit_idx": ui, "type": "build"}
-    best = _nearest_buildable(w, gs, pid)
-    if best:
-        return _move_to(w, ui, gs, best, rng)
+        # If we have 0 of this type, definitely build
+        if type_counts.get(buildable, 0) == 0:
+            return {"unit_idx": ui, "type": "build"}
+        # If we have all types, build if total < 6 (expand economy)
+        if has_all_types and total_facs < 6:
+            return {"unit_idx": ui, "type": "build"}
+        # If this type is underrepresented, build
+        avg_per_type = total_facs / 3
+        if type_counts.get(buildable, 0) < avg_per_type:
+            return {"unit_idx": ui, "type": "build"}
+        # Otherwise move to find missing types
+        target = _nearest_missing_type(w, gs, pid, type_counts)
+        if target:
+            return _move_to(w, ui, gs, target, rng)
+
+    # Move to nearest useful buildable
+    target = _nearest_missing_type(w, gs, pid, type_counts) if not has_all_types else _nearest_buildable(w, gs, pid)
+    if target:
+        return _move_to(w, ui, gs, target, rng)
     return {"unit_idx": ui, "type": "end_turn"}
+
+
+def _nearest_missing_type(unit, gs, pid, type_counts):
+    """Find nearest buildable tile for a facility type we don't have enough of."""
+    from prototype.terrain import terrain_buildable
+    best, best_d = None, 999
+    for y in range(gs.size):
+        for x in range(gs.size):
+            b = terrain_buildable(get_terrain(gs.grid, x, y))
+            if not b: continue
+            if gs.grid[y][x].get("facility"): continue
+            # Prioritize types with 0 count
+            if type_counts.get(b, 0) > 0 and all(v >= 1 for v in type_counts.values()):
+                pass  # Still consider if we have all types
+            d = abs(unit.x - x) + abs(unit.y - y)  # simplified torus distance
+            if d < best_d:
+                best_d = d
+                best = (x, y)
+    return best
 
 
 # =============================================================================

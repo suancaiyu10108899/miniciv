@@ -20,6 +20,8 @@ class Unit:
     ranged: bool
     range_dist: int       # 0 = 近战
     alive: bool = True
+    damage_dealt: int = 0   # 累计造成伤害
+    damage_taken: int = 0   # 累计承受伤害
 
     @classmethod
     def create(cls, unit_type: str, player_id: int, x: int, y: int) -> "Unit":

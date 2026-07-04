@@ -42,6 +42,11 @@ def resolve_melee(attacker, defender, terrain_att: Terrain, terrain_def: Terrain
 
     defender.hp -= att_damage
     attacker.hp -= def_damage
+    # Track damage dealt/taken
+    attacker.damage_dealt += att_damage
+    attacker.damage_taken += def_damage
+    defender.damage_dealt += def_damage
+    defender.damage_taken += att_damage
 
     if defender.hp <= 0:
         defender.hp = 0
@@ -73,6 +78,8 @@ def resolve_ranged(archer, target, terrain_target: Terrain) -> dict:
     damage = max(1, archer.atk - target.def_ - def_bonus)
 
     target.hp -= damage
+    archer.damage_dealt += damage
+    target.damage_taken += damage
     if target.hp <= 0:
         target.hp = 0
         target.alive = False

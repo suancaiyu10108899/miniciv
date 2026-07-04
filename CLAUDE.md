@@ -2,12 +2,10 @@
 
 ## 当前阶段
 
-**v0.6.2-dev — Multi-Agent 设计空间探索 + 工人经济修复。**
+**v0.6.3-dev — 重构前最后一轮：六边形决策 + 终版矩阵。**
 
-> 三轮矩阵完成（v0.6.0/0.6.1/0.6.2, 43,200 games）。
-> 下一步：工人经济多样化 → 弓手入场 → AI重训 → 验证矩阵。
-> 深夜自主执行：damage_dealt/taken + 工人经济修复 + Evo打表 + 完整矩阵。
-> 详细 → `docs/planning/2026-07-05-multi-agent-design-space.md`
+> v0.6.3 矩阵运行中（42%）。弓手 4.4/game，征服+建设首次过半（58%）。
+> 剩余决策：方格 vs 六边形。完整路线图 → `docs/planning/2026-07-05-pre-rebuild-roadmap.md`
 
 ## 当前任务（Phase 1 — 执行中）
 

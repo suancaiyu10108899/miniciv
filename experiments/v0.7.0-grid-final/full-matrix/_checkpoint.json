@@ -14,7 +14,7 @@
     },
     "random_vs_aggressive": {
       "n": 100,
-      "ai_a_wins": 98,
+      "ai_a_wins": 97,
       "total_games": 200
     }
   }

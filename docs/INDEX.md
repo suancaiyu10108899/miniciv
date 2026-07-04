@@ -13,6 +13,7 @@
 | [WORKFLOW.md](WORKFLOW.md) | 开发纪律 + Agent 规范 | 写代码/跑实验/用 Agent 前 |
 | [AI-EVAL.md](AI-EVAL.md) | AI 评估标准化协议 | 评估 AI 性能时 |
 | [AI-AUDIT.md](AI-AUDIT.md) | 每个 AI 的实现审计和诊断 | 修复/改进 AI 时 |
+| [ANALYSIS-DIMENSIONS.md](ANALYSIS-DIMENSIONS.md) | 游戏分析维度框架（7域 N维度, 分层可扩展）| 设计实验/分析数据时 |
 
 ## 设计（已冻结）
 

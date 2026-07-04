@@ -1,20 +1,20 @@
 {
   "best_winrate": 1.0,
   "weights": {
-    "attack_adjacent": 4.638363804222239,
-    "rush_enemy_city": 5.0,
+    "attack_adjacent": 2.3354085522879675,
+    "rush_enemy_city": 3.13723020851545,
     "defend_own_city": 2.4025953908244473,
-    "intercept_near_city": 0.7871636396974163,
-    "retreat_hp_threshold": 0.7334212622635724,
-    "terrain_def_weight": 0.12622097487420625,
-    "retreat_terrain_bonus": 0.43307376525654834,
-    "archer_keep_distance": 2.9751755322501383,
-    "archer_prefer_high": 0.7402206469785755,
-    "build_efficiency": 1.9996350045050257,
-    "resource_variety": 0.35965984184137256,
+    "intercept_near_city": 2.4386397036809595,
+    "retreat_hp_threshold": 0.05082216492156571,
+    "terrain_def_weight": 0.025701037892571277,
+    "retreat_terrain_bonus": 0.21325304531473027,
+    "archer_keep_distance": 4.645493081323085,
+    "archer_prefer_high": 0.9710783776136181,
+    "build_efficiency": 2.4949965880835383,
+    "resource_variety": 0.11277599568400232,
     "research_priority": 0.5033674301034068,
-    "military_tech_bias": 0.8266311596500596,
-    "cavalry_production": 0.8121546263287767,
-    "archer_production": 0.7387274190120874
+    "military_tech_bias": 0.8780095992040405,
+    "cavalry_production": 1.7835574606003237,
+    "archer_production": 0.6432893279470511
   }
 }

@@ -1,0 +1,95 @@
+{
+  "mode": "paired",
+  "ai_a": "evo",
+  "ai_b": "aggressive",
+  "n_seeds": 200,
+  "n_games": 400,
+  "city_hp": 80,
+  "city_damage": 5,
+  "size": 15,
+  "gen": "balanced",
+  "ai_a_winrate": 0.9625,
+  "ai_b_winrate": 0.0375,
+  "p0_winrate": 0.5075,
+  "p0_std": 0.1276,
+  "p0_ci95": 0.049,
+  "ai_a_std": 0.1412,
+  "ai_a_ci95": 0.0186,
+  "conquest_rate": 0.0575,
+  "construction_rate": 0.7525,
+  "tiebreak_rate": 0.19,
+  "avg_turns": 39.71,
+  "avg_dead": 11.04,
+  "ai_a_units_mean": 37.86,
+  "ai_a_units_std": 18.86,
+  "ai_b_units_mean": 18.58,
+  "ai_b_units_std": 12.63,
+  "ai_a_resources_mean": 299.4,
+  "ai_a_resources_std": 279.6,
+  "ai_b_resources_mean": 354.7,
+  "ai_b_resources_std": 117.6,
+  "ai_a_construction_mean": 4.52,
+  "ai_a_construction_std": 1.09,
+  "ai_b_construction_mean": 2.02,
+  "ai_b_construction_std": 0.22,
+  "ai_a_resource_efficiency": 3.2,
+  "ai_b_resource_efficiency": 0.11,
+  "ai_a_unit_composition": {
+    "infantry": {
+      "alive_mean": 15.98,
+      "dead_mean": 1.79
+    },
+    "cavalry": {
+      "alive_mean": 13.52,
+      "dead_mean": 2.14
+    },
+    "archer": {
+      "alive_mean": 0.38,
+      "dead_mean": 0.05
+    },
+    "scout": {
+      "alive_mean": 0.6,
+      "dead_mean": 0.4
+    },
+    "worker": {
+      "alive_mean": 2.96,
+      "dead_mean": 0.04
+    }
+  },
+  "ai_b_unit_composition": {
+    "infantry": {
+      "alive_mean": 4.85,
+      "dead_mean": 2.52
+    },
+    "cavalry": {
+      "alive_mean": 2.56,
+      "dead_mean": 0.99
+    },
+    "archer": {
+      "alive_mean": 0.07,
+      "dead_mean": 0.03
+    },
+    "scout": {
+      "alive_mean": 0.71,
+      "dead_mean": 0.28
+    },
+    "worker": {
+      "alive_mean": 3.77,
+      "dead_mean": 2.79
+    }
+  },
+  "p0_by_victory_type": {
+    "conquest": {
+      "p0_winrate": 0.4348,
+      "n_games": 23
+    },
+    "construction": {
+      "p0_winrate": 0.4983,
+      "n_games": 301
+    },
+    "tiebreak": {
+      "p0_winrate": 0.5658,
+      "n_games": 76
+    }
+  }
+}

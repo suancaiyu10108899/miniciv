@@ -1,0 +1,21 @@
+{
+  "completed": 500,
+  "total": 7200,
+  "pairs": {
+    "random_vs_random": {
+      "n": 200,
+      "ai_a_wins": 200,
+      "total_games": 400
+    },
+    "random_vs_greedy": {
+      "n": 200,
+      "ai_a_wins": 336,
+      "total_games": 400
+    },
+    "random_vs_aggressive": {
+      "n": 100,
+      "ai_a_wins": 98,
+      "total_games": 200
+    }
+  }
+}

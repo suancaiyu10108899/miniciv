@@ -57,9 +57,9 @@ UNIT_COST = {
 CAVALRY_CHARGE_BONUS = 10  # 骑兵走2格平原后攻击→额外ATK
 
 # ─── 城市 ──────────────────────────────────────────
-CITY_HP = 100
-CITY_DEF = 10
-CITY_DAMAGE = 10  # v0.6.0: lowered from 15 to make conquest more viable
+CITY_HP = 80   # v0.6.2: 100→80, faster conquest
+CITY_DEF = 5    # v0.6.2: 10→5, units deal more damage to cities
+CITY_DAMAGE = 5  # v0.6.2: 15→10→5, less attrition on occupiers
 CITY_BASE_FOOD = 1  # 城市自身每回合+1粮
 
 # ─── 经济 ──────────────────────────────────────────

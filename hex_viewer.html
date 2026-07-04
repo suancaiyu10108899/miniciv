@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>六边形网格评估 — miniciv Hex Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1b2a;color:#e0e0e0;font-family:monospace;display:flex;height:100vh}
+#map{flex:1;position:relative;overflow:auto}
+#panel{width:280px;background:#16213e;padding:16px;border-left:2px solid #0f3460;overflow-y:auto}
+canvas{display:block;margin:20px auto}
+h3{color:#a0a0cb;margin-bottom:8px;font-size:14px}
+.info-row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+.info-label{color:#a0a0cb}.info-value{color:#e0e0e0;font-weight:600}
+.p0{color:#42a5f5}.p1{color:#ef5350}
+button{display:block;width:100%;padding:8px;margin:6px 0;background:#0f3460;color:#e0e0e0;border:1px solid #1a5276;border-radius:4px;cursor:pointer;font-size:13px}
+button:hover{background:#1a5276}
+button.active{background:#e94560;border-color:#e94560}
+.legend{margin-top:12px;font-size:12px;line-height:1.8}
+.legend span{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:4px;vertical-align:middle}
+.tooltip{position:fixed;background:rgba(13,27,42,.95);border:1px solid #0f3460;padding:8px 10px;font-size:12px;border-radius:4px;pointer-events:none;display:none;z-index:100}
+</style>
+</head>
+<body>
+<div id="map"><canvas id="cv"></canvas></div>
+<div id="panel">
+  <h3>六边形网格评估</h3>
+  <div class="info-row"><span class="info-label">网格</span><span class="info-value">半径7, 轴向坐标(q,r)</span></div>
+  <div class="info-row"><span class="info-label">总格数</span><span class="info-value" id="total-cells">--</span></div>
+  <div class="info-row"><span class="info-label">选中单位</span><span class="info-value" id="sel-unit">无</span></div>
+  <div class="info-row"><span class="info-label">移动范围</span><span class="info-value" id="move-range">--</span></div>
+  <hr style="border-color:#0f3460;margin:10px 0">
+  <div class="info-row"><span class="info-label">P0 单位</span><span class="info-value p0" id="p0-units">--</span></div>
+  <div class="info-row"><span class="info-label">P1 单位</span><span class="info-value p1" id="p1-units">--</span></div>
+  <div class="info-row"><span class="info-label">当前回合</span><span class="info-value">P0</span></div>
+  <hr style="border-color:#0f3460;margin:10px 0">
+  <button id="btn-reset">重置</button>
+  <button id="btn-ai">AI 移动一步</button>
+  <div class="legend">
+    <b>地形:</b><br>
+    <span style="background:#c8e6c9"></span> 平原 DEF=0<br>
+    <span style="background:#388e3c"></span> 森林 DEF=10<br>
+    <span style="background:#9e9e9e"></span> 山地 DEF=15<br>
+    <span style="background:#64b5f6"></span> 水域 (不可通行)<br>
+    <span style="background:#8d6e63"></span> 城市 DEF=25<br><br>
+    <b>单位:</b><br>
+    <span style="background:#1565c0;color:#fff;text-align:center">I</span> 步兵 (ATK45/DEF30)<br>
+    <span style="background:#c62828;color:#fff;text-align:center">C</span> 骑兵 (ATK60/DEF15/冲锋+10)<br>
+    <span style="background:#ff8f00;color:#fff;text-align:center">A</span> 弓手 (ATK50/DEF10/射程2)<br>
+    <span style="background:#6a1b9a;color:#fff;text-align:center">W</span> 工人 (ATK0/DEF0)<br>
+    <hr style="border-color:#0f3460;margin:8px 0">
+    <b>操作:</b> 点击单位选中 → 点击蓝框移动<br>
+    <b>对比方格:</b> 6方向等价(无斜角陷阱)<br>
+    邻居数: 6 vs 方格4<br>
+    距离= max(|dq|,|dr|,|dq+dr|)
+  </div>
+</div>
+<div class="tooltip" id="tt"></div>
+<script>
+// === Hex Math ===
+const RADIUS = 7;
+const HEX_SIZE = 28;
+
+function hexToPixel(q, r) {
+  const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
+  const y = HEX_SIZE * (3./2 * r);
+  return [x + 500, y + 400];
+}
+
+function pixelToHex(px, py) {
+  px = (px - 500) / HEX_SIZE;
+  py = (py - 400) / HEX_SIZE;
+  const q = (Math.sqrt(3)/3 * px - 1./3 * py);
+  const r = (2./3 * py);
+  return hexRound(q, r);
+}
+
+function hexRound(q, r) {
+  const s = -q - r;
+  let rq = Math.round(q), rr = Math.round(r), rs = Math.round(s);
+  const dq = Math.abs(rq - q), dr = Math.abs(rr - r), ds = Math.abs(rs - s);
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+  return [rq, rr];
+}
+
+function hexDistance(q1, r1, q2, r2) {
+  return Math.max(Math.abs(q1-q2), Math.abs(r1-r2), Math.abs(q1+r1-q2-r2));
+}
+
+const NEIGHBORS = [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+
+// === Game State ===
+const TERRAIN = ['PLAIN','FOREST','MOUNTAIN','WATER','CITY'];
+const T_COLORS = {'PLAIN':'#c8e6c9','FOREST':'#388e3c','MOUNTAIN':'#9e9e9e','WATER':'#64b5f6','CITY':'#8d6e63'};
+const T_DEF = {'PLAIN':0,'FOREST':10,'MOUNTAIN':15,'WATER':0,'CITY':25};
+
+let grid = {}; // key: "q,r" -> {terrain, city_pid}
+let units = [];
+let selectedUnit = null;
+let moveTargets = new Set();
+let currentPlayer = 0;
+
+function inBounds(q, r) { return hexDistance(0,0,q,r) <= RADIUS; }
+
+function key(q, r) { return q+','+r; }
+
+function initGame() {
+  grid = {}; units = []; selectedUnit = null; moveTargets = new Set(); currentPlayer = 0;
+  // Generate terrain
+  for (let q = -RADIUS; q <= RADIUS; q++) {
+    for (let r = -RADIUS; r <= RADIUS; r++) {
+      if (!inBounds(q,r)) continue;
+      const rng = Math.random();
+      let t;
+      if (rng < 0.35) t = 'PLAIN';
+      else if (rng < 0.58) t = 'FOREST';
+      else if (rng < 0.75) t = 'MOUNTAIN';
+      else if (rng < 0.85) t = 'WATER';
+      else t = 'PLAIN';
+      grid[key(q,r)] = {terrain: t, city_pid: -1};
+    }
+  }
+  // Cities at opposite sides
+  const city0 = [0, -RADIUS+1];
+  const city1 = [0, RADIUS-1];
+  grid[key(...city0)].terrain = 'CITY'; grid[key(...city0)].city_pid = 0;
+  grid[key(...city1)].terrain = 'CITY'; grid[key(...city1)].city_pid = 1;
+  // Ensure plains near cities
+  for (const [cq, cr] of [city0, city1]) {
+    for (const [dq, dr] of NEIGHBORS) {
+      const nq = cq+dq, nr = cr+dr;
+      if (inBounds(nq,nr) && grid[key(nq,nr)].terrain === 'WATER') {
+        grid[key(nq,nr)].terrain = 'PLAIN';
+      }
+    }
+  }
+  // Units
+  for (const [pid, cq, cr] of [[0, ...city0], [1, ...city1]]) {
+    for (const [dq, dr] of NEIGHBORS) {
+      const nq = cq+dq, nr = cr+dr;
+      if (!inBounds(nq,nr)) continue;
+      const t = grid[key(nq,nr)].terrain;
+      if (t === 'WATER') continue;
+      if (units.filter(u => u.q === nq && u.r === nr).length === 0) {
+        if (units.filter(u => u.pid === pid && u.utype === 'infantry').length < 2) {
+          units.push({pid, utype:'infantry', q:nq, r:nr, hp:100, atk:45, def:30, move:1});
+        } else if (units.filter(u => u.pid === pid && u.utype === 'cavalry').length < 1) {
+          units.push({pid, utype:'cavalry', q:nq, r:nr, hp:80, atk:60, def:15, move:2});
+        } else if (units.filter(u => u.pid === pid && u.utype === 'archer').length < 1) {
+          units.push({pid, utype:'archer', q:nq, r:nr, hp:60, atk:50, def:10, move:1});
+        }
+        break;
+      }
+    }
+  }
+  document.getElementById('p0-units').textContent = units.filter(u=>u.pid===0).length + ' 单位';
+  document.getElementById('p1-units').textContent = units.filter(u=>u.pid===1).length + ' 单位';
+  document.getElementById('total-cells').textContent = Object.keys(grid).length;
+  render();
+}
+
+function getReachable(unit) {
+  const reachable = new Set();
+  const visited = new Set([key(unit.q, unit.r)]);
+  const queue = [[unit.q, unit.r, 0]];
+  while (queue.length > 0) {
+    const [q, r, d] = queue.shift();
+    if (d >= unit.move) continue;
+    for (const [dq, dr] of NEIGHBORS) {
+      const nq = q+dq, nr = r+dr;
+      const k = key(nq, nr);
+      if (!inBounds(nq,nr) || visited.has(k)) continue;
+      visited.add(k);
+      const cell = grid[k];
+      if (!cell || cell.terrain === 'WATER') continue;
+      if (unit.utype === 'cavalry' && cell.terrain === 'MOUNTAIN') continue;
+      const blocker = units.find(u => u.q === nq && u.r === nr && u.pid !== unit.pid);
+      if (blocker) { reachable.add(k); continue; } // can attack
+      const friendSame = units.filter(u => u.q === nq && u.r === nr && u.pid === unit.pid && (u.utype==='worker')===(unit.utype==='worker'));
+      if (friendSame.length > 0) continue; // stacking limit
+      reachable.add(k);
+      queue.push([nq, nr, d+1]);
+    }
+  }
+  return reachable;
+}
+
+function render() {
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  cv.width = 1100; cv.height = 900;
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // Draw hexes
+  for (const [k, cell] of Object.entries(grid)) {
+    const [q, r] = k.split(',').map(Number);
+    const [cx, cy] = hexToPixel(q, r);
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.PI/180 * (60*i - 30);
+      const hx = cx + HEX_SIZE * Math.cos(angle);
+      const hy = cy + HEX_SIZE * Math.sin(angle);
+      if (i===0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+    }
+    ctx.closePath();
+    ctx.fillStyle = T_COLORS[cell.terrain] || '#ccc';
+    ctx.fill();
+    ctx.strokeStyle = '#1a1a2e';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Move targets
+    if (moveTargets.has(k)) {
+      ctx.strokeStyle = '#42a5f5';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // City marker
+    if (cell.city_pid >= 0) {
+      ctx.fillStyle = cell.city_pid === 0 ? '#1565c0' : '#c62828';
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 2*Math.PI); ctx.fill();
+    }
+  }
+
+  // Draw units
+  for (const u of units) {
+    const [cx, cy] = hexToPixel(u.q, u.r);
+    const colors = {'infantry':'#1565c0','cavalry':'#c62828','archer':'#ff8f00','worker':'#6a1b9a'};
+    const labels = {'infantry':'I','cavalry':'C','archer':'A','worker':'W'};
+    ctx.fillStyle = u.pid === 1 ? (u.utype==='infantry'?'#c62828':u.utype==='cavalry'?'#ff5252':u.utype==='archer'?'#ffab00':'#ce93d8') : colors[u.utype];
+    ctx.beginPath(); ctx.arc(cx, cy, 10, 0, 2*Math.PI); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[u.utype], cx, cy+4);
+
+    // Selected unit highlight
+    if (u === selectedUnit) {
+      ctx.strokeStyle = '#ffeb3b';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, 13, 0, 2*Math.PI); ctx.stroke();
+    }
+  }
+
+  document.getElementById('sel-unit').textContent = selectedUnit ?
+    `P${selectedUnit.pid} ${selectedUnit.utype} (${selectedUnit.q},${selectedUnit.r})` : '无';
+  document.getElementById('move-range').textContent = selectedUnit ?
+    `${selectedUnit.move} 步, ${moveTargets.size} 个可移动格` : '--';
+}
+
+// Events
+document.getElementById('cv').addEventListener('click', (e) => {
+  const rect = e.target.getBoundingClientRect();
+  const [q, r] = pixelToHex(e.clientX - rect.left, e.clientY - rect.top);
+  const k = key(q, r);
+  if (!inBounds(q, r) || !grid[k]) return;
+
+  if (moveTargets.has(k)) {
+    // Move to target
+    const enemy = units.find(u => u.q === q && u.r === r && u.pid !== selectedUnit.pid);
+    if (enemy) {
+      const dmg = Math.max(1, selectedUnit.atk - enemy.def);
+      enemy.hp -= dmg;
+      if (enemy.hp <= 0) {
+        units = units.filter(u => u !== enemy);
+        selectedUnit.q = q; selectedUnit.r = r;
+      }
+    } else {
+      selectedUnit.q = q; selectedUnit.r = r;
+    }
+    selectedUnit = null;
+    moveTargets = new Set();
+    currentPlayer = 1 - currentPlayer;
+    document.getElementById('p0-units').textContent = units.filter(u=>u.pid===0).length + ' 单位';
+    document.getElementById('p1-units').textContent = units.filter(u=>u.pid===1).length + ' 单位';
+    render();
+    return;
+  }
+
+  // Select unit
+  const clickedUnit = units.find(u => u.q === q && u.r === r && u.pid === currentPlayer);
+  if (clickedUnit) {
+    selectedUnit = clickedUnit;
+    moveTargets = getReachable(clickedUnit);
+  } else {
+    selectedUnit = null;
+    moveTargets = new Set();
+  }
+  render();
+});
+
+// Hover tooltip
+document.getElementById('cv').addEventListener('mousemove', (e) => {
+  const rect = e.target.getBoundingClientRect();
+  const [q, r] = pixelToHex(e.clientX - rect.left, e.clientY - rect.top);
+  const k = key(q, r);
+  const tt = document.getElementById('tt');
+  if (!inBounds(q,r) || !grid[k]) { tt.style.display='none'; return; }
+  const cell = grid[k];
+  const unitHere = units.filter(u => u.q === q && u.r === r);
+  let html = `<b>(${q},${r})</b> ${cell.terrain} DEF+${T_DEF[cell.terrain]}<br>`;
+  if (cell.city_pid >= 0) html += `P${cell.city_pid} 城市<br>`;
+  if (unitHere.length > 0) {
+    for (const u of unitHere) {
+      html += `<span class="${u.pid===0?'p0':'p1'}">P${u.pid} ${u.utype} HP${u.hp}</span><br>`;
+    }
+  }
+  tt.innerHTML = html;
+  tt.style.display = 'block';
+  tt.style.left = (e.clientX + 16) + 'px';
+  tt.style.top = (e.clientY - 40) + 'px';
+});
+
+document.getElementById('cv').addEventListener('mouseleave', () => {
+  document.getElementById('tt').style.display = 'none';
+});
+
+document.getElementById('btn-reset').addEventListener('click', initGame);
+
+document.getElementById('btn-ai').addEventListener('click', () => {
+  // Simple random AI move for the non-current player
+  const myUnits = units.filter(u => u.pid === currentPlayer);
+  if (myUnits.length === 0) return;
+  const u = myUnits[Math.floor(Math.random() * myUnits.length)];
+  const reachable = [...getReachable(u)];
+  if (reachable.length > 0) {
+    const target = reachable[Math.floor(Math.random() * reachable.length)];
+    const [tq, tr] = target.split(',').map(Number);
+    u.q = tq; u.r = tr;
+  }
+  currentPlayer = 1 - currentPlayer;
+  selectedUnit = null; moveTargets = new Set();
+  render();
+});
+
+initGame();
+</script>
+</body>
+</html>

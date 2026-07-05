@@ -2,8 +2,8 @@
 
 > **唯一真相源。** 与 `prototype/constants.py` 手工同步。参数变动时同步更新两个文件。
 
-*最后同步: 2026-07-04 | constants.py git: 48a9d83*
-*v0.6.0-dev: facility门槛 8→5, Greedy v5已修复建设意图+兵种多样性, 堆叠限制已实装*
+*最后同步: 2026-07-05 | constants.py git: a006680*
+*v0.7.0-dev: facility=4, HP=80, DEF=5, DMG=5, max_t=80, 堆叠限制, 六边形原型就绪*
 
 ---
 
@@ -87,8 +87,8 @@
 ## 胜利条件
 
 1. **征服**: 敌方城市 HP ≤ 0
-2. **建设**: 完成 C5 科技 **且** 已建造 ≥ `CONSTRUCTION_VICTORY_REQUIRE_FACILITIES`（当前=8）个设施
-3. **阶梯判定**（100回合）: construction_count → city_hp → **随机**判定
+2. **建设**: 完成 C5 科技 **且** 已建造 ≥ `CONSTRUCTION_VICTORY_REQUIRE_FACILITIES`（当前=4）个设施
+3. **阶梯判定**（80回合）: construction_count → city_hp → **随机**判定
 
 ## 交替先手
 

@@ -2,13 +2,30 @@
 
 ## 当前阶段
 
-**原型阶段完成。坐标系已锁定六边形。Rust 重构准备就绪。**
+**Rust 重构准备就绪。工作模式已切换：从"纯 AI 写代码"到"人-AI 协作学习"。**
 
 > 方格终版矩阵：建设 31.5%，征服 24.1%，决定性 55.7%，P0=49.7%。
 > 六边基线矩阵：Evo 67%，整体 Cq=37.8% Cs=30.7% Tb=31.6%（Greedy 需在 Rust 阶段重写）。
-> **2026-07-05 第二 AI 完成**：全项目审计 + 真相源修复 + 六边验证 + 开发体系修补 + Rust 架构设计 + cargo 脚手架。
-> 下一步：安装 Rust → `cd miniciv-core && cargo build` → 按 `docs/rust-architecture.md` §5 逐模块实现。
-> 交接文档 → `docs/HANDOFF.md` | 完整规划 → `docs/planning/2026-07-05-pre-rebuild-audit.md`
+> **当前阻塞**：Rust 工具链未安装。安装后 → `cd miniciv-core && cargo build` → 按 Phase 2-9 推进。
+> **新模式**：每个 Phase 先讲解概念 → 人阅读提问 → AI 写代码（带教学注释）→ 人 review → 人写学习笔记。
+> 完整规划 → `docs/planning/2026-07-05-rust-implementation-plan.md` | 学习笔记 → `docs/learning/`
+
+## 工作模式（铁律）
+
+**每个 Phase 必须按以下流程，不可跳过任何步骤：**
+
+1. **概念讲解**：AI 用 5-10 分钟解释这个 Phase 要做什么、涉及的 Rust 概念、对应的 Python 参照代码
+2. **人提问**：人提出不理解的地方——AI 不准催、不准跳过
+3. **AI 写代码**：带 `// NOTE:` 教学注释，标注每个关键决策的原因
+4. **人 review**：人需能用自己的话解释核心逻辑
+5. **人写学习笔记**：`docs/learning/phase-N-<名称>.md`，至少一句话总结
+6. **门禁验证**：AI 跑测试/验证脚本，全部通过后进入下一个 Phase
+
+**反模式（原型阶段的教训，Rust 阶段禁止）：**
+- ❌ AI 连续写完多个 Phase 不等人 review
+- ❌ AI 只给代码不给解释
+- ❌ 人跳过学习笔记
+- ❌ 追求速度 > 追求理解
 
 ## 原型阶段关键成果
 

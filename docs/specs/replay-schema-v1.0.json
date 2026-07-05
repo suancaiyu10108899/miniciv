@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniciv.dev/schemas/replay-v1.0.json",
+  "title": "miniciv GameReplay v1.0",
+  "description": "Complete replay of one miniciv game. Lightweight per-turn snapshots + static terrain grid.",
+  "type": "object",
+  "required": ["format_version", "config", "turns", "result"],
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version for forward compatibility."
+    },
+    "config": {
+      "type": "object",
+      "required": ["size", "gen", "max_turns", "seed", "terrain_grid"],
+      "properties": {
+        "size": { "type": "integer", "minimum": 5, "maximum": 100 },
+        "gen": { "type": "string", "enum": ["balanced", "symmetric", "fertile", "harsh", "mountain_pass", "archipelago"] },
+        "max_turns": { "type": "integer", "minimum": 1 },
+        "seed": { "type": "integer" },
+        "terrain_grid": {
+          "type": "array",
+          "description": "size × size grid of terrain codes. 0=PLAIN 1=FOREST 2=MOUNTAIN 3=WATER 4=CITY. Stored once since terrain is static.",
+          "items": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 4 }
+          }
+        },
+        "ai_a": { "type": "string", "description": "Name of AI controlling player 0" },
+        "ai_b": { "type": "string", "description": "Name of AI controlling player 1" },
+        "grid_type": { "type": "string", "enum": ["square", "hex"], "default": "hex", "description": "Coordinate system. Added in v1.1 for hex support." }
+      }
+    },
+    "turns": {
+      "type": "array",
+      "description": "Per-turn snapshots. Index = turn number (turn 0 = initial state, turn 1 = after first actions).",
+      "items": {
+        "type": "object",
+        "required": ["turn"],
+        "properties": {
+          "turn": { "type": "integer", "minimum": 0 },
+          "units": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "pid", "x", "y", "hp"],
+              "properties": {
+                "type": { "type": "string", "enum": ["infantry", "cavalry", "archer", "scout", "worker"] },
+                "pid": { "type": "integer", "enum": [0, 1] },
+                "x": { "type": "integer" },
+                "y": { "type": "integer" },
+                "hp": { "type": "integer", "minimum": 0 },
+                "atk": { "type": "integer" },
+                "def": { "type": "integer" }
+              }
+            }
+          },
+          "cities": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["pid", "x", "y", "hp"],
+              "properties": {
+                "pid": { "type": "integer", "enum": [0, 1] },
+                "x": { "type": "integer" },
+                "y": { "type": "integer" },
+                "hp": { "type": "integer", "minimum": 0 }
+              }
+            }
+          },
+          "economies": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pid": { "type": "integer" },
+                "food": { "type": "integer" },
+                "wood": { "type": "integer" },
+                "gold": { "type": "integer" }
+              }
+            }
+          },
+          "techs": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pid": { "type": "integer" },
+                "completed": { "type": "array", "items": { "type": "string" } },
+                "researching": { "type": ["string", "null"] },
+                "research_ticks": { "type": "integer" }
+              }
+            }
+          },
+          "facility_count": {
+            "type": "object",
+            "properties": {
+              "0": { "type": "integer" },
+              "1": { "type": "integer" }
+            }
+          },
+          "facilities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "pid": { "type": "integer" },
+                "type": { "type": "string", "enum": ["farm", "lumbermill", "mine"] },
+                "x": { "type": "integer" },
+                "y": { "type": "integer" }
+              }
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "pid": { "type": "integer" },
+                "x": { "type": "integer" },
+                "y": { "type": "integer" },
+                "detail": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["winner", "victory_type", "final_turn"],
+      "properties": {
+        "winner": { "type": ["integer", "null"], "description": "null = draw or still in progress" },
+        "victory_type": { "type": ["string", "null"], "enum": ["conquest", "construction", "tiebreak_construction", "tiebreak_city_hp", "tiebreak_random", null] },
+        "final_turn": { "type": "integer" }
+      }
+    }
+  }
+}

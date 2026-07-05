@@ -2,12 +2,13 @@
 
 ## 当前阶段
 
-**原型阶段收尾完成。坐标系选定六边形。准备 Rust 重构。**
+**原型阶段完成。坐标系已锁定六边形。Rust 重构准备就绪。**
 
 > 方格终版矩阵：建设 31.5%，征服 24.1%，决定性 55.7%，P0=49.7%。
-> 六边形原型：引擎完整，3 AI 可用，对比数据支持六边（H1: 随机Evo 34% vs 方格1%）。
-> 下一步：Rust 架构设计 → 核心引擎实现 → Python 对比验证。
-> 交接文档 → `docs/HANDOFF.md`（给下一个 AI 助手的完整上下文）
+> 六边基线矩阵：Evo 67%，整体 Cq=37.8% Cs=30.7% Tb=31.6%（Greedy 需在 Rust 阶段重写）。
+> **2026-07-05 第二 AI 完成**：全项目审计 + 真相源修复 + 六边验证 + 开发体系修补 + Rust 架构设计 + cargo 脚手架。
+> 下一步：安装 Rust → `cd miniciv-core && cargo build` → 按 `docs/rust-architecture.md` §5 逐模块实现。
+> 交接文档 → `docs/HANDOFF.md` | 完整规划 → `docs/planning/2026-07-05-pre-rebuild-audit.md`
 
 ## 原型阶段关键成果
 

@@ -512,7 +512,7 @@ def _greedy_combat_v4(u, ui, gs, pid, opp_city, strategy, assessment, rally_poin
         friends_nearby = 0
         for other in gs.units:
             if other.alive and other.player_id == pid and other is not u:
-                if _td(other.x, u.x, size) + _td(other.y, u.y, size) <= 2:
+                if _hex_dist(other.x, u.x, other.y, u.y, size) <= 2:
                     friends_nearby += 1
                     if friends_nearby >= 2:
                         break
@@ -717,7 +717,7 @@ def _city_is_safe(gs, pid) -> bool:
     my_city = gs.cities[pid]
     for eu in gs.units:
         if eu.alive and eu.player_id != pid:
-            d = _td(eu.x, my_city.x, gs.size) + _td(eu.y, my_city.y, gs.size)
+            d = _hex_dist(eu.x, my_city.x, eu.y, my_city.y, gs.size)
             if d <= 2:
                 return False
     return True
@@ -731,7 +731,7 @@ def _retreat_from(unit, ui, gs, enemy, rng):
     best, best_d = [], -1
     for mv in legal:
         nx, ny = (unit.x + mv[0]) % gs.size, (unit.y + mv[1]) % gs.size
-        d = _td(nx, enemy.x, gs.size) + _td(ny, enemy.y, gs.size)
+        d = _hex_dist(nx, enemy.x, ny, enemy.y, gs.size)
         if d > best_d:
             best_d = d
             best = [mv]
@@ -749,7 +749,7 @@ def _approach_archer(unit, ui, gs, target, rng):
     best, best_score = [], -999
     for mv in legal:
         nx, ny = (unit.x + mv[0]) % gs.size, (unit.y + mv[1]) % gs.size
-        d = _td(nx, target.x, gs.size) + _td(ny, target.y, gs.size)
+        d = _hex_dist(nx, target.x, ny, target.y, gs.size)
         score = -abs(d - 2)
         t = get_terrain(gs.grid, nx, ny)
         score += terrain_def_bonus(t) * 0.1
@@ -772,7 +772,7 @@ def _nearest_buildable(unit, gs, pid):
                 continue
             if gs.grid[y][x].get("facility"):
                 continue
-            d = _td(unit.x, x, gs.size) + _td(unit.y, y, gs.size)
+            d = _hex_dist(unit.x, x, unit.y, y, gs.size)
             if d < best_d:
                 best_d = d
                 best = (x, y)
@@ -788,17 +788,17 @@ def _move_to(unit, ui, gs, target, rng, prefer_defense=False):
     best, best_score = [], -999
     for mv in legal:
         nx, ny = (unit.x + mv[0]) % gs.size, (unit.y + mv[1]) % gs.size
-        d = _td(nx, tx, gs.size) + _td(ny, ty, gs.size)
+        d = _hex_dist(nx, tx, ny, ty, gs.size)
         terrain = get_terrain(gs.grid, nx, ny)
         def_bonus = terrain_def_bonus(terrain)
-        score = -d
-        score += def_bonus * 0.15
+        score = -d * 3.0  # hex torus: distance gradient shallow, weight higher
+        score += def_bonus * 0.10
         if prefer_defense:
-            score += def_bonus * 0.3
+            score += def_bonus * 0.20
         if terrain == Terrain.WATER:
-            score -= 100
+            score -= 999
         if terrain == Terrain.MOUNTAIN and not unit.can_enter_mountain:
-            score -= 100
+            score -= 999
         if score > best_score:
             best_score = score
             best = [mv]

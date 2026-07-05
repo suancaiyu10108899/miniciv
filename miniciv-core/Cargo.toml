@@ -1,0 +1,29 @@
+[package]
+name = "miniciv-core"
+version = "0.1.0"
+edition = "2021"
+description = "miniciv hex grid strategy game engine — AI-first, deterministic, headless"
+authors = ["miniciv contributors"]
+license = "MIT"
+
+[dependencies]
+rand = "0.8"
+rand_chacha = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Python bindings (optional — enable with --features python)
+pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
+
+[features]
+default = []
+python = ["pyo3"]
+
+[lib]
+name = "miniciv_core"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

@@ -42,8 +42,6 @@
 | [sessions/2026-07-04.md](sessions/2026-07-04.md) | 回放驱动设计发现 + 堆叠修复 + 方法论文体系建设 |
 | [sessions/2026-07-03.md](sessions/2026-07-03.md) | 全矩阵 + API 泄露 + 建设胜利发现 |
 
-| [UI-PLAN.md](UI-PLAN.md) | UI 开发计划——从回放浏览器到决策可视化 | UI 相关决策时 |
-
 ## 规划
 
 | 文档 | 内容 |
@@ -64,18 +62,17 @@
 |------|------|--------|
 | `../eval_final/` | 4×4 核心全矩阵 | 16,000 |
 | `../experiments/v0.4.0/` | v0.4.0 全部实验 | ~45,000 |
-| `../experiments/v0.5.0/` | v0.5.0 实验（含全矩阵 36,000 局） | ~50,000 |
+| `../experiments/v0.6.3/` | v0.6.3 实验（建设首次>30%） | 14,400 |
+| `../experiments/v0.7.0-grid-final/` | v0.7.0 方格终版矩阵 | 10,000 |
+| `../experiments/v0.7.0-hex-baseline/` | v0.7.0 六边形基线矩阵 | 900 |
 
-## 归档
+## 规范与 Schema
 
 | 文档 | 内容 |
 |------|------|
-| [archive/balance-tuning-log.md](archive/balance-tuning-log.md) | 平衡调优五轮完整日志 |
-| [archive/param-grid-scan.md](archive/param-grid-scan.md) | 参数网格扫描 8100 局 |
-| [archive/game-design-notes.md](archive/game-design-notes.md) | 游戏设计笔记 |
-| [archive/2026-07-01-prototype-complete.md](archive/2026-07-01-prototype-complete.md) | 原型完成详细报告 |
-| [archive/2026-07-01-prototype-plan.md](archive/2026-07-01-prototype-plan.md) | 原型开发规划 |
-| archive/2026-07-01-gdd-*.md | GDD 各模块设计讨论 |
+| [INTEGRATION-TESTS.md](INTEGRATION-TESTS.md) | **Rust 重构集成测试标准** — 模块级 + 端到端验收门禁 |
+| [specs/replay-schema-v1.0.json](specs/replay-schema-v1.0.json) | GameReplay JSON Schema v1.0 |
+| [ENGINEERING.md](ENGINEERING.md) | 当前工程状态 + 技术债务 + 数据格式标准 |
 
 ## 旧项目
 
@@ -91,20 +88,6 @@
 | [../VERSION.txt](../VERSION.txt) | 版本号 |
 | [../changelog/](../changelog/) | 版本变更日志 |
 
-## 其他（待整理）
-
-以下文件仍在 docs/ 根目录，尚未完成迁移或归档：
-
-- `docs/gdd/` — 原始GDD目录（→ 迁移到 `docs/design/`）
-- `docs/gdd.md` — GDD入口指针（→ 废弃，被 `docs/design/README.md` 替代）
-- `docs/current-status.md` — 旧当前状态（→ 废弃，被 CLAUDE.md + session日志替代）
-- `docs/report-system.md` — 旧文档体系设计（→ 废弃，被 WORKFLOW.md 替代）
-- `docs/dev-workflow.md` — 旧开发流程（→ 内容已合并到 WORKFLOW.md）
-- `docs/dev-system-thoughts.md` — 旧开发体系思考（→ 移到 archive/）
-- `docs/rust-architecture.md` — Rust 架构规划（保留，未来有用）
-- `docs/reports/` — 旧报告目录（→ 移到 archive/）
-- `docs/planning/` — 旧规划目录（→ 移到 archive/）
-
 ---
 
-*最后更新: 2026-07-02*
+*最后更新: 2026-07-05*

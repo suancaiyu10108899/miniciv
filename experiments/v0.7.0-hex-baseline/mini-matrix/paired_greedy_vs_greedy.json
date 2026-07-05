@@ -1,0 +1,2668 @@
+{
+  "config": {
+    "ai0": "greedy",
+    "ai1": "greedy",
+    "games": 50,
+    "grid": "hex",
+    "gen": "balanced"
+  },
+  "p0_winrate": 0.48,
+  "avg_turns": 80.0,
+  "victory_types": {
+    "conquest": 0,
+    "construction": 0,
+    "tiebreak": 50
+  },
+  "results": [
+    {
+      "seed": 43000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 50,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 7,
+      "p1_alive": 12,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 1,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 44000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 7,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 45000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 8,
+      "p1_alive": 11,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 46000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 47000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 48000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 49000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 5,
+      "p1_techs": 6,
+      "p0_construction": 2,
+      "p1_construction": 3,
+      "p0_alive": 11,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 50000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 7,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 51000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 8,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 52000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 7,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 53000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 7,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 54000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 55000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 7,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 56000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 5,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 57000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 166,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 5,
+      "p1_techs": 6,
+      "p0_construction": 2,
+      "p1_construction": 3,
+      "p0_alive": 11,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 4
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 58000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 5,
+      "p1_techs": 7,
+      "p0_construction": 2,
+      "p1_construction": 4,
+      "p0_alive": 10,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 59000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 7,
+      "p1_techs": 7,
+      "p0_construction": 4,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 60000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 7,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 61000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 8,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 62000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 63000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 64000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 164,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 57,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 65000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 66000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 57,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 2,
+        "scout": 0,
+        "worker": 1
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 67000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 68000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 7,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 69000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 7,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 70000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 9,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 71000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 7,
+      "p1_techs": 7,
+      "p0_construction": 4,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 72000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 73000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 7,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 74000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 6,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 1
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 75000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 57,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 76000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 170,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 5,
+      "p1_techs": 7,
+      "p0_construction": 2,
+      "p1_construction": 4,
+      "p0_alive": 9,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 77000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 7,
+      "p1_techs": 7,
+      "p0_construction": 4,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 78000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 164,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 164,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 79000,
+      "winner": 0,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 57,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 2,
+        "scout": 0,
+        "worker": 1
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 80000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 5,
+      "p1_techs": 6,
+      "p0_construction": 2,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 1,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 81000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 82000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 83000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 57,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 2,
+        "scout": 0,
+        "worker": 1
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 84000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 5,
+      "p1_techs": 6,
+      "p0_construction": 2,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 85000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 50,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 5,
+      "p1_techs": 6,
+      "p0_construction": 2,
+      "p1_construction": 3,
+      "p0_alive": 11,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 1,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 86000,
+      "winner": 1,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 7,
+      "p0_construction": 3,
+      "p1_construction": 4,
+      "p0_alive": 10,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 87000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 9,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 88000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.1,
+      "p0_resources": {
+        "food": 175,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 7,
+      "p1_techs": 6,
+      "p0_construction": 4,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 7,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 1,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 89000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 169,
+        "wood": 0,
+        "gold": 2
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 8,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 3,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 90000,
+      "winner": 1,
+      "victory_type": "tiebreak_random",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 6,
+      "p0_construction": 3,
+      "p1_construction": 3,
+      "p0_alive": 9,
+      "p1_alive": 8,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 1,
+        "worker": 3
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 91000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 55,
+        "wood": 0,
+        "gold": 2
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 6,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 1
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 4,
+        "archer": 4,
+        "scout": 0,
+        "worker": 2
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    },
+    {
+      "seed": 92000,
+      "winner": 0,
+      "victory_type": "tiebreak_construction",
+      "turns": 80,
+      "elapsed": 0.2,
+      "p0_resources": {
+        "food": 62,
+        "wood": 0,
+        "gold": 5
+      },
+      "p1_resources": {
+        "food": 60,
+        "wood": 0,
+        "gold": 5
+      },
+      "p0_techs": 6,
+      "p1_techs": 5,
+      "p0_construction": 3,
+      "p1_construction": 2,
+      "p0_alive": 7,
+      "p1_alive": 10,
+      "p0_dead": 0,
+      "p1_dead": 0,
+      "p0_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 2,
+        "scout": 0,
+        "worker": 2
+      },
+      "p1_ut_alive": {
+        "infantry": 0,
+        "cavalry": 3,
+        "archer": 4,
+        "scout": 0,
+        "worker": 3
+      },
+      "p0_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      },
+      "p1_ut_dead": {
+        "infantry": 0,
+        "cavalry": 0,
+        "archer": 0,
+        "scout": 0,
+        "worker": 0
+      }
+    }
+  ]
+}

@@ -93,18 +93,35 @@ def parse_game_md():
     if m:
         values["_sync_date"] = m.group(1)
 
-    # Extract numeric values from tables and text
-    checks = {
+    # ── Section-scoped extraction ──────────────────────
+    # Extract city section to avoid matching unit table values
+    city_section = ""
+    m_city = re.search(r'## 城市\n(.*?)(?=\n## |\Z)', content, re.DOTALL)
+    if m_city:
+        city_section = m_city.group(1)
+
+    # Full-document checks (not city-specific)
+    full_checks = {
         "DEFAULT_SIZE": r'默认尺寸\s*\|\s*\*?\*?(\d+)\*?\*?',
         "MAX_TURNS": r'回合上限\s*\|\s*(\d+)',
-        "CITY_HP": r'HP\s*\|\s*(\d+)',  # need more context
-        "CITY_DEF": r'DEF\s*\|\s*(\d+)',
-        "CITY_DAMAGE": r'防守伤害\s*\|\s*(\d+)',
         "CONSTRUCTION_VICTORY_REQUIRE_FACILITIES": r'[≥=]\s*`?[^`]*?`?\s*[（(]?当前[=＝]\s*(\d+)\s*[）)]?',
     }
-
-    for name, pattern in checks.items():
+    for name, pattern in full_checks.items():
         m = re.search(pattern, content)
+        if m:
+            try:
+                values[name] = int(m.group(1))
+            except ValueError:
+                values[name] = m.group(1)
+
+    # City-section checks (scoped to city table only)
+    city_checks = {
+        "CITY_HP": r'\|\s*HP\s*\|\s*(\d+)',
+        "CITY_DEF": r'\|\s*DEF\s*\|\s*(\d+)',
+        "CITY_DAMAGE": r'防守伤害\s*\|\s*(\d+)',
+    }
+    for name, pattern in city_checks.items():
+        m = re.search(pattern, city_section)
         if m:
             try:
                 values[name] = int(m.group(1))
@@ -125,11 +142,6 @@ def parse_game_md():
     m = re.search(r'设施产出\s*\|\s*(\d+)/T', content)
     if m:
         values["FACILITY_OUTPUT_BASE"] = int(m.group(1))
-
-    # City HP in city section
-    m = re.search(r'HP\s*\|\s*(\d+)\s*\|', content)
-    if m:
-        values["_CITY_HP_TABLE"] = int(m.group(1))
 
     # C5 cost in tech tree table
     m = re.search(r'C5.*?纪念碑.*?\|\s*(\d+).*?(\d+).*?(\d+)\s*\|', content)
@@ -168,10 +180,15 @@ def check():
     else:
         warnings.append("GAME.md missing sync date")
 
-    # Cross-check values
+    # Cross-check values — every numeric constant that appears in GAME.md
     checks = [
         ("DEFAULT_SIZE", "DEFAULT_SIZE"),
         ("MAX_TURNS", "MAX_TURNS"),
+        ("CITY_HP", "CITY_HP"),
+        ("CITY_DEF", "CITY_DEF"),
+        ("CITY_DAMAGE", "CITY_DAMAGE"),
+        ("CITY_BASE_FOOD", "CITY_BASE_FOOD"),
+        ("CAVALRY_CHARGE_BONUS", "CAVALRY_CHARGE_BONUS"),
         ("CONSTRUCTION_VICTORY_REQUIRE_FACILITIES", "CONSTRUCTION_VICTORY_REQUIRE_FACILITIES"),
     ]
 

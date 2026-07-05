@@ -49,6 +49,7 @@
 
 ## 伴随资源
 
+- **Rust for C++ 程序员速查**: `rust-for-cpp.md` — 每个 Phase 开始前查对应的语法
 - Rust Book: https://doc.rust-lang.org/book/
 - Rust by Example: https://doc.rust-lang.org/rust-by-example/
 - 项目 Rust 架构: `../rust-architecture.md`

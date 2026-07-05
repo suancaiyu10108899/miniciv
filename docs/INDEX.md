@@ -14,6 +14,8 @@
 | [AI-EVAL.md](AI-EVAL.md) | AI 评估标准化协议 | 评估 AI 性能时 |
 | [AI-AUDIT.md](AI-AUDIT.md) | 每个 AI 的实现审计和诊断 | 修复/改进 AI 时 |
 | [ANALYSIS-DIMENSIONS.md](ANALYSIS-DIMENSIONS.md) | 游戏分析维度框架（7域 N维度, 分层可扩展）| 设计实验/分析数据时 |
+| [DATA-MANAGEMENT.md](DATA-MANAGEMENT.md) | 数据管理规划（五类数据 + SQLite迁移路径）| 思考数据组织时 |
+| [UI-PLAN.md](UI-PLAN.md) | UI 开发计划——从回放浏览器到决策可视化 | UI 相关决策时 |
 
 ## 设计（已冻结）
 
@@ -36,6 +38,7 @@
 |------|------|
 | [sessions/2026-07-01.md](sessions/2026-07-01.md) | GDD 设计 + 原型开发 |
 | [sessions/2026-07-02.md](sessions/2026-07-02.md) | 调参 + AI 大军 + 文档重启 + Multi-Agent 试点 |
+| [sessions/2026-07-05.md](sessions/2026-07-05.md) | Multi-Agent设计探索 + 方格终版 + 六边形引擎 |
 | [sessions/2026-07-04.md](sessions/2026-07-04.md) | 回放驱动设计发现 + 堆叠修复 + 方法论文体系建设 |
 | [sessions/2026-07-03.md](sessions/2026-07-03.md) | 全矩阵 + API 泄露 + 建设胜利发现 |
 
@@ -45,9 +48,9 @@
 
 | 文档 | 内容 |
 |------|------|
-| [planning/2026-07-03-next-execution.md](planning/2026-07-03-next-execution.md) | **下一步执行计划** — Phase M1: 方法论文基础设施 + UI 试点，含 Agent 分工/验收/风险 |
-| [planning/2026-07-03-wrapup.md](planning/2026-07-03-wrapup.md) | **原型收尾评估** — 已验证/未验证审计 + 收尾执行计划 |
-| [planning/2026-07-03.md](planning/2026-07-03.md) | 建设胜利平衡 + Rust 前最后一轮规划 |
+| [planning/2026-07-05-complete-pre-rebuild.md](planning/2026-07-05-complete-pre-rebuild.md) | **重构前完整规划** — 当前唯一参考文件，所有分项规划已合并 |
+| [planning/2026-07-05-final-push.md](planning/2026-07-05-final-push.md) | 最终推进计划（已被上述文档合并） |
+| [planning/2026-07-03-wrapup.md](planning/2026-07-03-wrapup.md) | 原型收尾评估（历史参考） |
 
 ## 归档
 

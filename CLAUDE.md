@@ -7,7 +7,7 @@
 > 方格终版矩阵：建设 31.5%，征服 24.1%，决定性 55.7%，P0=49.7%。
 > 六边形引擎可用（mapgen+movement+game+Greedy），hex_viewer.html 可评估。
 > 最后决策：方格 vs 六边形 → Rust 重构。
-> 完整路线 → `docs/planning/2026-07-05-pre-rebuild-roadmap.md`
+> 完整路线 → `docs/planning/2026-07-05-complete-pre-rebuild.md`（**唯一参考文件**，所有分项规划已合并）
 
 ## 当前任务
 

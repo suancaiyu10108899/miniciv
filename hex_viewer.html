@@ -36,7 +36,8 @@ button.active{background:#e94560;border-color:#e94560}
   <div class="info-row"><span class="info-label">当前回合</span><span class="info-value">P0</span></div>
   <hr style="border-color:#0f3460;margin:10px 0">
   <button id="btn-reset">重置</button>
-  <button id="btn-ai">AI 移动一步</button>
+  <button id="btn-end-turn">结束回合</button>
+  <button id="btn-ai">AI 移动全部单位</button>
   <div class="legend">
     <b>地形:</b><br>
     <span style="background:#c8e6c9"></span> 平原 DEF=0<br>
@@ -289,7 +290,7 @@ document.getElementById('cv').addEventListener('click', (e) => {
 
   if (moveTargets.has(k)) {
     // Move to target
-    const enemy = units.find(u => u.q === q && u.r === r && u.pid !== selectedUnit.pid);
+    const enemy = units.find(u => u.q === wq && u.r === wr && u.pid !== selectedUnit.pid);
     if (enemy) {
       const dmg = Math.max(1, selectedUnit.atk - enemy.def);
       enemy.hp -= dmg;
@@ -349,19 +350,36 @@ document.getElementById('cv').addEventListener('mouseleave', () => {
 
 document.getElementById('btn-reset').addEventListener('click', initGame);
 
+document.getElementById('btn-end-turn').addEventListener('click', () => {
+  currentPlayer = 1 - currentPlayer;
+  selectedUnit = null; moveTargets = new Set();
+  render();
+});
+
 document.getElementById('btn-ai').addEventListener('click', () => {
-  // Simple random AI move for the non-current player
+  // Move ALL units for current player with simple AI
   const myUnits = units.filter(u => u.pid === currentPlayer);
-  if (myUnits.length === 0) return;
-  const u = myUnits[Math.floor(Math.random() * myUnits.length)];
-  const reachable = [...getReachable(u)];
-  if (reachable.length > 0) {
-    const target = reachable[Math.floor(Math.random() * reachable.length)];
-    const [tq, tr] = target.split(',').map(Number);
-    u.q = tq; u.r = tr;
+  for (const u of myUnits) {
+    const reachable = [...getReachable(u)];
+    if (reachable.length > 0) {
+      const target = reachable[Math.floor(Math.random() * reachable.length)];
+      const [tq, tr] = target.split(',').map(Number);
+      // Check for enemy at target
+      const enemy = units.find(eu => eu.q === tq && eu.r === tr && eu.pid !== u.pid);
+      if (enemy) {
+        const dmg = Math.max(1, u.atk - enemy.def);
+        enemy.hp -= dmg;
+        if (enemy.hp <= 0) units = units.filter(eu => eu !== enemy);
+        else { u.q = tq; u.r = tr; }
+      } else {
+        u.q = tq; u.r = tr;
+      }
+    }
   }
   currentPlayer = 1 - currentPlayer;
   selectedUnit = null; moveTargets = new Set();
+  document.getElementById('p0-units').textContent = units.filter(u=>u.pid===0).length + ' 单位';
+  document.getElementById('p1-units').textContent = units.filter(u=>u.pid===1).length + ' 单位';
   render();
 });
 

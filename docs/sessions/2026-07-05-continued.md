@@ -47,13 +47,43 @@
 - GitHub push 后半段断网——6 个 commit 在本地，未推送
 - 学习笔记零执行——因为格式门槛太高，已降低为一句话表格
 
-## 下一步
+### Phase 7-9 完成（追加）
 
-1. 文档修补收尾（归档旧文件 + INDEX 清理 + CC Memory 更新）
-2. Phase 7: Greedy AI 移植（最大工作量，需参数重校准）
-3. Phase 8: Evo AI 移植
-4. Phase 9: 集成验证矩阵
-5. 网络恢复后 push 全部 commit
+**Phase 7 Greedy AI**：
+- 翻译四层架构（战略评估/策略选择/战术执行/经济研究生产），1300 行
+- GreedyConfig 参数化权重，600 局扫描：TW=0.15 最优，DW 影响不大
+- **核心修复**: hex_distance() 替换了 Python 版的 _td()+_td() 方格曼哈顿距离
+- Greedy vs Random: 36% (64→36% after RNG fix: 46.7%)
+- Greedy mirror 建设率: 83.3% (Python hex: 0%)
+
+**Phase 8 Evo AI**：
+- 15 权重参数化决策，from_json 加载 evo_hex_weights.json
+- 复用 GreedyConfig 移动校准参数
+- **已知问题**: 权重是 Python MT19937 下进化的，Rust ChaCha12 上失效（10.8% vs Python 67%）
+
+**Phase 9 集成验证**：
+- Rust 3×3 矩阵（30 seeds paired × 9 = 270 局）
+- Greedy 60.8% vs others（Python hex: 8.5% → 7x 提升）
+- Evo 10.8%（需在 Rust 引擎上重训）
+- Random 78.3%
+- P0 偏差: Greedy mirror 63.3%（偏高，待调查）
+
+### 文档收尾
+- CLAUDE.md 进度表更新至 9/9
+- Changelog v0.8.0 里程碑
+- VERSION.txt → v0.8.0
+- Git tag v0.8.0
+- HANDOFF.md 新增 Rust 引擎入口
+- ENGINEERING.md 更新技术债务
+- AI-AUDIT.md 更新 Rust 端数据
+- CC Memory 更新至 9/9
+
+## 最终状态
+
+**Rust 引擎 v0.8.0**: 9/9 Phase, 68 tests, 0 errors
+**Greedy 60.8%** (7x improvement over Python hex), **Evo 10.8%** (needs retrain)
+**3 AI 均可运行**, 2 AI (Random/Greedy) 可用
+**已知缺口**: snapshot.rs todo!(), eval.rs todo!(), Evo 需重训, P0 偏差偏高
 
 ---
-*Session 2026-07-05 续 | 第二个 AI*
+*Session 2026-07-05 续 | 第二个 AI | 完成于 Phase 9 集成验证*

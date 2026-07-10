@@ -71,16 +71,21 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 
 **建议**：Rust 重构期间不使用并行 Agent（类型系统 + 模块耦合不适合并行）。coordinator 归档，平台化阶段再启用。
 
-## 六、技术债务（重构前不修，Rust 后再说）
+## 六、技术债务
 
-1. **hex Greedy AI 距离计算**：机械翻译自方格版，移动启发式在六边环面上不工作（距离梯度太浅，地形权重过高）
-2. **FlatMC 未适配六边**：需改为 hex 距离 + hex Greedy 委托
+### Python 端（预重构遗留）
+1. **DQN 生产决策不经 NN**：结构性问题，需动作空间重新设计
+2. **BC 完整 AI 未完成**：只有预测器（91.7% acc），per-turn 行为克隆数据格式不匹配
 3. **FOW 未执行**：代码存在但所有 AI 使用全信息
-4. **测试覆盖率 13.5%**：核心循环无测试
-5. **DQN 生产决策不经 NN**：结构性问题，需动作空间重新设计
-6. **BC 完整 AI 未完成**：只有预测器（91.7% acc），per-turn 行为克隆数据格式不匹配
-7. **回放浏览器不支持六边**：`replay_viewer.html` 是方格专用
-8. **check_docs.py 3 个 warning**：DEFAULT_SIZE/CITY_BASE_FOOD/CAVALRY_CHARGE_BONUS 的 GAME.md 正则需更新
+4. **回放浏览器不支持六边**：`replay_viewer.html` 是方格专用
+5. **check_docs.py 3 个 warning**：正则需更新
+
+### Rust 端（v0.8.0 新增）
+6. **Evo 权重失效**：Python MT19937 下进化的权重在 Rust ChaCha12 上不工作（10.8% vs Python 67%）。需在 Rust 引擎上重训。
+7. **snapshot.rs todo!()**：无 GameReplay JSON 输出
+8. **eval.rs todo!()**：无正式批量评估 CLI 工具
+9. **P0 偏差偏高**：Greedy mirror P0=63.3%（理想 ~50%），待调查交替先手/RNG 种子
+10. **hex Greedy vs Random 46.7%**：虽已 7x 提升但仍低于 50% 基准线
 
 ---
 

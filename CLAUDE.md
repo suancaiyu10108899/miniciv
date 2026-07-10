@@ -4,14 +4,13 @@
 
 **Rust 重构 Phase 9/9 完成 + 门禁1(诚实评估)落地。70 tests 通过 (+2 ignored)。**
 
-> ⚠️ **顶层真相(2026-07-10 第三个 AI 修正,500 seeds paired):**
-> **手写 Greedy 显著弱于乱数:Greedy vs Random paired = 41.4%(有意 <50%)。**
-> v0.8.0 招牌"Greedy 60.8% / 7x"是拿坏掉的 Evo 刷跨对手平均的假象,非 AI 变强的证据。
-> 游戏当前收敛成**建设竞速**(镜像建设率 62~86%),战术权重低——项目北极星"AI 玩出深度"尚未成立。
-> P0 偏差:✅ 已修(门禁2a)。tiebreak 随机分支原用 `turn%2` 恒判 P0,改 murmur3 无偏。
-> 镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达 P0≤55% 目标)。
-> 完整数据 → `experiments/v0.8.1-honest-eval/` | 接手规划 → `docs/planning/2026-07-10-takeover-plan.md`
-> **下一步:门禁 2b —— 裁决"游戏是否奖励水平"(固定策略 vs Random)。**
+> ⚠️ **顶层真相(2026-07-10 第三个 AI,500 seeds paired):**
+> **游戏存在 5 回合建设速通支配策略。** 纯建设固定策略(Builder)5 回合合法完成 C5+设施,
+> **100% 通杀 Greedy/Evo/Random**,军事/战术全是摆设,同类对决先手 90.8% 决定。
+> → 北极星"AI 玩出深度"**当前不合格**:有单一支配解,非丰富博弈。裁决 → `experiments/v0.8.1-honest-eval/VERDICT.md`
+> 附带修正:v0.8.0 招牌"Greedy 60.8%/7x"是拿坏 Evo 刷平均的假象(Greedy vs Random 实为 41%,反优化)。
+> P0 偏差:✅ 已修(门禁2a,tiebreak murmur3)。镜像 P0 Greedy 49%/Random 53%/Evo 54%。
+> **下一步:门禁 3 —— 打破建设速通(设计决策,待人拍板方向)。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|

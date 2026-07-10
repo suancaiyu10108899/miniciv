@@ -14,6 +14,7 @@ use miniciv_core::ai::Agent;
 use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
+use miniciv_core::ai::fixed::BuilderAgent;
 use miniciv_core::eval::run_matrix_default;
 
 fn main() {
@@ -26,7 +27,8 @@ fn main() {
     let greedy = GreedyAgent::new();
     let evo = EvoAgent::new();
     let random = RandomAgent;
-    let agents: Vec<&dyn Agent> = vec![&greedy, &evo, &random];
+    let builder = BuilderAgent;
+    let agents: Vec<&dyn Agent> = vec![&builder, &greedy, &evo, &random];
 
     eprintln!("跑矩阵: {} AI × {} seeds paired (每对 {} 局), generator={}",
               agents.len(), seeds, seeds * 2, generator);
@@ -34,16 +36,14 @@ fn main() {
     let m = run_matrix_default(&agents, seeds, seed_base, &generator);
 
     println!("\n═══ Pairwise paired (先手偏差已抵消) ═══");
-    println!("{:>8} vs {:<8} {:>8} {:>7} {:>7} {:>7}  (Cq/Cs/Tb%)",
-             "A", "B", "A胜率", "Cq%", "Cs%", "Tb%");
-    println!("{}", "-".repeat(60));
+    println!("{:>8} vs {:<8} {:>8}  | A靠[征/建/平]赢  B靠[征/建/平]赢",
+             "A", "B", "A胜率");
+    println!("{}", "-".repeat(64));
     for p in &m.pairs {
-        let g = p.games as f64;
-        println!("{:>8} vs {:<8} {:7.1}% {:6.1}% {:6.1}% {:6.1}%",
+        println!("{:>8} vs {:<8} {:7.1}%  |  {:>3}/{:>3}/{:<3}      {:>3}/{:>3}/{:<3}",
                  p.a, p.b, p.a_win_rate * 100.0,
-                 p.conquest as f64 / g * 100.0,
-                 p.construction as f64 / g * 100.0,
-                 p.tiebreak as f64 / g * 100.0);
+                 p.a_win_conquest, p.a_win_construction, p.a_win_tiebreak,
+                 p.b_win_conquest, p.b_win_construction, p.b_win_tiebreak);
     }
 
     println!("\n═══ 镜像 P0 偏差 (理想 ~50%, 偏离即先手不变量被破坏) ═══");

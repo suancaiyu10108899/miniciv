@@ -6,6 +6,7 @@ use rand::RngCore;
 pub mod random;
 pub mod greedy;
 pub mod evo;
+pub mod fixed;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Action {

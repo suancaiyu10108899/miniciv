@@ -87,6 +87,14 @@ pub struct PairResult {
     pub p0_wins: u32,             // 两局合计:winner==0 的局数(先手偏差诊断)
     pub p0_win_rate: f64,        // p0_wins / games
     pub avg_turns: f64,
+    // 分解:A 靠各类型赢的局数(诊断"谁靠什么赢")
+    pub a_win_conquest: u32,
+    pub a_win_construction: u32,
+    pub a_win_tiebreak: u32,
+    // B 靠各类型赢的局数
+    pub b_win_conquest: u32,
+    pub b_win_construction: u32,
+    pub b_win_tiebreak: u32,
 }
 
 pub fn run_pair(
@@ -97,20 +105,28 @@ pub fn run_pair(
     generator_id: &str,
     max_turns: u16,
 ) -> PairResult {
+    use crate::game::VictoryType as VT;
     let mut a_wins = 0u32;
     let (mut cq, mut cs, mut tb) = (0u32, 0u32, 0u32);
     let mut p0_wins = 0u32;
     let mut turn_sum = 0u64;
+    let (mut awc, mut aws, mut awt) = (0u32, 0u32, 0u32);
+    let (mut bwc, mut bws, mut bwt) = (0u32, 0u32, 0u32);
 
     let mut tally = |o: &GameOutcome, a_is_p0: bool| {
         // A 是否赢:A 在 P0 位则 winner==0,在 P1 位则 winner==1
         let a_won = o.winner == Some(if a_is_p0 { 0 } else { 1 });
         if a_won { a_wins += 1; }
         if o.winner == Some(0) { p0_wins += 1; }
-        match o.victory_type {
-            Some(VictoryType::Conquest) => cq += 1,
-            Some(VictoryType::Construction) => cs += 1,
-            _ => tb += 1,
+        // 胜利类型归类(tiebreak 三种合并)
+        let is_cq = matches!(o.victory_type, Some(VT::Conquest));
+        let is_cs = matches!(o.victory_type, Some(VT::Construction));
+        if is_cq { cq += 1; } else if is_cs { cs += 1; } else { tb += 1; }
+        // 分解到胜者
+        if a_won {
+            if is_cq { awc += 1; } else if is_cs { aws += 1; } else { awt += 1; }
+        } else {
+            if is_cq { bwc += 1; } else if is_cs { bws += 1; } else { bwt += 1; }
         }
         turn_sum += o.turns as u64;
     };
@@ -139,6 +155,12 @@ pub fn run_pair(
         p0_wins,
         p0_win_rate: p0_wins as f64 / games as f64,
         avg_turns: turn_sum as f64 / games as f64,
+        a_win_conquest: awc,
+        a_win_construction: aws,
+        a_win_tiebreak: awt,
+        b_win_conquest: bwc,
+        b_win_construction: bws,
+        b_win_tiebreak: bwt,
     }
 }
 

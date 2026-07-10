@@ -2,7 +2,15 @@
 
 ## 当前阶段
 
-**Rust 重构 Phase 9/9 完成。68 个测试全部通过。**
+**Rust 重构 Phase 9/9 完成 + 门禁1(诚实评估)落地。70 tests 通过 (+2 ignored)。**
+
+> ⚠️ **顶层真相(2026-07-10 第三个 AI 修正,500 seeds paired):**
+> **手写 Greedy 显著弱于乱数:Greedy vs Random paired = 41.4%(有意 <50%)。**
+> v0.8.0 招牌"Greedy 60.8% / 7x"是拿坏掉的 Evo 刷跨对手平均的假象,非 AI 变强的证据。
+> 游戏当前收敛成**建设竞速**(镜像建设率 62~86%),战术权重低——项目北极星"AI 玩出深度"尚未成立。
+> P0 偏差:交互先手基本 work(Greedy 镜像 50.8%),但 **tiebreak 局有 P0 偏向**(Random 镜像 57%)。
+> 完整数据 → `experiments/v0.8.1-honest-eval/` | 接手规划 → `docs/planning/2026-07-10-takeover-plan.md`
+> **下一步:门禁 2 —— 查 tiebreak P0 偏向 + 裁决"游戏是否奖励水平"。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|
@@ -14,14 +22,14 @@
 | 6 | game.rs + ai/random.rs — 游戏循环+Random | ✅ | 4 | 首次端到端！split_at_mut 实战，所有权移动 |
 | 7 | ai/greedy.rs — Greedy AI | ✅ | 4 | 600局参数扫描: TW=0.15最优, hex_distance修复是关键 |
 | 8 | ai/evo.rs — Evo AI | ✅ | 3 | 权重从JSON加载, 但需Rust引擎上重训 |
-| 9 | 集成验证矩阵 | ✅ | 1 | 3×3矩阵 Greedy 60.8%, Evo需重训 |
+| 9 | 集成验证矩阵 | ✅ | 1 | ~~Greedy 60.8%~~ 30-seed 噪声,见门禁1修正 |
+| G1 | eval.rs 批量评估 (第三AI) | ✅ | 3 | 500-seed 诚实矩阵: Greedy vs Random 41.4% |
 
-> **Rust 集成矩阵 (30 seeds paired):**
-> Greedy 60.8% | Evo 10.8% (需重训) | Random 78.3%
-> **核心成就: Greedy 从 Python hex 的 8.5% 跃升到 60.8% (7x提升)**
-> Greedy mirror: 83.3% 建设率 (Python hex: 0%)
-> Rust 代码: ~3,000 行, 68 tests, 0 errors
-> 完整规划 → `docs/planning/2026-07-05-rust-implementation-plan.md`
+> **~~Rust 集成矩阵 (30 seeds paired)~~ — 已被 500-seed 修正,勿引用:**
+> ~~Greedy 60.8% | Random 78.3%~~ 这是 30-seed 噪声 + 拿坏 Evo 刷平均。
+> **诚实版 (500 seeds):Greedy vs Random 41.4% | Evo vs Random 8.6% | Greedy 镜像 P0 50.8%**
+> Rust 代码: ~4,600 行, 70 tests (+2 ignored), 0 errors
+> 复现: `cd miniciv-core && cargo run --release --bin eval -- 500 balanced out.json`
 
 ## 工作模式（铁律）
 

@@ -1,0 +1,93 @@
+{
+  "generator": "balanced",
+  "seeds": 500,
+  "seed_base": 50000,
+  "max_turns": 80,
+  "pairs": [
+    {
+      "a": "Greedy",
+      "b": "Evo",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 777,
+      "a_win_rate": 0.777,
+      "conquest": 46,
+      "construction": 659,
+      "tiebreak": 295,
+      "p0_wins": 567,
+      "p0_win_rate": 0.567,
+      "avg_turns": 53.83
+    },
+    {
+      "a": "Greedy",
+      "b": "Random",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 414,
+      "a_win_rate": 0.414,
+      "conquest": 128,
+      "construction": 682,
+      "tiebreak": 190,
+      "p0_wins": 472,
+      "p0_win_rate": 0.472,
+      "avg_turns": 49.674
+    },
+    {
+      "a": "Evo",
+      "b": "Random",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 86,
+      "a_win_rate": 0.086,
+      "conquest": 53,
+      "construction": 619,
+      "tiebreak": 328,
+      "p0_wins": 518,
+      "p0_win_rate": 0.518,
+      "avg_turns": 57.893
+    }
+  ],
+  "mirrors": [
+    {
+      "agent": "Greedy",
+      "seeds": 500,
+      "p0_wins": 254,
+      "p0_win_rate": 0.508,
+      "conquest": 12,
+      "construction": 428,
+      "tiebreak": 60
+    },
+    {
+      "agent": "Evo",
+      "seeds": 500,
+      "p0_wins": 330,
+      "p0_win_rate": 0.66,
+      "conquest": 10,
+      "construction": 113,
+      "tiebreak": 377
+    },
+    {
+      "agent": "Random",
+      "seeds": 500,
+      "p0_wins": 285,
+      "p0_win_rate": 0.57,
+      "conquest": 29,
+      "construction": 310,
+      "tiebreak": 161
+    }
+  ],
+  "summaries": [
+    {
+      "agent": "Greedy",
+      "avg_vs_others": 0.5955
+    },
+    {
+      "agent": "Evo",
+      "avg_vs_others": 0.15449999999999997
+    },
+    {
+      "agent": "Random",
+      "avg_vs_others": 0.75
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "experiment": "v0.8.1-honest-eval",
+  "date": "2026-07-10",
+  "purpose": "门禁1: 用真正的批量评估工具(eval.rs)在大样本上得到诚实指标, 取代 30-seed 玩具测试",
+  "engine": "miniciv-core Rust, ChaCha12 RNG",
+  "design": "paired (每 seed A为P0 + B为P0 各一局, 同地图, 先手偏差抵消)",
+  "params": {
+    "seeds": 500,
+    "games_per_pair": 1000,
+    "seed_base": 50000,
+    "generator": "balanced",
+    "max_turns": 80
+  },
+  "agents": ["Greedy", "Evo", "Random"],
+  "reproduce": "cd miniciv-core && cargo run --release --bin eval -- 500 balanced ../experiments/v0.8.1-honest-eval/matrix-500.json",
+  "results_file": "matrix-500.json"
+}

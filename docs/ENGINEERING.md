@@ -80,12 +80,12 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 4. **回放浏览器不支持六边**：`replay_viewer.html` 是方格专用
 5. **check_docs.py 3 个 warning**：正则需更新
 
-### Rust 端（v0.8.0 新增）
-6. **Evo 权重失效**：Python MT19937 下进化的权重在 Rust ChaCha12 上不工作（10.8% vs Python 67%）。需在 Rust 引擎上重训。
+### Rust 端（v0.8.0 新增，v0.8.1 更新）
+6. **Evo 权重失效**：Python MT19937 下进化的权重在 Rust ChaCha12 上不工作（Evo vs Random 仅 8.6%）。需在 Rust 引擎上重训。
 7. **snapshot.rs todo!()**：无 GameReplay JSON 输出
-8. **eval.rs todo!()**：无正式批量评估 CLI 工具
-9. **P0 偏差偏高**：Greedy mirror P0=63.3%（理想 ~50%），待调查交替先手/RNG 种子
-10. **hex Greedy vs Random 46.7%**：虽已 7x 提升但仍低于 50% 基准线
+8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
+9. **tiebreak P0 偏向(精确定位)**：500-seed 下 Greedy 镜像 P0=50.8%(交互先手 OK),但 Random 镜像 57%、Evo 镜像 66%,偏差集中在 **tiebreak 局**。查阶梯判定的随机 tiebreak RNG。~~原"Greedy mirror 63.3%"是 30-seed 噪声。~~
+10. **⚠️ 存在意义级:手写 AI 弱于乱数**。Greedy vs Random paired = 41.4%(500 seeds, 有意 <50%)。游戏收敛成建设竞速(镜像建设率 62~86%),战术权重低。北极星"AI 玩出深度"尚未成立 → 门禁 2 要裁决并可能重做建设胜利/先手补正。
 
 ---
 

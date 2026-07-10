@@ -8,9 +8,10 @@
 > **手写 Greedy 显著弱于乱数:Greedy vs Random paired = 41.4%(有意 <50%)。**
 > v0.8.0 招牌"Greedy 60.8% / 7x"是拿坏掉的 Evo 刷跨对手平均的假象,非 AI 变强的证据。
 > 游戏当前收敛成**建设竞速**(镜像建设率 62~86%),战术权重低——项目北极星"AI 玩出深度"尚未成立。
-> P0 偏差:交互先手基本 work(Greedy 镜像 50.8%),但 **tiebreak 局有 P0 偏向**(Random 镜像 57%)。
+> P0 偏差:✅ 已修(门禁2a)。tiebreak 随机分支原用 `turn%2` 恒判 P0,改 murmur3 无偏。
+> 镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达 P0≤55% 目标)。
 > 完整数据 → `experiments/v0.8.1-honest-eval/` | 接手规划 → `docs/planning/2026-07-10-takeover-plan.md`
-> **下一步:门禁 2 —— 查 tiebreak P0 偏向 + 裁决"游戏是否奖励水平"。**
+> **下一步:门禁 2b —— 裁决"游戏是否奖励水平"(固定策略 vs Random)。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|

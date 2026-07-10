@@ -481,6 +481,25 @@ fn check_construction_victory(gs: &mut GameState) {
     }
 }
 
+/// 无偏"硬币":用 game seed 派生确定性但统计无偏的 0/1。
+///
+/// ⚠️ bug 修复(2026-07-10 门禁2): 原 tiebreak 随机分支用 `gs.turn % 2`,
+///    但 tiebreak 恒在 turn==MAX_TURNS(80,偶数)触发 → 恒判 P0 赢,
+///    注释说"消除 P0 偏向"实际制造了它。
+///    也不能用 `seed % 2`: paired/镜像种子恒为偶数(50000+i*100)→ 同样恒 P0。
+///    用 murmur3 finalizer 把连续 seed 打散成伪随机位:
+///    - 镜像(不同 seed)→ 奇偶各半 → P0 ~50%
+///    - paired(同 seed 两局)→ 同判定位置 → A/B 各赢一次,完美抵消
+fn unbiased_coin(seed: u64) -> u8 {
+    let mut h = seed;
+    h ^= h >> 33;
+    h = h.wrapping_mul(0xff51afd7ed558ccd);
+    h ^= h >> 33;
+    h = h.wrapping_mul(0xc4ceb9fe1a85ec53);
+    h ^= h >> 33;
+    (h & 1) as u8
+}
+
 /// 阶梯判定: construction_count → city_hp → random
 fn tiebreak(gs: &mut GameState) {
     let c0 = gs.techs[0].construction_count();
@@ -499,9 +518,8 @@ fn tiebreak(gs: &mut GameState) {
         gs.winner = Some(1);
         gs.victory_type = Some(VictoryType::TiebreakCityHp);
     } else {
-        // 随机判定——消除系统性 P0 偏向
-        // 使用回合数作为简易随机源(确定性)
-        gs.winner = Some((gs.turn % 2) as u8);
+        // 真·无偏随机判定(见 unbiased_coin 文档)
+        gs.winner = Some(unbiased_coin(gs.seed));
         gs.victory_type = Some(VictoryType::TiebreakRandom);
     }
 }
@@ -582,5 +600,18 @@ mod tests {
         let r1 = run(9999);
         let r2 = run(9999);
         assert_eq!(r1, r2, "同 seed 必须产生完全相同的游戏");
+    }
+
+    #[test]
+    fn test_unbiased_coin_无偏() {
+        // 用 eval 实际使用的种子分布 50000+i*100(全偶数,曾导致 seed%2 恒 P0)
+        let n = 2000u64;
+        let p0 = (0..n).filter(|i| unbiased_coin(50000 + i * 100) == 0).count();
+        let rate = p0 as f64 / n as f64;
+        // 无偏应 ~50%,允许 ±3%(2000 样本 95% CI 约 ±2.2%)
+        assert!((rate - 0.5).abs() < 0.03,
+                "unbiased_coin 在 50000+i*100 种子上偏向: P0={:.1}%", rate * 100.0);
+        // paired 抵消性:同 seed 恒返回同值
+        assert_eq!(unbiased_coin(12345), unbiased_coin(12345));
     }
 }

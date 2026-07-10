@@ -84,7 +84,7 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 6. **Evo 权重失效**：Python MT19937 下进化的权重在 Rust ChaCha12 上不工作（Evo vs Random 仅 8.6%）。需在 Rust 引擎上重训。
 7. **snapshot.rs todo!()**：无 GameReplay JSON 输出
 8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
-9. **tiebreak P0 偏向(精确定位)**：500-seed 下 Greedy 镜像 P0=50.8%(交互先手 OK),但 Random 镜像 57%、Evo 镜像 66%,偏差集中在 **tiebreak 局**。查阶梯判定的随机 tiebreak RNG。~~原"Greedy mirror 63.3%"是 30-seed 噪声。~~
+9. ~~**tiebreak P0 偏向**~~：✅ **已修(门禁2a)** — tiebreak 随机分支原用 `gs.turn % 2`,但恒在 turn==80(偶数)触发→恒判 P0。改为 `unbiased_coin(seed)`(murmur3 双轮 + 单测)。镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达标)。剩余 ~3% 是随机对局真实先手优势(Greedy 建设 P0=47.7% 证明引擎干净)。
 10. **⚠️ 存在意义级:手写 AI 弱于乱数**。Greedy vs Random paired = 41.4%(500 seeds, 有意 <50%)。游戏收敛成建设竞速(镜像建设率 62~86%),战术权重低。北极星"AI 玩出深度"尚未成立 → 门禁 2 要裁决并可能重做建设胜利/先手补正。
 
 ---

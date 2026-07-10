@@ -1,0 +1,105 @@
+{
+  "generator": "balanced",
+  "seeds": 500,
+  "seed_base": 50000,
+  "max_turns": 80,
+  "pairs": [
+    {
+      "a": "Greedy",
+      "b": "Evo",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 775,
+      "a_win_rate": 0.775,
+      "conquest": 46,
+      "construction": 659,
+      "tiebreak": 295,
+      "p0_wins": 487,
+      "p0_win_rate": 0.487,
+      "avg_turns": 53.83
+    },
+    {
+      "a": "Greedy",
+      "b": "Random",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 414,
+      "a_win_rate": 0.414,
+      "conquest": 128,
+      "construction": 681,
+      "tiebreak": 191,
+      "p0_wins": 458,
+      "p0_win_rate": 0.458,
+      "avg_turns": 49.645
+    },
+    {
+      "a": "Evo",
+      "b": "Random",
+      "seeds": 500,
+      "games": 1000,
+      "a_wins": 86,
+      "a_win_rate": 0.086,
+      "conquest": 53,
+      "construction": 619,
+      "tiebreak": 328,
+      "p0_wins": 504,
+      "p0_win_rate": 0.504,
+      "avg_turns": 57.893
+    }
+  ],
+  "mirrors": [
+    {
+      "agent": "Greedy",
+      "seeds": 500,
+      "p0_wins": 245,
+      "p0_win_rate": 0.49,
+      "conquest": 11,
+      "construction": 428,
+      "tiebreak": 61,
+      "conquest_p0": 6,
+      "construction_p0": 204,
+      "tiebreak_random": 32,
+      "tiebreak_random_p0": 17
+    },
+    {
+      "agent": "Evo",
+      "seeds": 500,
+      "p0_wins": 269,
+      "p0_win_rate": 0.538,
+      "conquest": 10,
+      "construction": 113,
+      "tiebreak": 377,
+      "conquest_p0": 6,
+      "construction_p0": 62,
+      "tiebreak_random": 119,
+      "tiebreak_random_p0": 58
+    },
+    {
+      "agent": "Random",
+      "seeds": 500,
+      "p0_wins": 267,
+      "p0_win_rate": 0.534,
+      "conquest": 29,
+      "construction": 310,
+      "tiebreak": 161,
+      "conquest_p0": 16,
+      "construction_p0": 165,
+      "tiebreak_random": 29,
+      "tiebreak_random_p0": 11
+    }
+  ],
+  "summaries": [
+    {
+      "agent": "Greedy",
+      "avg_vs_others": 0.5945
+    },
+    {
+      "agent": "Evo",
+      "avg_vs_others": 0.15549999999999997
+    },
+    {
+      "agent": "Random",
+      "avg_vs_others": 0.75
+    }
+  ]
+}

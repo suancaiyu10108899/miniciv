@@ -153,6 +153,11 @@ pub struct MirrorResult {
     pub conquest: u32,
     pub construction: u32,
     pub tiebreak: u32,
+    // 分解:每种胜利类型里 P0 赢的局数(诊断偏向来源)
+    pub conquest_p0: u32,
+    pub construction_p0: u32,
+    pub tiebreak_random: u32,      // TiebreakRandom 子类总数
+    pub tiebreak_random_p0: u32,   // 其中 P0 赢的数(bug 修复后应 ~50%)
 }
 
 pub fn run_mirror(
@@ -162,16 +167,21 @@ pub fn run_mirror(
     generator_id: &str,
     max_turns: u16,
 ) -> MirrorResult {
+    use crate::game::VictoryType as VT;
     let mut p0_wins = 0u32;
     let (mut cq, mut cs, mut tb) = (0u32, 0u32, 0u32);
+    let (mut cq_p0, mut cs_p0) = (0u32, 0u32);
+    let (mut tbr, mut tbr_p0) = (0u32, 0u32);
     for i in 0..seeds {
         let seed = seed_base + i as u64 * 100;
         let o = run_one_game(seed, ai, ai, generator_id, max_turns);
-        if o.winner == Some(0) { p0_wins += 1; }
+        let p0_won = o.winner == Some(0);
+        if p0_won { p0_wins += 1; }
         match o.victory_type {
-            Some(VictoryType::Conquest) => cq += 1,
-            Some(VictoryType::Construction) => cs += 1,
-            _ => tb += 1,
+            Some(VT::Conquest) => { cq += 1; if p0_won { cq_p0 += 1; } }
+            Some(VT::Construction) => { cs += 1; if p0_won { cs_p0 += 1; } }
+            Some(VT::TiebreakRandom) => { tb += 1; tbr += 1; if p0_won { tbr_p0 += 1; } }
+            _ => { tb += 1; }  // TiebreakConstruction / TiebreakCityHp
         }
     }
     MirrorResult {
@@ -182,6 +192,10 @@ pub fn run_mirror(
         conquest: cq,
         construction: cs,
         tiebreak: tb,
+        conquest_p0: cq_p0,
+        construction_p0: cs_p0,
+        tiebreak_random: tbr,
+        tiebreak_random_p0: tbr_p0,
     }
 }
 

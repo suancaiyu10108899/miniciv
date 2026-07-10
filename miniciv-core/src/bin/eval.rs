@@ -47,15 +47,19 @@ fn main() {
     }
 
     println!("\n═══ 镜像 P0 偏差 (理想 ~50%, 偏离即先手不变量被破坏) ═══");
-    println!("{:>8} {:>10} {:>7} {:>7} {:>7}", "AI", "P0胜率", "Cq%", "Cs%", "Tb%");
-    println!("{}", "-".repeat(45));
+    println!("{:>8} {:>10} {:>7} {:>7} {:>7}  | {:>12} {:>10}",
+             "AI", "P0胜率", "Cq%", "Cs%", "Tb%", "建设P0率", "随机tb P0率");
+    println!("{}", "-".repeat(72));
     for mr in &m.mirrors {
         let s = mr.seeds as f64;
-        println!("{:>8} {:9.1}% {:6.1}% {:6.1}% {:6.1}%",
+        let cs_p0 = if mr.construction > 0 { mr.construction_p0 as f64 / mr.construction as f64 * 100.0 } else { 0.0 };
+        let tbr_p0 = if mr.tiebreak_random > 0 { mr.tiebreak_random_p0 as f64 / mr.tiebreak_random as f64 * 100.0 } else { 0.0 };
+        println!("{:>8} {:9.1}% {:6.1}% {:6.1}% {:6.1}%  | {:10.1}% (n={:<3}) {:6.1}% (n={})",
                  mr.agent, mr.p0_win_rate * 100.0,
                  mr.conquest as f64 / s * 100.0,
                  mr.construction as f64 / s * 100.0,
-                 mr.tiebreak as f64 / s * 100.0);
+                 mr.tiebreak as f64 / s * 100.0,
+                 cs_p0, mr.construction, tbr_p0, mr.tiebreak_random);
     }
 
     println!("\n═══ 跨对手平均 (⚠️ 会被坏对手刷高,别拿来下结论) ═══");

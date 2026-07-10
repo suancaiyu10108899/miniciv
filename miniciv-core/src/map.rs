@@ -65,17 +65,8 @@ impl Terrain {
     }
 }
 
-// ─── 设施 ────────────────────────────────────────────
+// Facility 类型定义在 unit.rs 中，通过 crate::unit::Facility 引用。
 // Option<Facility> ≈ C++17 的 std::optional<Facility>
-// 格子上没有设施时 = None。Rust 没有 null/nullptr——用 Option 表达"可能有也可能没有"。
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Facility {
-    pub facility_type: crate::unit::FacilityType,
-    pub player_id: u8,
-    pub q: i32,
-    pub r: i32,
-}
 
 // ─── 格子 ────────────────────────────────────────────
 // 六边形地图上的一个格子。facility 是可选的——None 表示空地。
@@ -83,7 +74,7 @@ pub struct Facility {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Tile {
     pub terrain: Terrain,
-    pub facility: Option<Facility>,
+    pub facility: Option<crate::unit::Facility>,
 }
 
 impl Tile {

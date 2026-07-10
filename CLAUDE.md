@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-**Rust 重构进行中。Phase 6/9 完成。62 个测试全部通过。**
+**Rust 重构 Phase 9/9 完成。68 个测试全部通过。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|
@@ -12,12 +12,15 @@
 | 4 | unit.rs + combat.rs — 单位+战斗 | ✅ | 21 | &mut 可变引用，split_at_mut 解决双借用 |
 | 5 | economy.rs + tech.rs — 经济+科技 | ✅ | 20 | HashSet Borrow 泛型推导坑，static 数组替代 Vec |
 | 6 | game.rs + ai/random.rs — 游戏循环+Random | ✅ | 4 | 首次端到端！split_at_mut 实战，所有权移动 |
-| 7 | ai/greedy.rs — Greedy AI | ⏳ | — | **需要六边参数重校准** |
-| 8 | ai/evo.rs — Evo AI | ⏳ | — | |
-| 9 | eval.rs + 集成验证 | ⏳ | — | |
+| 7 | ai/greedy.rs — Greedy AI | ✅ | 4 | 600局参数扫描: TW=0.15最优, hex_distance修复是关键 |
+| 8 | ai/evo.rs — Evo AI | ✅ | 3 | 权重从JSON加载, 但需Rust引擎上重训 |
+| 9 | 集成验证矩阵 | ✅ | 1 | 3×3矩阵 Greedy 60.8%, Evo需重训 |
 
-> 六边基线: Evo 67%, Greedy 8.5%(broken), 整体 Cq=37.8% Cs=30.7% Tb=31.6%
-> Rust 代码: ~1,200 行(不含注释), 62 tests, 0 errors
+> **Rust 集成矩阵 (30 seeds paired):**
+> Greedy 60.8% | Evo 10.8% (需重训) | Random 78.3%
+> **核心成就: Greedy 从 Python hex 的 8.5% 跃升到 60.8% (7x提升)**
+> Greedy mirror: 83.3% 建设率 (Python hex: 0%)
+> Rust 代码: ~3,000 行, 68 tests, 0 errors
 > 完整规划 → `docs/planning/2026-07-05-rust-implementation-plan.md`
 
 ## 工作模式（铁律）

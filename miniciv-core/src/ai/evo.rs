@@ -101,7 +101,7 @@ impl Agent for EvoAgent {
         for (global_idx, local_idx) in archers.iter().chain(fighters.iter()) {
             let unit = &gs.units[*global_idx];
             if let Some(act) = evo_combat(
-                unit, *local_idx, gs, pid, opp_city, my_city, w, &self.config,
+                unit, *local_idx, gs, pid, opp_city, my_city, w, &self.config, rng,
             ) {
                 actions.push(act);
             }
@@ -111,7 +111,7 @@ impl Agent for EvoAgent {
         for (global_idx, unit) in &player_units {
             if unit.unit_type == UnitType::Worker {
                 let local_idx = player_units.iter().position(|(i, _)| *i == *global_idx).unwrap();
-                if let Some(act) = evo_worker(unit, local_idx, gs, pid, w, &self.config) {
+                if let Some(act) = evo_worker(unit, local_idx, gs, pid, w, &self.config, rng) {
                     actions.push(act);
                 }
             }
@@ -181,7 +181,7 @@ impl Agent for EvoAgent {
 fn evo_combat(
     unit: &Unit, local_idx: usize, gs: &GameState, pid: u8,
     opp_city: &crate::unit::City, my_city: &crate::unit::City,
-    w: &HashMap<String, f64>, cfg: &GreedyConfig,
+    w: &HashMap<String, f64>, cfg: &GreedyConfig, rng: &mut dyn RngCore,
 ) -> Option<Action> {
     let max_hp = match unit.unit_type {
         UnitType::Infantry => 100, UnitType::Cavalry => 80,
@@ -252,7 +252,7 @@ fn evo_combat(
             if eu.alive && eu.player_id != pid {
                 let d = hex_distance(eu.q, eu.r, my_city.q, my_city.r);
                 if d <= 2 {
-                    if 0.5 < intercept_w / 5.0 {
+                    if rng_f(rng) <intercept_w / 5.0 {
                         return Some(move_to_evo(unit, local_idx, gs, eu.q, eu.r,
                             *w.get("terrain_def_weight").unwrap_or(&0.15), 0.0, cfg));
                     }
@@ -264,7 +264,7 @@ fn evo_combat(
 
     // 攻击邻格敌人
     let attack_w = *w.get("attack_adjacent").unwrap_or(&1.0);
-    if 0.5 < attack_w / 5.0 {
+    if rng_f(rng) <attack_w / 5.0 {
         for (dq, dr) in HEX_DIRS.iter() {
             let nq = (unit.q + dq).rem_euclid(MAP_W as i32);
             let nr = (unit.r + dr).rem_euclid(MAP_H as i32);
@@ -279,7 +279,7 @@ fn evo_combat(
 
     // 防守
     let defend_w = *w.get("defend_own_city").unwrap_or(&1.0);
-    if 0.5 < defend_w / 5.0 {
+    if rng_f(rng) <defend_w / 5.0 {
         if hex_distance(unit.q, unit.r, my_city.q, my_city.r) > 3 {
             return Some(move_to_evo(unit, local_idx, gs, my_city.q, my_city.r,
                 *w.get("terrain_def_weight").unwrap_or(&0.15), 0.0, cfg));
@@ -288,7 +288,7 @@ fn evo_combat(
 
     // 向敌城推进
     let rush_w = *w.get("rush_enemy_city").unwrap_or(&1.0);
-    if 0.5 < rush_w / 5.0 {
+    if rng_f(rng) <rush_w / 5.0 {
         return Some(move_to_evo(unit, local_idx, gs, opp_city.q, opp_city.r,
             *w.get("terrain_def_weight").unwrap_or(&0.15), 0.0, cfg));
     }
@@ -298,13 +298,18 @@ fn evo_combat(
         *w.get("terrain_def_weight").unwrap_or(&0.15), 0.0, cfg))
 }
 
+/// 从 RNG 生成 [0,1) 的随机浮点数
+fn rng_f(rng: &mut dyn RngCore) -> f64 {
+    rng.next_u32() as f64 / u32::MAX as f64
+}
+
 // ═══════════════════════════════════════════════════════
 // 工人决策
 // ═══════════════════════════════════════════════════════
 
 fn evo_worker(
     unit: &Unit, local_idx: usize, gs: &GameState, pid: u8,
-    w: &HashMap<String, f64>, cfg: &GreedyConfig,
+    w: &HashMap<String, f64>, cfg: &GreedyConfig, rng: &mut dyn RngCore,
 ) -> Option<Action> {
     let tile = gs.grid.get(unit.q, unit.r);
 
@@ -317,7 +322,7 @@ fn evo_worker(
             }
             // 不全 → 找缺失类型
             let variety_w = *w.get("resource_variety").unwrap_or(&1.0);
-            if 0.5 < variety_w / 3.0 {
+            if rng_f(rng) <variety_w / 3.0 {
                 if let Some(target) = find_missing_resource(unit, gs, pid) {
                     return Some(move_to_evo(unit, local_idx, gs, target.0, target.1,
                         *w.get("terrain_def_weight").unwrap_or(&0.15), 0.0, cfg));
@@ -332,7 +337,7 @@ fn evo_worker(
         let missing = is_missing_type(gs, pid, ft);
         if missing {
             let build_w = *w.get("build_efficiency").unwrap_or(&1.0);
-            if 0.5 < build_w / 3.0 {
+            if rng_f(rng) <build_w / 3.0 {
                 return Some(Action::Build { unit_idx: local_idx });
             }
         }

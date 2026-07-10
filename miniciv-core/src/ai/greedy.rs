@@ -346,7 +346,7 @@ fn update_opponent_model(model: &mut OpponentModel, gs: &GameState, pid: u8) {
 
     model.history.push((gs.turn, aggression));
     // 保留最近 10 回合
-    model.history.retain(|(t, _)| gs.turn - t < 10);
+    model.history.retain(|(t, _)| gs.turn.saturating_sub(*t) < 10);
     if !model.history.is_empty() {
         model.aggression = model.history.iter().map(|(_, a)| a).sum::<f64>()
             / model.history.len() as f64;
@@ -1159,6 +1159,78 @@ mod tests {
                 let cs = constructions as f64 / games_per as f64 * 100.0;
                 println!("{:5.1} {:5.2} {:7.1}% {:7.1}% {:7.1}%",
                          dw, tw, wr, cq, cs);
+            }
+        }
+    }
+
+    /// 集成验证: 3×3 矩阵 (Greedy/Evo/Random, 30 seeds paired)
+    /// cargo test integration_matrix -- --nocapture --ignored
+    #[test]
+    #[ignore]
+    fn integration_matrix() {
+        use crate::ai::evo::EvoAgent;
+        let games_per = 30u64;
+        let agents: Vec<(&str, Box<dyn Agent>)> = vec![
+            ("Greedy", Box::new(GreedyAgent::new())),
+            ("Evo", Box::new(EvoAgent::new())),
+            ("Random", Box::new(RandomAgent)),
+        ];
+
+        println!("\n{:>8} vs {:<8} {:>6} {:>6} {:>6} {:>6}",
+                 "P0", "P1", "WR%", "Cq%", "Cs%", "Tb%");
+        println!("{}", "-".repeat(45));
+
+        let mut all_results: Vec<(String, String, f64, f64, f64, f64)> = Vec::new();
+
+        for (name0, agent0) in &agents {
+            for (name1, agent1) in &agents {
+                let mut wins = 0u32;
+                let mut cq = 0u32;
+                let mut cs = 0u32;
+                let mut tb = 0u32;
+
+                for i in 0..games_per {
+                    let seed = 50000 + i * 100;
+                    let mut gs = init_game(seed, "balanced");
+                    let mut rng0 = ChaCha12Rng::seed_from_u64(seed);
+                    let mut rng1 = ChaCha12Rng::seed_from_u64(seed + 1);
+
+                    while gs.winner.is_none() && gs.turn < crate::constants::MAX_TURNS {
+                        let a0 = agent0.decide(&gs, 0, &mut rng0);
+                        let a1 = agent1.decide(&gs, 1, &mut rng1);
+                        crate::game::step_game(&mut gs, &a0, &a1);
+                    }
+                    if gs.winner == Some(0) { wins += 1; }
+                    match &gs.victory_type {
+                        Some(crate::game::VictoryType::Conquest) => cq += 1,
+                        Some(crate::game::VictoryType::Construction) => cs += 1,
+                        _ => tb += 1,
+                    }
+                }
+                let wr = wins as f64 / games_per as f64 * 100.0;
+                let cqp = cq as f64 / games_per as f64 * 100.0;
+                let csp = cs as f64 / games_per as f64 * 100.0;
+                let tbp = tb as f64 / games_per as f64 * 100.0;
+                println!("{:>8} vs {:<8} {:5.1}% {:5.1}% {:5.1}% {:5.1}%",
+                         name0, name1, wr, cqp, csp, tbp);
+                all_results.push((name0.to_string(), name1.to_string(), wr, cqp, csp, tbp));
+            }
+        }
+
+        // 计算跨对手平均胜率
+        println!();
+        for ai_name in &["Random", "Greedy", "Evo"] {
+            let mut wr_sum = 0.0;
+            let mut n = 0;
+            for (a0, a1, wr, _, _, _) in &all_results {
+                if a0 == *ai_name && a1 != *ai_name {
+                    wr_sum += wr; n += 1;
+                } else if a1 == *ai_name && a0 != *ai_name {
+                    wr_sum += 100.0 - wr; n += 1;
+                }
+            }
+            if n > 0 {
+                println!("{} avg vs others: {:.1}%", ai_name, wr_sum / n as f64);
             }
         }
     }

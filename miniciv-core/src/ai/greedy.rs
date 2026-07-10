@@ -29,21 +29,30 @@ use rand::RngCore;
 use std::collections::HashMap;
 
 // ═══════════════════════════════════════════════════════
-// 可调参数 — 六边形几何重校准的核心
+// 可调参数结构体 — 六边形几何重校准的核心
+// 字段而非 const, 支持运行时参数扫描
 // ═══════════════════════════════════════════════════════
 
-/// 移动评分中路径距离的权重。
-/// 方格版用 1.0, 六边环面需要更高(距离梯度浅)。
-/// 候选值: 1.0, 2.0, 3.0, 5.0 — 需参数扫描确定最优。
-const DISTANCE_WEIGHT: f64 = 3.0;
+#[derive(Clone, Debug)]
+pub struct GreedyConfig {
+    /// 移动评分中路径距离的权重。方格版用 1.0, 六边环面需要更高。
+    pub distance_weight: f64,
+    /// 移动评分中地形防御的权重。方格版用 0.15, 六边需要更低。
+    pub terrain_weight: f64,
+    /// 撤退时额外看重防御加成
+    pub retreat_terrain_bonus: f64,
+}
 
-/// 移动评分中地形防御的权重。
-/// 方格版用 0.15, 六边需要更低(否则单位贪地形不推进)。
-/// 候选值: 0.05, 0.10, 0.15 — 需参数扫描确定最优。
-const TERRAIN_WEIGHT: f64 = 0.10;
-
-/// 撤退时额外看重防御加成的权重
-const RETREAT_TERRAIN_BONUS: f64 = 0.20;
+impl Default for GreedyConfig {
+    fn default() -> Self {
+        Self {
+            // 参数扫描结果 (600 games): TW=0.15最优, DW影响不大
+            distance_weight: 3.0,
+            terrain_weight: 0.15,
+            retreat_terrain_bonus: 0.20,
+        }
+    }
+}
 
 /// 弓手保持最佳射程(2格)的权重
 const ARCHER_DIST_WEIGHT: f64 = 1.0;
@@ -93,15 +102,18 @@ impl OpponentModel {
 // ═══════════════════════════════════════════════════════
 
 pub struct GreedyAgent {
+    /// 可调权重配置(运行时参数扫描用)
+    pub config: GreedyConfig,
     /// 对手模型 — 按 game seed 索引(同一局内跨回合持久)
     opponent_models: std::sync::Mutex<HashMap<u64, OpponentModel>>,
 }
 
 impl GreedyAgent {
     pub fn new() -> Self {
-        Self {
-            opponent_models: std::sync::Mutex::new(HashMap::new()),
-        }
+        Self { config: GreedyConfig::default(), opponent_models: std::sync::Mutex::new(HashMap::new()) }
+    }
+    pub fn with_config(config: GreedyConfig) -> Self {
+        Self { config, opponent_models: std::sync::Mutex::new(HashMap::new()) }
     }
 
     fn get_opponent_model(&self, seed: u64) -> OpponentModel {
@@ -171,7 +183,7 @@ impl Agent for GreedyAgent {
             let unit = &gs.units[*global_idx];
             if let Some(act) = greedy_combat(
                 unit, local_idx, gs, pid,
-                strategy, &assessment, rally_point, wave_ready, rng,
+                strategy, &assessment, rally_point, wave_ready, &self.config,
             ) {
                 actions.push(act);
             }
@@ -182,7 +194,7 @@ impl Agent for GreedyAgent {
             if unit.unit_type == UnitType::Worker {
                 let local_idx = player_units.iter()
                     .position(|(i, _)| *i == *global_idx).unwrap();
-                if let Some(act) = greedy_worker(unit, local_idx, gs, pid, strategy, rng) {
+                if let Some(act) = greedy_worker(unit, local_idx, gs, pid, strategy, &self.config) {
                     actions.push(act);
                 }
             }
@@ -485,7 +497,7 @@ fn greedy_combat(
     unit: &Unit, local_idx: usize, gs: &GameState, pid: u8,
     strategy: Strategy, a: &StrategicAssessment,
     rally_point: (i32, i32), wave_ready: bool,
-    rng: &mut dyn RngCore,
+    cfg: &GreedyConfig,
 ) -> Option<Action> {
     let opp = 1 - pid;
     let my_city = &gs.cities[pid as usize];
@@ -506,7 +518,7 @@ fn greedy_combat(
                 && hex_distance(eu.q, eu.r, unit.q, unit.r) <= 2
         });
         if near_enemy {
-            return Some(move_to(unit, local_idx, gs, my_city.q, my_city.r, true));
+            return Some(move_to(unit, local_idx, gs, my_city.q, my_city.r, true, cfg));
         }
     }
 
@@ -528,17 +540,17 @@ fn greedy_combat(
             if nearest_dist <= 2 {
                 if nearest_dist == 1 {
                     // 敌人贴脸 → 撤退
-                    return Some(retreat_from(unit, local_idx, gs, target.q, target.r));
+                    return Some(retreat_from(unit, local_idx, gs, target.q, target.r, cfg));
                 }
                 // 理想射程(2格) → 射击
                 return Some(Action::EndTurn);
             } else {
                 // 太远 → 接近并保持射程
-                return Some(approach_archer(unit, local_idx, gs, target.q, target.r));
+                return Some(approach_archer(unit, local_idx, gs, target.q, target.r, cfg));
             }
         }
         // 没敌人 → 向敌城推进
-        return Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false));
+        return Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false, cfg));
     }
 
     // ── 守城: 敌人在我城格上 ──────────────────────
@@ -560,7 +572,7 @@ fn greedy_combat(
         if eu.alive && eu.player_id != pid {
             let d = hex_distance(eu.q, eu.r, my_city.q, my_city.r);
             if d <= 2 {
-                return Some(move_to(unit, local_idx, gs, eu.q, eu.r, false));
+                return Some(move_to(unit, local_idx, gs, eu.q, eu.r, false, cfg));
             }
         }
     }
@@ -581,13 +593,13 @@ fn greedy_combat(
     if strategy == Strategy::Defensive || strategy == Strategy::DefensiveConstruction {
         let dist_to_my = hex_distance(unit.q, unit.r, my_city.q, my_city.r);
         if dist_to_my > 3 {
-            return Some(move_to(unit, local_idx, gs, my_city.q, my_city.r, true));
+            return Some(move_to(unit, local_idx, gs, my_city.q, my_city.r, true, cfg));
         }
     }
 
     // ── 部队协调: wave ready → 全军冲城 ──────────
     if wave_ready {
-        return Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false));
+        return Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false, cfg));
     }
 
     // ── rally point 聚兵 ──────────────────────────
@@ -605,7 +617,7 @@ fn greedy_combat(
     }
 
     // ── 默认: 向敌城推进 ─────────────────────────
-    Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false))
+    Some(move_to(unit, local_idx, gs, opp_city.q, opp_city.r, false, cfg))
 }
 
 // ═══════════════════════════════════════════════════════
@@ -614,7 +626,7 @@ fn greedy_combat(
 
 fn greedy_worker(
     unit: &Unit, local_idx: usize, gs: &GameState, pid: u8,
-    strategy: Strategy, _rng: &mut dyn RngCore,
+    strategy: Strategy, cfg: &GreedyConfig,
 ) -> Option<Action> {
     let tile = gs.grid.get(unit.q, unit.r);
 
@@ -652,7 +664,7 @@ fn greedy_worker(
             if need_expansion || !has_all {
                 // 离开找新资源格
                 if let Some(target) = nearest_missing_type(unit, gs, pid, &type_counts) {
-                    return Some(move_to(unit, local_idx, gs, target.0, target.1, false));
+                    return Some(move_to(unit, local_idx, gs, target.0, target.1, false, cfg));
                 }
             }
             return Some(Action::Produce { unit_idx: local_idx });
@@ -674,13 +686,13 @@ fn greedy_worker(
         }
         // 不缺 → 找缺的
         if let Some(target) = nearest_missing_type(unit, gs, pid, &type_counts) {
-            return Some(move_to(unit, local_idx, gs, target.0, target.1, false));
+            return Some(move_to(unit, local_idx, gs, target.0, target.1, false, cfg));
         }
     }
 
     // 找最近的可用建造点
     if let Some(target) = nearest_buildable(unit, gs, pid) {
-        return Some(move_to(unit, local_idx, gs, target.0, target.1, false));
+        return Some(move_to(unit, local_idx, gs, target.0, target.1, false, cfg));
     }
 
     // 有设施就生产
@@ -946,7 +958,7 @@ fn try_produce(econ: &crate::economy::Economy, ut: &str, actions: &mut Vec<Actio
 /// 六边重校准核心——使用参数化 DISTANCE_WEIGHT 和 TERRAIN_WEIGHT。
 fn move_to(
     unit: &Unit, local_idx: usize, gs: &GameState,
-    tx: i32, ty: i32, prefer_defense: bool,
+    tx: i32, ty: i32, prefer_defense: bool, cfg: &GreedyConfig,
 ) -> Action {
     let moves = legal_moves(unit, &gs.grid);
     if moves.is_empty() {
@@ -963,11 +975,11 @@ fn move_to(
         let terrain = gs.grid.get(nq, nr).terrain;
         let def_bonus = terrain.def_bonus() as f64;
 
-        // 六边重校准核心公式 — 和 Python 版不同
-        let mut score = -d * DISTANCE_WEIGHT;
-        score += def_bonus * TERRAIN_WEIGHT;
+        // 六边重校准核心公式 — 权重由 cfg 控制(参数扫描用)
+        let mut score = -d * cfg.distance_weight;
+        score += def_bonus * cfg.terrain_weight;
         if prefer_defense {
-            score += def_bonus * RETREAT_TERRAIN_BONUS;
+            score += def_bonus * cfg.retreat_terrain_bonus;
         }
         // 不可通行的惩罚
         if terrain == Terrain::Water {
@@ -1000,7 +1012,7 @@ fn move_to(
 /// 远离敌人
 fn retreat_from(
     unit: &Unit, local_idx: usize, gs: &GameState,
-    ex: i32, ey: i32,
+    ex: i32, ey: i32, _cfg: &GreedyConfig,
 ) -> Action {
     let moves = legal_moves(unit, &gs.grid);
     if moves.is_empty() {
@@ -1031,7 +1043,7 @@ fn retreat_from(
 /// 弓手接近目标并保持最佳射程(2格)
 fn approach_archer(
     unit: &Unit, local_idx: usize, gs: &GameState,
-    tx: i32, ty: i32,
+    tx: i32, ty: i32, cfg: &GreedyConfig,
 ) -> Action {
     let moves = legal_moves(unit, &gs.grid);
     if moves.is_empty() {
@@ -1049,7 +1061,7 @@ fn approach_archer(
         let mut score = -(d - 2.0).abs() * ARCHER_DIST_WEIGHT;
         let t = gs.grid.get(nq, nr).terrain;
         let db = t.def_bonus() as f64;
-        score += db * TERRAIN_WEIGHT;
+        score += db * cfg.terrain_weight;
         score += db * ARCHER_HIGH_GROUND;
 
         if score > best_score {
@@ -1094,6 +1106,61 @@ mod tests {
         }
         // 只要不 panic 就算通过
         assert!(gs.winner.is_some() || gs.turn >= crate::constants::MAX_TURNS);
+    }
+
+    /// 参数扫描: Greedy vs Random, 不同 distance_weight + terrain_weight 组合
+    /// 运行: cargo test scan_greedy -- --nocapture --ignored
+    #[test]
+    #[ignore]  // 默认跳过(耗时), 手动 --ignored 运行
+    fn scan_greedy_params() {
+        let d_weights = [1.0, 2.0, 3.0, 5.0];
+        let t_weights = [0.05, 0.10, 0.15];
+        let games_per = 50u64;
+
+        println!("\n{:>5} {:>5} {:>8} {:>8} {:>8}",
+                 "DW", "TW", "WR%", "Conq%", "Cons%");
+        println!("{}", "-".repeat(42));
+
+        for &dw in &d_weights {
+            for &tw in &t_weights {
+                let cfg = GreedyConfig {
+                    distance_weight: dw,
+                    terrain_weight: tw,
+                    retreat_terrain_bonus: 0.20,
+                };
+                let agent = GreedyAgent::with_config(cfg);
+                let random = RandomAgent;
+
+                let mut wins = 0u32;
+                let mut conquests = 0u32;
+                let mut constructions = 0u32;
+
+                for i in 0..games_per {
+                    let mut gs = init_game(42000 + i * 100, "balanced");
+                    let mut rng0 = ChaCha12Rng::seed_from_u64(42000 + i * 100);
+                    let mut rng1 = ChaCha12Rng::seed_from_u64(42000 + i * 200);
+
+                    while gs.winner.is_none() && gs.turn < crate::constants::MAX_TURNS {
+                        let a0 = agent.decide(&gs, 0, &mut rng0);
+                        let a1 = random.decide(&gs, 1, &mut rng1);
+                        crate::game::step_game(&mut gs, &a0, &a1);
+                    }
+
+                    if gs.winner == Some(0) { wins += 1; }
+                    match &gs.victory_type {
+                        Some(crate::game::VictoryType::Conquest) => conquests += 1,
+                        Some(crate::game::VictoryType::Construction) => constructions += 1,
+                        _ => {}
+                    }
+                }
+
+                let wr = wins as f64 / games_per as f64 * 100.0;
+                let cq = conquests as f64 / games_per as f64 * 100.0;
+                let cs = constructions as f64 / games_per as f64 * 100.0;
+                println!("{:5.1} {:5.2} {:7.1}% {:7.1}% {:7.1}%",
+                         dw, tw, wr, cq, cs);
+            }
+        }
     }
 
     #[test]

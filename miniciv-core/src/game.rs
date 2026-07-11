@@ -308,6 +308,23 @@ pub fn step_game(
         }
     }
 
+    // 渐进攻城(硬伤修复 2026-07-10): 敌方近战单位占据城格 → 每回合削城 HP。
+    // 原 bug: 攻城伤害只在"移入城格"触发一次, 占领者卡城后不再攻, 高HP城几乎打不破。
+    // 现: 占领者每回合持续削城, 守方必须赶走/杀死占领者。弓箭手不占城、工人无攻城力。
+    for pid in [0, 1] {
+        let opp = 1 - pid;
+        let (cq, cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+        let best_dmg = gs.units.iter()
+            .filter(|u| u.alive && u.player_id == opp && u.q == cq && u.r == cr
+                     && !u.ranged && u.unit_type != UnitType::Worker)
+            .map(|u| city_occupation_damage(u, &gs.cities[pid as usize]))
+            .max();
+        if let Some(dmg) = best_dmg {
+            gs.cities[pid as usize].hp -= dmg;
+            if gs.cities[pid as usize].hp < 0 { gs.cities[pid as usize].hp = 0; }
+        }
+    }
+
     // 征服胜利检查
     for pid in [0, 1] {
         if !gs.cities[1 - pid as usize].is_alive() {
@@ -447,31 +464,14 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
             if result.attacker_alive && !result.defender_alive {
                 attacker.q = nq;
                 attacker.r = nr;
-                // 占领城市?
-                let opp = 1 - attacker.player_id;
-                if nq == gs.cities[opp as usize].q && nr == gs.cities[opp as usize].r {
-                    let dmg = city_occupation_damage(attacker, &gs.cities[opp as usize]);
-                    gs.cities[opp as usize].hp -= dmg;
-                    if gs.cities[opp as usize].hp <= 0 {
-                        gs.cities[opp as usize].hp = 0;
-                    }
-                }
+                // 占城格 = 占领; 城 HP 由回合结算的"渐进攻城"持续削(不在移入时一次性扣)
             }
         }
     } else {
         // 目标格为空 → 直接移动
         gs.units[unit_idx].q = nq;
         gs.units[unit_idx].r = nr;
-
-        // 占领空城?
-        let opp = 1 - gs.units[unit_idx].player_id;
-        if nq == gs.cities[opp as usize].q && nr == gs.cities[opp as usize].r {
-            let dmg = city_occupation_damage(&gs.units[unit_idx], &gs.cities[opp as usize]);
-            gs.cities[opp as usize].hp -= dmg;
-            if gs.cities[opp as usize].hp <= 0 {
-                gs.cities[opp as usize].hp = 0;
-            }
-        }
+        // 进敌城格 = 占领; 城 HP 由回合结算的"渐进攻城"持续削(不在移入时一次性扣)
     }
 }
 

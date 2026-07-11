@@ -1,9 +1,9 @@
-// 内容利用率诊断 — 维度 G(无死内容)
+// 兵种战斗数据诊断 — 回答"哪种兵种战斗有效 / 步兵vs弓箭手"
 //
-// 目的: 跨大量对局统计每种兵种是否被使用(存活/死亡)、每条科技是否被研究。
-//       某兵种/科技从没出现 = 潜在死内容(受限于当前 AI 水平, 仅供参考)。
+// 引擎已追踪 damage_dealt/taken(combat.rs)。这里按兵种聚合:
+//   出现率 / 平均造成伤害 / 平均承受 / 存活率
 //
-// 用法: cargo run --release --bin content -- [seeds] [起手资源]
+// 用法: cargo run --release --bin content -- [seeds] [起手资源] [进攻方AI(可选,聚焦防守场景)]
 
 use std::collections::HashMap;
 use miniciv_core::config::GameConfig;
@@ -15,6 +15,9 @@ use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent};
 use rand_chacha::ChaCha12Rng;
 use rand::SeedableRng;
+
+#[derive(Default, Clone)]
+struct Stat { games: u32, dealt: i64, taken: i64, alive: u32, dead: u32 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -33,10 +36,9 @@ fn main() {
         ("Greedy", &greedy), ("Random", &RandomAgent),
     ];
 
-    // 统计: 兵种 → (出现过的局数, 累计存活, 累计死亡)
-    let mut unit_seen: HashMap<String, u32> = HashMap::new();
+    let mut stats: HashMap<String, Stat> = HashMap::new();
     let mut tech_seen: HashMap<String, u32> = HashMap::new();
-    let mut total_games = 0u32;
+    let mut total = 0u32;
 
     for (_, a0) in &agents {
         for (_, a1) in &agents {
@@ -51,36 +53,37 @@ fn main() {
                     let act1 = a1.decide(&gs, 1, &mut r1);
                     step_game(&mut gs, &act0, &act1);
                 }
-                total_games += 1;
-                // 统计终局所有单位(存活+死亡)的兵种
-                let mut seen_this: HashMap<String, bool> = HashMap::new();
+                total += 1;
+                let mut seen: HashMap<String, bool> = HashMap::new();
                 for u in gs.units.iter().chain(gs.dead_units.iter()) {
-                    seen_this.insert(format!("{:?}", u.unit_type), true);
+                    let k = format!("{:?}", u.unit_type);
+                    let s = stats.entry(k.clone()).or_default();
+                    s.dealt += u.damage_dealt as i64;
+                    s.taken += u.damage_taken as i64;
+                    if u.alive { s.alive += 1; } else { s.dead += 1; }
+                    seen.insert(k, true);
                 }
-                for k in seen_this.keys() { *unit_seen.entry(k.clone()).or_insert(0) += 1; }
-                // 统计研究过的科技
-                let mut seen_tech: HashMap<String, bool> = HashMap::new();
+                for k in seen.keys() { stats.entry(k.clone()).or_default().games += 1; }
                 for t in &gs.techs {
-                    for c in &t.completed { seen_tech.insert(c.clone(), true); }
+                    for c in &t.completed { *tech_seen.entry(c.clone()).or_insert(0) += 1; }
                 }
-                for k in seen_tech.keys() { *tech_seen.entry(k.clone()).or_insert(0) += 1; }
             }
         }
     }
 
-    println!("内容利用率: {} 局(起手资源={})", total_games, res);
-    println!("\n=== 兵种出现率(某兵种在多少比例的对局里出现)===");
+    println!("兵种战斗数据: {} 局(起手资源={})", total, res);
+    println!("{:>9} {:>7} {:>10} {:>10} {:>8}", "兵种", "出现%", "均造伤害", "均承伤害", "存活率");
+    println!("{}", "-".repeat(50));
     for ut in ["Infantry", "Cavalry", "Archer", "Scout", "Worker"] {
-        let n = unit_seen.get(ut).copied().unwrap_or(0);
-        let pct = n as f64 / total_games as f64 * 100.0;
-        let flag = if pct < 1.0 { "  <== 死内容?" } else { "" };
-        println!("  {:>9}: {:>5.1}%{}", ut, pct, flag);
-    }
-    println!("\n=== 科技研究率 ===");
-    for t in ["M1","M2","M3","M4","E1","E2","E3","E4","C1","C2","C3","C4","C5"] {
-        let n = tech_seen.get(t).copied().unwrap_or(0);
-        let pct = n as f64 / total_games as f64 * 100.0;
-        let flag = if pct < 1.0 { "  <== 死内容?" } else { "" };
-        println!("  {:>3}: {:>5.1}%{}", t, pct, flag);
+        if let Some(s) = stats.get(ut) {
+            let appeared = s.alive + s.dead;
+            let dealt = if appeared > 0 { s.dealt as f64 / appeared as f64 } else { 0.0 };
+            let taken = if appeared > 0 { s.taken as f64 / appeared as f64 } else { 0.0 };
+            let surv = if appeared > 0 { s.alive as f64 / appeared as f64 * 100.0 } else { 0.0 };
+            println!("{:>9} {:>6.1}% {:>10.1} {:>10.1} {:>7.1}%",
+                     ut, s.games as f64 / total as f64 * 100.0, dealt, taken, surv);
+        } else {
+            println!("{:>9}   0.0%(未出现)", ut);
+        }
     }
 }

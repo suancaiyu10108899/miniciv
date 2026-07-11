@@ -62,27 +62,30 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(100);
 
-    // 决定性发现: 起手资源是控制"建设发育速度"的主杠杆(资源25→10T, 15→49T)。
-    // 最干净的单杠杆: 只降起手资源, 其他全默认(academy=2,C5=2,require=4,cityHP=80)。
-    // 找建设速通 ≈ 军事攻城(~27T)的势均力敌点(Rusher 30~70%)。
-    let res_opts = [25i32, 23, 21, 20, 19, 18, 17, 16, 14];
+    // 耗时杠杆有效(整条C线)。细扫: turns 控速通, city_hp 控军事强度, 找 Rusher 40~60%。
+    let turns_opts = [8u8];
+    let hp_opts = [80i32, 81, 82, 83, 84];
 
-    println!("平衡扫描: {} seeds/组. 单杠杆=起手资源(其他全默认)", seeds);
-    println!("{:>10} | {:>10} {:>14} {}", "起手资源", "速通(T)", "Rusher胜率", "");
-    println!("{}", "-".repeat(52));
+    println!("平衡扫描: {} seeds/组. C线耗时×城市HP(academy关)", seeds);
+    println!("{:>8} {:>8} | {:>10} {:>14} {}", "C线turns", "cityHP", "速通(T)", "Rusher胜率", "");
+    println!("{}", "-".repeat(58));
 
     let base = GameConfig::default();
-    for &res in &res_opts {
-        let cfg = GameConfig {
-            starting_food: res,
-            starting_wood: res,
-            starting_gold: res,
-            ..base.clone()
-        };
-        let sr = builder_speedrun(&cfg, seeds);
-        let rw = rusher_vs_builder(&cfg, seeds);
-        let sweet = if rw >= 0.30 && rw <= 0.70 { " <== 势均力敌!" }
-                    else if rw > 0.0 { " <- 军事够得着" } else { "" };
-        println!("{:>10} | {:>9.1} {:>13.1}%{}", res, sr, rw * 100.0, sweet);
+    for &ct in &turns_opts {
+        for &hp in &hp_opts {
+            let mut tech_turns = HashMap::new();
+            for t in ["C1", "C3", "C4", "C5"] { tech_turns.insert(t.to_string(), ct); }
+            let cfg = GameConfig {
+                academy_research_increment: 1,
+                city_hp: hp,
+                tech_turns,
+                ..base.clone()
+            };
+            let sr = builder_speedrun(&cfg, seeds);
+            let rw = rusher_vs_builder(&cfg, seeds);
+            let sweet = if sr >= 28.0 && rw >= 0.40 && rw <= 0.60 { " <== 甜点!" }
+                        else if rw >= 0.30 && rw <= 0.70 { " <- 接近" } else { "" };
+            println!("{:>8} {:>8} | {:>9.1} {:>13.1}%{}", ct, hp, sr, rw * 100.0, sweet);
+        }
     }
 }

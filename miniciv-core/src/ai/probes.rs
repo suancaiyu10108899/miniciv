@@ -357,6 +357,71 @@ impl Agent for DefenderAgent {
     fn name(&self) -> &str { "Defender" }
 }
 
+// ═══════════════════════════════════════════════════════
+// CavalryRusher — 骑兵攻城探针
+// ═══════════════════════════════════════════════════════
+//
+// 和 Rusher 同结构但产骑兵(攻城 55/次 vs 步兵 40/次, 更快)。
+// 对照点: 骑兵禁山遇林停, 山林多的图到不了城 → 检验地形对军事的影响。
+
+pub struct CavalryRusherAgent;
+
+impl Agent for CavalryRusherAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let mut actions = Vec::new();
+        let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
+
+        // 研究 M1(ATK+5) → M2(骑兵冲锋+5)
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let econ = &gs.economies[pid as usize];
+            for t in ["M1", "M2"] {
+                if tech.available_to_research().iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive)
+            .collect();
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            match unit.unit_type {
+                UnitType::Worker => {
+                    if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                        actions.push(a);
+                    }
+                }
+                UnitType::Scout => {}
+                _ => {
+                    if let Some((dq, dr)) = step_toward(unit, ecq, ecr, &gs.grid) {
+                        actions.push(Action::Move { unit_idx: local_idx, dq, dr });
+                    }
+                }
+            }
+        }
+
+        // 城市: 产骑兵(5/0/3), 资源不够退步兵
+        let econ = &gs.economies[pid as usize];
+        if econ.can_afford((5, 0, 3)) {
+            actions.push(Action::ProduceUnit { unit_type: "cavalry".to_string() });
+        } else if econ.can_afford((5, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+        }
+
+        actions
+    }
+
+    fn name(&self) -> &str { "CavRusher" }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

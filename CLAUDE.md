@@ -10,15 +10,14 @@
 > `docs/planning/2026-07-10-stage1-goal-acceptance.md`;方法论=验证金字塔 →
 > `2026-07-10-validation-pyramid.md`。
 >
-> **M1 找到平衡杠杆**:GameConfig 参数化 + `bin/scan` 扫描。**起手资源 25→17**(单杠杆)
-> 把建设速通 5T→30T,建设↔军事势均力敌(Builder vs Rusher 45/55),胜利类型均衡
-> (征服47/建设36)。数据 → `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md`。
-> **M2 攻防兼顾 AI**:Defender(步兵+弓箭手)把被 Rusher 攻破率 55%→15%,防守有效。
-> 但 Defender 成新支配者(86.8%)且 avg 8.8T 偏快——**待诊断: 好AI 还是新speedrun?**
+> **M1 找到平衡杠杆**:纯参数试尽——起手资源是假象(采集绕过)、耗时线性有效、
+> **C线成本×是平滑半硬主杠杆**。**M2 甜点带(打表+多攻防AI)**:C线成本×3+city_hp160,
+> 建设~43T,步兵/骑兵/防守 rush 各 40-50%,无单一支配。军事强弱靠 AI 兵种决策
+> (骑兵快但地形制约),city_hp 台阶微调。数据 → `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md`。
+> **关键方法论**:参数只设环境,平滑平衡靠 AI 资源分配(血量阶跃=攻击次数离散的正确反映)。
 >
-> **验收进展**: A(探针无单一支配)/G(无死内容)技术满足;B(好AI强于探针)有希望;
-> 待解 D(Builder 镜像先手 60% 偏高)。P0 偏差 tiebreak bug 已修(门禁2a)。
-> **下一步:诊断 Defender(turn分布/应变) → M3 训练AI → M4 回放器。**
+> **验收进展**: A/G 技术满足;B 待验(Defender speedrun 已被成本堵死);待解 D(先手偏高)。
+> **下一步:甜点带跑完整探针矩阵最终验证 → M3 训练AI → M4 回放器。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|

@@ -125,3 +125,15 @@ CavRusher  53   78   --   47   52  100
 > 现状:硬伤全修、甜点=成本×2 HP160、一阶深度温和成立。
 > 从"科技强互斥"开始深化,每步用 `bin/depth`/`bin/table` 体检验证真加了深度。
 > 先判断:默认参数改不改(HANDOFF"默认参数改不改"一节有我的思路)。
+
+---
+
+## ⚠️ 别忘了:向个人管理体系(vault)同步
+
+miniciv 内部交接(本文件)是写给下一个 AI 的,**不是写给三个月后的用户和 vault 的**。
+两边有信息断层。**每个开发阶段结束时,除了写 HANDOFF,还要向 dev-hub(`D:\Dev\dev-hub`)同步一次**:
+- 更新 `dev-hub/01-project-index.md` 里 miniciv 一行(阶段/健康度/下一步)
+- 阶段报告放 `docs/personal-management/`,dev-hub 里放链接
+- 发现跨项目模式 → `dev-hub/40-Concepts/` 扔一张概念卡(门槛低到"发现即录":标题+3案例+教训)
+
+细节 → `docs/personal-management/README.md`。这是开发体系的一部分,不是额外负担。

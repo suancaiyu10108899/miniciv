@@ -97,6 +97,7 @@
 | 找什么 | 去哪 |
 |--------|------|
 | Phase 进度 + 当前状态 | **本文件**（唯一真相源） |
+| **个人管理体系(vault)对接** | **`docs/personal-management/README.md`**（阶段结束向 dev-hub 同步纪律） |
 | 游戏参数（唯一真相源） | `docs/GAME.md` |
 | 设计决策 | `docs/DECISIONS.md` |
 | 开发纪律 | `docs/WORKFLOW.md` |

@@ -9,6 +9,7 @@ pub mod evo;
 pub mod fixed;
 pub mod probes;
 pub mod search;
+pub mod flatmc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Action {

@@ -12,7 +12,7 @@ use crate::game::GameState;
 use crate::unit::UnitType;
 use crate::map::Terrain;
 use crate::ai::{Action, Agent};
-use crate::movement::{legal_moves, hex_distance};
+use crate::movement::{legal_moves, hex_distance, HEX_DIRS};
 use crate::tech::TechManager;
 use crate::constants::{MAP_W, MAP_H};
 use rand::RngCore;
@@ -174,6 +174,89 @@ impl Agent for HarasserAgent {
     }
 
     fn name(&self) -> &str { "Harasser" }
+}
+
+// ═══════════════════════════════════════════════════════
+// Turtle — 龟缩防守探针
+// ═══════════════════════════════════════════════════════
+//
+// 边建设边留兵守城: 检验"防守能否挡住 Rusher"(资源17 暴露的核心缺口)。
+// 研究直奔 C5(像 Builder), 但城市产步兵守家、战斗单位不出击只拦截。
+
+pub struct TurtleAgent;
+
+impl Agent for TurtleAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let mut actions = Vec::new();
+        let (my_cq, my_cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+
+        // 研究: 直奔 C5(和 Builder 同路线)
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let econ = &gs.economies[pid as usize];
+            let avail = tech.available_to_research();
+            for t in ["C1", "C3", "C4", "C5", "E1", "C2"] {
+                if avail.iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive)
+            .collect();
+        let mut soldier_count = 0u32;
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            match unit.unit_type {
+                UnitType::Worker => {
+                    if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                        actions.push(a);
+                    }
+                }
+                UnitType::Scout => {}
+                _ => {
+                    // 战斗单位: 守城。邻格有敌→攻击; 否则回撤到城市附近待命。
+                    soldier_count += 1;
+                    let mut acted = false;
+                    for (dq, dr) in HEX_DIRS.iter() {
+                        let nq = (unit.q + dq).rem_euclid(MAP_W as i32);
+                        let nr = (unit.r + dr).rem_euclid(MAP_H as i32);
+                        let has_enemy = gs.units.iter().any(|e|
+                            e.alive && e.player_id == opp && e.q == nq && e.r == nr);
+                        if has_enemy {
+                            actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
+                            acted = true;
+                            break;
+                        }
+                    }
+                    if acted { continue; }
+                    // 离城市 >1 格 → 回撤守城
+                    if hex_distance(unit.q, unit.r, my_cq, my_cr) > 1 {
+                        if let Some((dq, dr)) = step_toward(unit, my_cq, my_cr, &gs.grid) {
+                            actions.push(Action::Move { unit_idx: local_idx, dq, dr });
+                        }
+                    }
+                }
+            }
+        }
+
+        // 城市: 产步兵守家, 上限 4(留资源推建设)
+        let econ = &gs.economies[pid as usize];
+        if soldier_count < 4 && econ.can_afford((5, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+        }
+
+        actions
+    }
+
+    fn name(&self) -> &str { "Turtle" }
 }
 
 #[cfg(test)]

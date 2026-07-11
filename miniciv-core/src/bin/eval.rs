@@ -15,7 +15,7 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent};
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent};
 use miniciv_core::config::GameConfig;
 use miniciv_core::eval::run_matrix_with_config;
 
@@ -41,7 +41,8 @@ fn main() {
     let builder = BuilderAgent;
     let rusher = RusherAgent;
     let harasser = HarasserAgent;
-    let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &harasser, &greedy, &evo, &random];
+    let turtle = TurtleAgent;
+    let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &harasser, &turtle, &greedy, &evo, &random];
 
     eprintln!("跑矩阵: {} AI × {} seeds paired (每对 {} 局), generator={}, 起手资源={}",
               agents.len(), seeds, seeds * 2, generator, starting_res);

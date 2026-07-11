@@ -13,20 +13,22 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent};
-use miniciv_core::snapshot::run_replay_default;
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent};
+use miniciv_core::config::GameConfig;
+use miniciv_core::snapshot::run_replay;
 
 fn make_agent(name: &str) -> Box<dyn Agent> {
     match name.to_lowercase().as_str() {
         "builder" => Box::new(BuilderAgent),
         "rusher" => Box::new(RusherAgent),
         "harasser" => Box::new(HarasserAgent),
+        "turtle" => Box::new(TurtleAgent),
         "greedy" => Box::new(GreedyAgent::new()),
         "evo" => Box::new(EvoAgent::new()),
         "random" => Box::new(RandomAgent),
         other => {
             // 不静默 fallback: 未知 AI 直接退出, 避免拿错误对局误导决策
-            eprintln!("错误: 未知 AI '{}'。可选: Builder/Rusher/Harasser/Greedy/Evo/Random", other);
+            eprintln!("错误: 未知 AI '{}'。可选: Builder/Rusher/Harasser/Turtle/Greedy/Evo/Random", other);
             std::process::exit(1);
         }
     }
@@ -38,10 +40,15 @@ fn main() {
     let name_b = args.get(2).map(|s| s.as_str()).unwrap_or("Random");
     let seed: u64 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(50000);
     let out_path = args.get(4).cloned();
+    let res: i32 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(25);
 
+    let config = GameConfig {
+        starting_food: res, starting_wood: res, starting_gold: res,
+        ..GameConfig::default()
+    };
     let a = make_agent(name_a);
     let b = make_agent(name_b);
-    let rep = run_replay_default(seed, a.as_ref(), b.as_ref(), "balanced");
+    let rep = run_replay(seed, a.as_ref(), b.as_ref(), "balanced", &config);
 
     println!("回放: {} (P0) vs {} (P1)  seed={}", rep.config.ai_a, rep.config.ai_b, seed);
     println!("{:>4} | {:>16} | {:>16} | {:>16} | {:>16}",

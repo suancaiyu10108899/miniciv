@@ -6,10 +6,11 @@
 // 设计: snapshot_turn(gs) 从当前状态抓一帧; run_replay 驱动一局并逐回合收集。
 //       原 create_replay 只拿到最终 gs 拿不到历史,故新增带记录的驱动器。
 
-use crate::game::{GameState, init_game, step_game};
+use crate::game::{GameState, init_game_with_config, step_game};
+use crate::config::GameConfig;
 use crate::map::{Grid, Terrain};
 use crate::ai::Agent;
-use crate::constants::{MAP_W, MAP_H, MAX_TURNS};
+use crate::constants::{MAP_W, MAP_H};
 use rand_chacha::ChaCha12Rng;
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
@@ -129,9 +130,10 @@ fn terrain_grid(grid: &Grid) -> Vec<Vec<u8>> {
 /// 驱动一局并逐回合收集回放。P0 rng=seed, P1 rng=seed+1(与 eval 一致)。
 pub fn run_replay(
     seed: u64, ai0: &dyn Agent, ai1: &dyn Agent,
-    generator_id: &str, max_turns: u16,
+    generator_id: &str, config: &GameConfig,
 ) -> GameReplay {
-    let mut gs = init_game(seed, generator_id);
+    let mut gs = init_game_with_config(seed, generator_id, config.clone());
+    let max_turns = config.max_turns;
     let mut rng0 = ChaCha12Rng::seed_from_u64(seed);
     let mut rng1 = ChaCha12Rng::seed_from_u64(seed + 1);
 
@@ -166,9 +168,9 @@ pub fn run_replay(
     }
 }
 
-/// 便捷:默认 MAX_TURNS。
+/// 便捷:默认配置。
 pub fn run_replay_default(seed: u64, ai0: &dyn Agent, ai1: &dyn Agent, generator_id: &str) -> GameReplay {
-    run_replay(seed, ai0, ai1, generator_id, MAX_TURNS)
+    run_replay(seed, ai0, ai1, generator_id, &GameConfig::default())
 }
 
 #[cfg(test)]

@@ -219,9 +219,23 @@ pub fn step_game(
             match act {
                 Action::Move { unit_idx, dq, dr } => {
                     if let Some(&global_idx) = player_units.get(*unit_idx) {
-                        let dq = *dq;
-                        let dr = *dr;
-                        do_move(gs, global_idx, dq, dr);
+                        // B2 修复: 按 move_speed 走多步(遇敌/占城/受阻停)。
+                        // 冲锋(B5): 骑兵连续走过平原后攻击 → +10。
+                        let speed = gs.units[global_idx].move_speed.max(1);
+                        let mut plains_run = 0u8;
+                        for _ in 0..speed {
+                            let from = gs.grid.get(gs.units[global_idx].q, gs.units[global_idx].r).terrain;
+                            let charged = gs.units[global_idx].unit_type == UnitType::Cavalry
+                                && plains_run >= 1
+                                && from == crate::map::Terrain::Plain;
+                            match do_move(gs, global_idx, *dq, *dr, charged) {
+                                MoveOutcome::Moved => {
+                                    if from == crate::map::Terrain::Plain { plains_run += 1; }
+                                    else { plains_run = 0; }
+                                }
+                                _ => break,  // 战斗/占城/受阻 → 停
+                            }
+                        }
                     }
                 }
                 Action::Build { unit_idx } => {
@@ -378,7 +392,10 @@ fn unit_category(ut: &UnitType) -> &str {
 ///   3. 堆叠检查(己方同类别单位是否已满)
 ///   4. 目标格有敌方单位 → 战斗(近战互打 / 远程单向)
 ///   5. 目标格为空 → 直接移动(可能触发城市占领)
-fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
+/// 单步移动的结果(用于 move_speed 多步移动的控制)。
+enum MoveOutcome { Moved, Fought, Blocked }
+
+fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32, charged: bool) -> MoveOutcome {
     // 骑兵遇林检查: 进入森林 → 停
     let (dq, dr) = if gs.units[unit_idx].unit_type == UnitType::Cavalry {
         let nq = (gs.units[unit_idx].q + dq).rem_euclid(MAP_W as i32);
@@ -393,7 +410,7 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
     };
 
     if dq == 0 && dr == 0 {
-        return;  // 没有实际移动
+        return MoveOutcome::Blocked;  // 遇林/无实际移动
     }
 
     let nq = (gs.units[unit_idx].q + dq).rem_euclid(MAP_W as i32);
@@ -408,7 +425,7 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
             && unit_category(&u.unit_type) == cat
     }).count();
     if friendly_count >= max_allowed {
-        return;  // 无法移入——己方同类别单位已满
+        return MoveOutcome::Blocked;  // 无法移入——己方同类别单位已满
     }
 
     // 找目标格的敌方单位
@@ -436,14 +453,9 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
                 resolve_ranged(&mut right[0], &mut left[archer_idx], terrain_target);
             }
         } else {
-            // 近战——移动+攻击
+            // 近战——移动+攻击(charged 由调用方按 move_speed 多步移动判定)
             let terrain_att = gs.grid.get(gs.units[unit_idx].q, gs.units[unit_idx].r).terrain;
             let terrain_def = gs.grid.get(nq, nr).terrain;
-            // 骑兵冲锋判断: 走2格+起始格是平原
-            let charged = gs.units[unit_idx].unit_type == UnitType::Cavalry
-                && (dq.abs() + dr.abs() == 2 || dq.abs().max(dr.abs()) >= 2)
-                && gs.grid.get(
-                    gs.units[unit_idx].q, gs.units[unit_idx].r).terrain == crate::map::Terrain::Plain;
 
             // split_at_mut 技巧: 从 Vec 中同时可变借用两个不同元素
             let (a_idx, b_idx) = if unit_idx < blocker_idx {
@@ -467,11 +479,13 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32) {
                 // 占城格 = 占领; 城 HP 由回合结算的"渐进攻城"持续削(不在移入时一次性扣)
             }
         }
+        MoveOutcome::Fought
     } else {
         // 目标格为空 → 直接移动
         gs.units[unit_idx].q = nq;
         gs.units[unit_idx].r = nr;
         // 进敌城格 = 占领; 城 HP 由回合结算的"渐进攻城"持续削(不在移入时一次性扣)
+        MoveOutcome::Moved
     }
 }
 

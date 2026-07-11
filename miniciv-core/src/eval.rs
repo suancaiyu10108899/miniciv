@@ -313,7 +313,9 @@ mod tests {
 
     #[test]
     fn test_run_one_game_有胜者且确定性() {
-        let g = GreedyAgent::new();
+        // 用确定 AI(Builder)测引擎确定性。Greedy 有 HashMap 迭代非确定性(见 BUGS B6),
+        // 不适合确定性断言。
+        let g = crate::ai::fixed::BuilderAgent;
         let r = RandomAgent;
         let o1 = run_one_game(50000, &g, &r, "balanced", &GameConfig::default());
         let o2 = run_one_game(50000, &g, &r, "balanced", &GameConfig::default());

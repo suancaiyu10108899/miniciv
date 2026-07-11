@@ -59,3 +59,17 @@
 B4/B5 随 B2 一并处理。
 
 *最后更新: 2026-07-10*
+
+---
+
+## 2026-07-10 修复更新
+
+- **B2(move_speed)✅ 已修**: do_move 返回 MoveOutcome, Move 动作按 move_speed 循环走多步
+  (遇敌/占城/受阻停)。骑兵移速2生效, 但因禁山遇林停(地形50%非平原), 骑兵rush仅 52%→53%——
+  这是**正确实现的真实兵种权衡**(骑兵攻城强55但机动怕地形), 非 bug。
+- **B4(遇林停)= 其实已实现**: 排查时 grep movement.rs 没找到, 实际在 game.rs do_move 383-393。不是硬伤。
+- **B5(冲锋)✅ 已修**: charged 判定移到 Move 循环(连续走过平原后攻击+10), 随 B2 实现。
+- **B6 新增 — Greedy HashMap 迭代非确定性(隐藏)**: greedy.rs 133 `map.keys().take()` 迭代
+  HashMap(顺序随机)删对手模型 → 同 seed 不同结果。只影响 Greedy(探针/Builder 不受影响)。
+  确定性测试已改用 Builder。修复留待(改 BTreeMap 或排序迭代)。
+- **B3(range_dist 弓箭手射程2)⚠️ 仍待修** — 下一步。

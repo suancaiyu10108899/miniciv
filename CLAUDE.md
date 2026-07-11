@@ -2,18 +2,37 @@
 
 ## 当前阶段
 
-**Rust 重构 Phase 9/9 完成 + 门禁1(诚实评估)落地。70 tests 通过 (+2 ignored)。**
+**一阶深度阶段(M1-M2 进行中)。78 tests 通过 (+3 ignored)。**
 
-> ⚠️ **顶层真相(2026-07-10 第三个 AI,500 seeds paired):**
-> **游戏存在 5 回合建设速通支配策略。** 纯建设固定策略(Builder)5 回合合法完成 C5+设施,
-> **100% 通杀 Greedy/Evo/Random**,军事/战术全是摆设,同类对决先手 90.8% 决定。
-> → 北极星"AI 玩出深度"**当前不合格**:有单一支配解,非丰富博弈。裁决 → `experiments/v0.8.1-honest-eval/VERDICT.md`
-> 附带修正:v0.8.0 招牌"Greedy 60.8%/7x"是拿坏 Evo 刷平均的假象(Greedy vs Random 实为 41%,反优化)。
-> P0 偏差:✅ 已修(门禁2a,tiebreak murmur3)。镜像 P0 Greedy 49%/Random 53%/Evo 54%。
-> **方法论锚点:验证金字塔(探针→手写→训练→自己玩→社区)→ `docs/planning/2026-07-10-validation-pyramid.md`**
-> 阶段0-1 已交付:回放 CLI + 反速通哨兵 + 探针套件支配矩阵。
-> 诊断:军事有效(Rusher 碾压除 Builder 外所有人)但打不过速通(Rusher vs Builder=0%)。
-> **门禁3靶心:让 Rusher vs Builder 从 0% 爬起来(拖慢建设,给军事攻城时间)。待人拍板方向。**
+> ⚠️ **顶层真相(2026-07-10 第三个 AI):**
+> **原发现**:游戏存在 5 回合建设速通支配策略(Builder 100% 通杀),北极星曾不合格。
+> **进展**:阶段目标=一阶深度(建设↔军事张力,40-80T决出)。合同+验收标准 →
+> `docs/planning/2026-07-10-stage1-goal-acceptance.md`;方法论=验证金字塔 →
+> `2026-07-10-validation-pyramid.md`。
+>
+> **M1 找到平衡杠杆**:GameConfig 参数化 + `bin/scan` 扫描。**起手资源 25→17**(单杠杆)
+> 把建设速通 5T→30T,建设↔军事势均力敌(Builder vs Rusher 45/55),胜利类型均衡
+> (征服47/建设36)。数据 → `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md`。
+> **M2 攻防兼顾 AI**:Defender(步兵+弓箭手)把被 Rusher 攻破率 55%→15%,防守有效。
+> 但 Defender 成新支配者(86.8%)且 avg 8.8T 偏快——**待诊断: 好AI 还是新speedrun?**
+>
+> **验收进展**: A(探针无单一支配)/G(无死内容)技术满足;B(好AI强于探针)有希望;
+> 待解 D(Builder 镜像先手 60% 偏高)。P0 偏差 tiebreak bug 已修(门禁2a)。
+> **下一步:诊断 Defender(turn分布/应变) → M3 训练AI → M4 回放器。**
+
+| Phase | 内容 | 状态 | 测试 | 学习笔记 |
+|-------|------|------|------|---------|
+| 1 | cargo 骨架 | ✅ | — | — |
+| 2 | map.rs — 地图生成 | ✅ | 7 | enum/struct ≈ C++，rem_euclid 是 Python % |
+| 3 | movement.rs — 移动+距离 | ✅ | 10 | hex_distance 9种wrap取最短，cube distance公式 |
+| 4 | unit.rs + combat.rs — 单位+战斗 | ✅ | 21 | &mut 可变引用，split_at_mut 解决双借用 |
+| 5 | economy.rs + tech.rs — 经济+科技 | ✅ | 20 | HashSet Borrow 泛型推导坑，static 数组替代 Vec |
+| 6 | game.rs + ai/random.rs — 游戏循环+Random | ✅ | 4 | 首次端到端！split_at_mut 实战，所有权移动 |
+| 7 | ai/greedy.rs — Greedy AI | ✅ | 4 | 600局参数扫描: TW=0.15最优, hex_distance修复是关键 |
+| 8 | ai/evo.rs — Evo AI | ✅ | 3 | 权重从JSON加载, 但需Rust引擎上重训 |
+| 9 | 集成验证矩阵 | ✅ | 1 | ~~Greedy 60.8%~~ 30-seed 噪声,见门禁1修正 |
+| G1 | eval.rs 批量评估 (第三AI) | ✅ | 3 | 500-seed 诚实矩阵: Greedy vs Random 41.4% |
+| S1 | 一阶深度 M1-M2 (第三AI) | 🔄 | +tests | 起手资源=甜点杠杆; 步兵+弓箭手防守有效 |
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|

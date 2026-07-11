@@ -13,17 +13,21 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent};
 use miniciv_core::snapshot::run_replay_default;
 
 fn make_agent(name: &str) -> Box<dyn Agent> {
     match name.to_lowercase().as_str() {
         "builder" => Box::new(BuilderAgent),
+        "rusher" => Box::new(RusherAgent),
+        "harasser" => Box::new(HarasserAgent),
         "greedy" => Box::new(GreedyAgent::new()),
         "evo" => Box::new(EvoAgent::new()),
         "random" => Box::new(RandomAgent),
         other => {
-            eprintln!("未知 AI '{}', 用 Random。可选: Builder/Greedy/Evo/Random", other);
-            Box::new(RandomAgent)
+            // 不静默 fallback: 未知 AI 直接退出, 避免拿错误对局误导决策
+            eprintln!("错误: 未知 AI '{}'。可选: Builder/Rusher/Harasser/Greedy/Evo/Random", other);
+            std::process::exit(1);
         }
     }
 }

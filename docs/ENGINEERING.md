@@ -20,8 +20,8 @@
 
 | 项 | 状态 | 备注 |
 |----|------|------|
-| 单元测试 | ✅ | 86 tests, 0.17s, 覆盖 combat/mapgen/movement/terrain/unit |
-| 未测试模块 | ⚠️ | game/ economy/ tech/ snapshot/ eval/ 全部 9 个 AI 模块 — 零测试 |
+| 单元测试 | ✅ | 80 tests (+3 ignored), 覆盖 combat/mapgen/movement/terrain/unit/config/flatmc |
+| 未测试模块 | ⚠️ | game/ economy/ tech/ snapshot/ eval/ 部分 AI 模块单测薄(但 eval/flatmc 有确定性测试) |
 | 集成测试标准 | ✅ | `docs/INTEGRATION-TESTS.md` 已定义 |
 | check_docs.py | ✅ | 检测 constants.py ↔ GAME.md 一致性（已补全至 8 个值） |
 
@@ -59,7 +59,7 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 | CC Memory (07-01→07-03) | ⚠️ 缺 07-04/07-05 |
 | 活跃文档日期戳同步 | ✅ 已修复（本次 audit） |
 | GAME.md ↔ constants.py 一致性 | ✅ check_docs 已补全 |
-| BUGS.md | ❌ 空模板（零条记录） |
+| BUGS.md | ✅ B1-B7 已记录并全修(B6 于 S2 修复) |
 
 ## 五、Agent 协作
 
@@ -86,7 +86,12 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
 9. ~~**tiebreak P0 偏向**~~：✅ **已修(门禁2a)** — tiebreak 随机分支原用 `gs.turn % 2`,但恒在 turn==80(偶数)触发→恒判 P0。改为 `unbiased_coin(seed)`(murmur3 双轮 + 单测)。镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达标)。剩余 ~3% 是随机对局真实先手优势(Greedy 建设 P0=47.7% 证明引擎干净)。
 10. ~~**存在意义级:5 回合建设速通支配**~~：✅ **已解决(2026-07-10)** — 门禁2b 发现纯建设 Builder 5T 速通 100% 通杀。修完硬伤(B1-B7 攻城/移速/射程/冲锋/遇林停)+ 甜点带(C线成本×2 + city_hp160)后,变成**建设↔军事↔防守三方制衡、有克制环(骑兵>步兵>防守>骑兵)、无单一支配、征服43/建设47均衡**。见 `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md` + `docs/BUGS.md`。
-11. **待深化/待修**：B6 Greedy HashMap 迭代非确定(只影响 Greedy)、骑兵精确平衡(成本×2 下 CavRusher 66% 可接受)、弓箭手 kiting 未充分利用、FOW 未实现(迷雾深化时做)。详见 `docs/BUGS.md`。
+11. **待深化/待修**：~~B6 Greedy HashMap 迭代非确定~~(✅ S2 修复: BTreeMap)、骑兵精确平衡(成本×2 下 CavRusher 可接受)、弓箭手 kiting 未充分利用、FOW 未实现(迷雾深化时做)。详见 `docs/BUGS.md`。
+
+### Rust 端（v0.9 S2 新增）
+12. **默认配置已落地为甜点**(成本×2 HP160): 消除"甜点只活在 CLI 参数"的漂移源。见 DECISIONS #19。
+13. **FlatMC 裁判**(`ai/flatmc.rs` + `bin/judge`): 首个非循环深度裁判。裁决"深度温和偏浅"。见 `experiments/v0.9-judge/S2-VERDICT.md`。
+14. **性能债(新)**: 评估/裁判全单线程(无 rayon), FlatMC 矩阵只用 1 核。paired seeds 天然可并行, `par_iter` 可近线性加速。**规范里也无"性能"纪律** → 建议立项加并行 + 写进 WORKFLOW。
 
 ---
 

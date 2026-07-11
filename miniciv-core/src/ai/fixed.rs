@@ -178,7 +178,7 @@ mod tests {
         use crate::eval::run_pair;
         let b = BuilderAgent;
         let r = RandomAgent;
-        let p = run_pair(&b, &r, 50, 50000, "balanced", MAX_TURNS);
+        let p = run_pair(&b, &r, 50, 50000, "balanced", &crate::config::GameConfig::default());
         assert!(p.avg_turns < 10.0,
             "反速通哨兵: Builder vs Random 平均结束回合={:.1}。\
              若 >10 说明速通已被打破 —— 请按本测试文档注释更新(改为 >=30 并跑探针套件)。",

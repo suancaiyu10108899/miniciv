@@ -16,14 +16,24 @@ use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
 use miniciv_core::ai::probes::{RusherAgent, HarasserAgent};
-use miniciv_core::eval::run_matrix_default;
+use miniciv_core::config::GameConfig;
+use miniciv_core::eval::run_matrix_with_config;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(100);
     let generator = args.get(2).map(|s| s.as_str()).unwrap_or("balanced").to_string();
     let out_path = args.get(3).cloned();
+    // 第4参数: 起手资源(默认25=当前)。甜点候选=17。
+    let starting_res: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(25);
     let seed_base = 50000u64;
+
+    let config = GameConfig {
+        starting_food: starting_res,
+        starting_wood: starting_res,
+        starting_gold: starting_res,
+        ..GameConfig::default()
+    };
 
     let greedy = GreedyAgent::new();
     let evo = EvoAgent::new();
@@ -33,10 +43,10 @@ fn main() {
     let harasser = HarasserAgent;
     let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &harasser, &greedy, &evo, &random];
 
-    eprintln!("跑矩阵: {} AI × {} seeds paired (每对 {} 局), generator={}",
-              agents.len(), seeds, seeds * 2, generator);
+    eprintln!("跑矩阵: {} AI × {} seeds paired (每对 {} 局), generator={}, 起手资源={}",
+              agents.len(), seeds, seeds * 2, generator, starting_res);
 
-    let m = run_matrix_default(&agents, seeds, seed_base, &generator);
+    let m = run_matrix_with_config(&agents, seeds, seed_base, &generator, &config);
 
     println!("\n═══ Pairwise paired (先手偏差已抵消) ═══");
     println!("{:>8} vs {:<8} {:>8}  | A靠[征/建/平]赢  B靠[征/建/平]赢",

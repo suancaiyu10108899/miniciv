@@ -10,9 +10,9 @@
 // 诚实原则:pairwise paired 表全量输出,读者能直接看到 Greedy vs Random,
 // 不用"跨对手平均"这种会被坏对手刷高的数字下结论。
 
-use crate::game::{GameState, init_game, step_game, VictoryType};
+use crate::game::{GameState, init_game_with_config, step_game, VictoryType};
+use crate::config::GameConfig;
 use crate::ai::Agent;
-use crate::constants::MAX_TURNS;
 use rand_chacha::ChaCha12Rng;
 use rand::SeedableRng;
 use serde::Serialize;
@@ -39,9 +39,10 @@ pub fn run_one_game(
     ai0: &dyn Agent,
     ai1: &dyn Agent,
     generator_id: &str,
-    max_turns: u16,
+    config: &GameConfig,
 ) -> GameOutcome {
-    let mut gs: GameState = init_game(seed, generator_id);
+    let mut gs: GameState = init_game_with_config(seed, generator_id, config.clone());
+    let max_turns = config.max_turns;
     let mut rng0 = ChaCha12Rng::seed_from_u64(seed);
     let mut rng1 = ChaCha12Rng::seed_from_u64(seed + 1);
 
@@ -103,7 +104,7 @@ pub fn run_pair(
     seeds: u32,
     seed_base: u64,
     generator_id: &str,
-    max_turns: u16,
+    config: &GameConfig,
 ) -> PairResult {
     use crate::game::VictoryType as VT;
     let mut a_wins = 0u32;
@@ -134,10 +135,10 @@ pub fn run_pair(
     for i in 0..seeds {
         let seed = seed_base + i as u64 * 100;
         // 局1:A=P0, B=P1
-        let g1 = run_one_game(seed, ai_a, ai_b, generator_id, max_turns);
+        let g1 = run_one_game(seed, ai_a, ai_b, generator_id, config);
         tally(&g1, true);
         // 局2:B=P0, A=P1(同 seed → 同地图,交换阵营)
-        let g2 = run_one_game(seed, ai_b, ai_a, generator_id, max_turns);
+        let g2 = run_one_game(seed, ai_b, ai_a, generator_id, config);
         tally(&g2, false);
     }
 
@@ -187,7 +188,7 @@ pub fn run_mirror(
     seeds: u32,
     seed_base: u64,
     generator_id: &str,
-    max_turns: u16,
+    config: &GameConfig,
 ) -> MirrorResult {
     use crate::game::VictoryType as VT;
     let mut p0_wins = 0u32;
@@ -196,7 +197,7 @@ pub fn run_mirror(
     let (mut tbr, mut tbr_p0) = (0u32, 0u32);
     for i in 0..seeds {
         let seed = seed_base + i as u64 * 100;
-        let o = run_one_game(seed, ai, ai, generator_id, max_turns);
+        let o = run_one_game(seed, ai, ai, generator_id, config);
         let p0_won = o.winner == Some(0);
         if p0_won { p0_wins += 1; }
         match o.victory_type {
@@ -248,19 +249,19 @@ pub fn run_matrix(
     seeds: u32,
     seed_base: u64,
     generator_id: &str,
-    max_turns: u16,
+    config: &GameConfig,
 ) -> MatrixResult {
     let mut pairs = Vec::new();
     // 无序对:i < j
     for i in 0..agents.len() {
         for j in (i + 1)..agents.len() {
-            pairs.push(run_pair(agents[i], agents[j], seeds, seed_base, generator_id, max_turns));
+            pairs.push(run_pair(agents[i], agents[j], seeds, seed_base, generator_id, config));
         }
     }
 
     let mut mirrors = Vec::new();
     for a in agents {
-        mirrors.push(run_mirror(*a, seeds, seed_base, generator_id, max_turns));
+        mirrors.push(run_mirror(*a, seeds, seed_base, generator_id, config));
     }
 
     // 跨对手平均:对每个 AI,收集它在所有 pair 里的胜率(注意方向)
@@ -283,16 +284,21 @@ pub fn run_matrix(
         generator: generator_id.to_string(),
         seeds,
         seed_base,
-        max_turns,
+        max_turns: config.max_turns,
         pairs,
         mirrors,
         summaries,
     }
 }
 
-/// 便捷:用默认 MAX_TURNS 跑矩阵。
+/// 便捷:用默认配置跑矩阵。
 pub fn run_matrix_default(agents: &[&dyn Agent], seeds: u32, seed_base: u64, generator_id: &str) -> MatrixResult {
-    run_matrix(agents, seeds, seed_base, generator_id, MAX_TURNS)
+    run_matrix(agents, seeds, seed_base, generator_id, &GameConfig::default())
+}
+
+/// 便捷:用指定配置跑矩阵。
+pub fn run_matrix_with_config(agents: &[&dyn Agent], seeds: u32, seed_base: u64, generator_id: &str, config: &GameConfig) -> MatrixResult {
+    run_matrix(agents, seeds, seed_base, generator_id, config)
 }
 
 // ═══════════════════════════════════════════════════════
@@ -309,8 +315,8 @@ mod tests {
     fn test_run_one_game_有胜者且确定性() {
         let g = GreedyAgent::new();
         let r = RandomAgent;
-        let o1 = run_one_game(50000, &g, &r, "balanced", MAX_TURNS);
-        let o2 = run_one_game(50000, &g, &r, "balanced", MAX_TURNS);
+        let o1 = run_one_game(50000, &g, &r, "balanced", &GameConfig::default());
+        let o2 = run_one_game(50000, &g, &r, "balanced", &GameConfig::default());
         // 确定性:同 seed 同结果
         assert_eq!(o1.winner, o2.winner);
         assert_eq!(o1.turns, o2.turns);
@@ -322,7 +328,7 @@ mod tests {
     fn test_paired_场次守恒() {
         let g = GreedyAgent::new();
         let r = RandomAgent;
-        let p = run_pair(&g, &r, 5, 50000, "balanced", MAX_TURNS);
+        let p = run_pair(&g, &r, 5, 50000, "balanced", &GameConfig::default());
         assert_eq!(p.games, 10);
         assert!(p.a_wins <= p.games);
         assert_eq!(p.conquest + p.construction + p.tiebreak, p.games);
@@ -335,7 +341,7 @@ mod tests {
         let g = GreedyAgent::new();
         let r = RandomAgent;
         let agents: Vec<&dyn Agent> = vec![&g, &r];
-        let m = run_matrix(&agents, 3, 50000, "balanced", MAX_TURNS);
+        let m = run_matrix(&agents, 3, 50000, "balanced", &GameConfig::default());
         assert_eq!(m.pairs.len(), 1);       // 2 个 AI → 1 对
         assert_eq!(m.mirrors.len(), 2);
         assert_eq!(m.summaries.len(), 2);

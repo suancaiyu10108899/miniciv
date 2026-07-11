@@ -5,6 +5,7 @@
 //   constants → map → movement → unit → combat → economy → tech → game → ai → eval
 
 pub mod constants;
+pub mod config;
 pub mod map;
 pub mod movement;
 pub mod unit;

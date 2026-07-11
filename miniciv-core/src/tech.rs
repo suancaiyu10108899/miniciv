@@ -75,7 +75,12 @@ pub struct TechManager {
     pub researching: Option<String>,
     pub research_ticks: u8,
     pub has_academy: bool,
+    /// C3 学院研究增量(M1.1 可配置): has_academy 时每回合 +这个值。默认 2=减半。
+    #[serde(default = "default_academy_increment")]
+    pub academy_increment: u8,
 }
+
+fn default_academy_increment() -> u8 { 2 }
 
 impl TechManager {
     pub fn new(player_id: u8) -> Self {
@@ -85,6 +90,7 @@ impl TechManager {
             researching: None,
             research_ticks: 0,
             has_academy: false,
+            academy_increment: default_academy_increment(),
         }
     }
 
@@ -153,8 +159,8 @@ impl TechManager {
     pub fn tick_research(&mut self) -> Option<String> {
         let tech_id = self.researching.as_ref()?;  // ? = 没有在研究就返回 None
 
-        // 研究速度: 有学院 → +2，没有 → +1
-        let increment: u8 = if self.has_academy { 2 } else { 1 };
+        // 研究速度: 有学院 → +academy_increment(默认2), 没有 → +1
+        let increment: u8 = if self.has_academy { self.academy_increment } else { 1 };
         self.research_ticks += increment;
 
         // 找到对应节点获取所需回合数

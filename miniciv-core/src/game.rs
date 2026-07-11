@@ -20,9 +20,7 @@ use crate::economy::Economy;
 use crate::tech::TechManager;
 use crate::ai::Action;
 use crate::constants::{
-    MAP_W, MAP_H, MAX_TURNS, CITY_DAMAGE,
-    STARTING_WORKERS, STARTING_SCOUTS,
-    CONSTRUCTION_VICTORY_REQUIRE_FACILITIES,
+    MAP_W, MAP_H,
 };
 use crate::movement::HEX_DIRS;
 use crate::combat::{resolve_melee, resolve_ranged, city_occupation_damage};
@@ -68,6 +66,7 @@ pub struct GameState {
     pub winner: Option<u8>,
     pub victory_type: Option<VictoryType>,
     pub dead_units: Vec<Unit>,
+    pub config: crate::config::GameConfig,
 }
 
 // ─── 初始化 ──────────────────────────────────────────
@@ -80,6 +79,11 @@ pub struct GameState {
 ///   3. 放置初始单位(3工人 + 1侦察兵, 放在城市邻格平原上)
 ///   4. 初始化经济和科技
 pub fn init_game(seed: u64, generator_id: &str) -> GameState {
+    init_game_with_config(seed, generator_id, crate::config::GameConfig::default())
+}
+
+/// 用指定配置初始化游戏(M1.1: 参数可配置化的入口)。
+pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::config::GameConfig) -> GameState {
     let grid = generate_map(seed, generator_id);
     // Wrap generator_id in String for owned storage
     let gen_id = generator_id.to_string();
@@ -98,10 +102,16 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
     let (cq0, cr0) = city_positions[0];
     let (cq1, cr1) = city_positions[1];
 
-    let cities = vec![
+    let mut cities = vec![
         City::new(0, cq0, cr0),
         City::new(1, cq1, cr1),
     ];
+    // M1.1: 用 config 覆盖城市数值
+    for c in &mut cities {
+        c.hp = config.city_hp;
+        c.def = config.city_def;
+        c.base_food = config.city_base_food;
+    }
 
     // 放置初始单位: 每个玩家 3 工人 + 1 侦察兵
     let mut units = Vec::new();
@@ -111,7 +121,7 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
         let cy = *city_r;
 
         // 放置工人(放在城市邻格的平原上)
-        for _ in 0..STARTING_WORKERS {
+        for _ in 0..config.starting_workers {
             for (dq, dr) in HEX_DIRS.iter() {
                 let nq = (cx + dq).rem_euclid(MAP_W as i32);
                 let nr = (cy + dr).rem_euclid(MAP_H as i32);
@@ -126,7 +136,7 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
             }
         }
         // 放置侦察兵
-        for _ in 0..STARTING_SCOUTS {
+        for _ in 0..config.starting_scouts {
             for (dq, dr) in HEX_DIRS.iter() {
                 let nq = (cx + dq).rem_euclid(MAP_W as i32);
                 let nr = (cy + dr).rem_euclid(MAP_H as i32);
@@ -141,8 +151,16 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
         }
     }
 
-    let economies = vec![Economy::new(0), Economy::new(1)];
-    let techs = vec![TechManager::new(0), TechManager::new(1)];
+    let mut economies = vec![Economy::new(0), Economy::new(1)];
+    for e in &mut economies {
+        e.food = config.starting_food;
+        e.wood = config.starting_wood;
+        e.gold = config.starting_gold;
+    }
+    let mut techs = vec![TechManager::new(0), TechManager::new(1)];
+    for t in &mut techs {
+        t.academy_increment = config.academy_research_increment;
+    }
 
     GameState {
         seed,
@@ -157,6 +175,7 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
         winner: None,
         victory_type: None,
         dead_units: Vec::new(),
+        config,
     }
 }
 
@@ -278,7 +297,7 @@ pub fn step_game(
         let opp = 1 - pid;
         for u in gs.units.iter_mut() {
             if u.alive && u.player_id == opp && u.q == city.q && u.r == city.r {
-                u.hp -= CITY_DAMAGE;
+                u.hp -= gs.config.city_damage;
                 if u.hp <= 0 {
                     u.hp = 0;
                     u.alive = false;
@@ -296,7 +315,7 @@ pub fn step_game(
     }
 
     // 阶梯判定(回合上限)
-    if gs.turn >= MAX_TURNS && gs.winner.is_none() {
+    if gs.turn >= gs.config.max_turns && gs.winner.is_none() {
         tiebreak(gs);
     }
 
@@ -473,7 +492,7 @@ fn check_construction_victory(gs: &mut GameState) {
                     }
                 }
             }
-            if facility_count >= CONSTRUCTION_VICTORY_REQUIRE_FACILITIES {
+            if facility_count >= gs.config.construction_require_facilities {
                 gs.winner = Some(pid);
                 gs.victory_type = Some(VictoryType::Construction);
             }
@@ -571,14 +590,14 @@ mod tests {
         let mut rng1 = ChaCha12Rng::seed_from_u64(456);
 
         // 跑 80 回合或直到有人获胜
-        while gs.winner.is_none() && gs.turn < MAX_TURNS {
+        while gs.winner.is_none() && gs.turn < gs.config.max_turns {
             let a0 = agent.decide(&gs, 0, &mut rng0);
             let a1 = agent.decide(&gs, 1, &mut rng1);
             step_game(&mut gs, &a0, &a1);
         }
 
         // 游戏必须结束(有人赢或达到回合上限)
-        assert!(gs.winner.is_some() || gs.turn >= MAX_TURNS);
+        assert!(gs.winner.is_some() || gs.turn >= gs.config.max_turns);
     }
 
     #[test]

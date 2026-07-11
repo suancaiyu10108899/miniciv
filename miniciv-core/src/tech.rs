@@ -81,7 +81,12 @@ pub struct TechManager {
     /// 科技耗时覆盖(M1.2): 覆盖特定科技的 turns, 空=用 ALL_NODES 默认。
     #[serde(default)]
     pub turns_override: std::collections::HashMap<String, u8>,
+    /// C线成本倍率(资源消耗杠杆): C开头科技的 cost ×这个值。默认1.0。
+    #[serde(default = "default_cost_mult")]
+    pub c_line_cost_mult: f64,
 }
+
+fn default_cost_mult() -> f64 { 1.0 }
 
 fn default_academy_increment() -> u8 { 2 }
 
@@ -95,6 +100,7 @@ impl TechManager {
             has_academy: false,
             academy_increment: default_academy_increment(),
             turns_override: std::collections::HashMap::new(),
+            c_line_cost_mult: 1.0,
         }
     }
 
@@ -237,6 +243,19 @@ impl TechManager {
     /// 获取科技花费。
     pub fn tech_cost(tech_id: &str) -> Option<(i32, i32, i32)> {
         find_node(tech_id).map(|n| n.cost)
+    }
+
+    /// 有效花费(应用 C线成本倍率)。game 扣费用这个。
+    pub fn cost_of(&self, tech_id: &str) -> Option<(i32, i32, i32)> {
+        let base = Self::tech_cost(tech_id)?;
+        if tech_id.starts_with('C') && (self.c_line_cost_mult - 1.0).abs() > 1e-9 {
+            let m = self.c_line_cost_mult;
+            Some(((base.0 as f64 * m).ceil() as i32,
+                  (base.1 as f64 * m).ceil() as i32,
+                  (base.2 as f64 * m).ceil() as i32))
+        } else {
+            Some(base)
+        }
     }
 }
 

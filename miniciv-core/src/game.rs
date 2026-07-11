@@ -161,6 +161,7 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
     for t in &mut techs {
         t.academy_increment = config.academy_research_increment;
         t.turns_override = config.tech_turns.clone();
+        t.c_line_cost_mult = config.c_line_cost_mult;
     }
 
     GameState {
@@ -261,7 +262,7 @@ pub fn step_game(
                 }
                 Action::Research { tech_id } => {
                     let tech = &mut gs.techs[pid as usize];
-                    if let Some(cost) = TechManager::tech_cost(tech_id) {
+                    if let Some(cost) = tech.cost_of(tech_id) {
                         if gs.economies[pid as usize].can_afford(cost) {
                             if tech.start_research(tech_id) {
                                 gs.economies[pid as usize].spend(cost);

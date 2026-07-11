@@ -38,6 +38,10 @@ pub struct GameConfig {
     /// 科技耗时覆盖(M1.2): 覆盖特定科技的研究回合数, 空=用默认。
     /// 例: {"C5": 6} 让 C5 耗时从 2 变 6。是打破建设速通的直接杠杆。
     pub tech_turns: std::collections::HashMap<String, u8>,
+
+    /// C线成本倍率(资源消耗杠杆): C开头科技 cost ×这个值。默认1.0。
+    /// 高成本→建设者研究耗资源→挤占产防守兵的资源, 创造"研究vs产兵"张力。
+    pub c_line_cost_mult: f64,
 }
 
 impl Default for GameConfig {
@@ -56,6 +60,7 @@ impl Default for GameConfig {
             construction_require_facilities: CONSTRUCTION_VICTORY_REQUIRE_FACILITIES,
             academy_research_increment: 2,
             tech_turns: std::collections::HashMap::new(),
+            c_line_cost_mult: 1.0,
         }
     }
 }

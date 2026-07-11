@@ -40,31 +40,44 @@ fn rollout(start: &GameState, pid: u8, my: &dyn Agent, opp: &dyn Agent) -> f64 {
     }
 }
 
+/// 评估当前局面下每个候选策略的 minimax 评分(对最坏参考对手的结果)。
+/// 供 SearchAgent 决策 + 深度分析(评分分布/决策分叉)用。
+pub fn evaluate_strategies(gs: &GameState, pid: u8) -> Vec<(&'static str, f64)> {
+    let builder = BuilderAgent;
+    let rusher = RusherAgent;
+    let cav = CavalryRusherAgent;
+    let def = DefenderAgent;
+    let strats: [(&'static str, &dyn Agent); 4] =
+        [("Builder", &builder), ("Rusher", &rusher), ("CavRusher", &cav), ("Defender", &def)];
+    let opp_b = BuilderAgent;
+    let opp_r = RusherAgent;
+    let opps: [&dyn Agent; 2] = [&opp_b, &opp_r];
+
+    strats.iter().map(|(name, s)| {
+        let mut worst = f64::MAX;
+        for o in &opps {
+            worst = worst.min(rollout(gs, pid, *s, *o));
+        }
+        (*name, worst)
+    }).collect()
+}
+
 impl Agent for SearchAgent {
     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+        let scores = evaluate_strategies(gs, pid);
+        let best = scores.iter().enumerate()
+            .max_by(|a, b| a.1.1.partial_cmp(&b.1.1).unwrap())
+            .map(|(i, _)| i).unwrap_or(0);
         let builder = BuilderAgent;
         let rusher = RusherAgent;
         let cav = CavalryRusherAgent;
         let def = DefenderAgent;
-        let strats: [&dyn Agent; 4] = [&builder, &rusher, &cav, &def];
-        // 参考对手: 建设威胁 + 军事威胁(minimax 对这两种都要稳)
-        let opp_b = BuilderAgent;
-        let opp_r = RusherAgent;
-        let opps: [&dyn Agent; 2] = [&opp_b, &opp_r];
-
-        let mut best_i = 0usize;
-        let mut best_score = f64::MIN;
-        for (i, s) in strats.iter().enumerate() {
-            let mut worst = f64::MAX;
-            for o in &opps {
-                worst = worst.min(rollout(gs, pid, *s, *o));
-            }
-            if worst > best_score {
-                best_score = worst;
-                best_i = i;
-            }
+        match best {
+            0 => builder.decide(gs, pid, rng),
+            1 => rusher.decide(gs, pid, rng),
+            2 => cav.decide(gs, pid, rng),
+            _ => def.decide(gs, pid, rng),
         }
-        strats[best_i].decide(gs, pid, rng)
     }
 
     fn name(&self) -> &str { "Search" }

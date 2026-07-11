@@ -163,4 +163,27 @@ mod tests {
                      gs.techs[0].completed);
         }
     }
+
+    /// 反速通哨兵(阶段 0.3)。
+    ///
+    /// 当前记录的是**不健康基线**: 存在 5 回合建设速通, Builder 100% 通杀 Random。
+    ///
+    /// ⚠️ 这个测试故意在"速通被打破时 fail",作为门禁 3 的强制检查点:
+    ///    门禁 3 改好设计后, avg_turns 会上升越过阈值 → 本测试 fail → 那时必须:
+    ///      1. 跑探针套件, 确认 Builder 不再对所有对手 100% 通杀
+    ///      2. 把下面断言改成 `assert!(p.avg_turns >= 30.0)` 并删除"不健康基线"注释
+    ///    在此之前, 它守着"我们知道这里有个洞"这个事实, 防止无声退化。
+    #[test]
+    fn test_反速通哨兵_门禁3打破后需更新() {
+        use crate::eval::run_pair;
+        let b = BuilderAgent;
+        let r = RandomAgent;
+        let p = run_pair(&b, &r, 50, 50000, "balanced", MAX_TURNS);
+        assert!(p.avg_turns < 10.0,
+            "反速通哨兵: Builder vs Random 平均结束回合={:.1}。\
+             若 >10 说明速通已被打破 —— 请按本测试文档注释更新(改为 >=30 并跑探针套件)。",
+            p.avg_turns);
+        assert_eq!(p.a_win_rate, 1.0,
+            "不健康基线记录: Builder 当前应 100% 通杀 Random。实际={:.3}", p.a_win_rate);
+    }
 }

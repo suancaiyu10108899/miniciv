@@ -82,7 +82,7 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 
 ### Rust 端（v0.8.0 新增，v0.8.1 更新）
 6. **Evo 权重失效**：Python MT19937 下进化的权重在 Rust ChaCha12 上不工作（Evo vs Random 仅 8.6%）。需在 Rust 引擎上重训。
-7. **snapshot.rs todo!()**：无 GameReplay JSON 输出
+7. ~~**snapshot.rs todo!()**~~：✅ **已解决(阶段0.2)** — `snapshot_turn`+`run_replay` 落地,`bin/replay` CLI 可逐回合看一局。
 8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
 9. ~~**tiebreak P0 偏向**~~：✅ **已修(门禁2a)** — tiebreak 随机分支原用 `gs.turn % 2`,但恒在 turn==80(偶数)触发→恒判 P0。改为 `unbiased_coin(seed)`(murmur3 双轮 + 单测)。镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达标)。剩余 ~3% 是随机对局真实先手优势(Greedy 建设 P0=47.7% 证明引擎干净)。
 10. **⚠️ 存在意义级:5 回合建设速通支配策略**(门禁2b 裁决)。纯建设固定策略(Builder,`ai/fixed.rs`)5 回合合法完成 C5+设施,100% 通杀 Greedy/Evo/Random,同类对决先手 90.8%。军事/战术全是摆设。北极星"AI 玩出深度"当前不合格——有单一支配解。根因:C3学院减半+设施门槛太易+建设无时间下限+征服太弱。裁决与门禁3方向 → `experiments/v0.8.1-honest-eval/VERDICT.md`。Greedy vs Random 41% 是这个漏洞的次生现象(Greedy 分心军事,比裸建设更慢)。

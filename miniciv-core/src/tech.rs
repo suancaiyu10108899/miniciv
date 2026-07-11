@@ -78,6 +78,9 @@ pub struct TechManager {
     /// C3 学院研究增量(M1.1 可配置): has_academy 时每回合 +这个值。默认 2=减半。
     #[serde(default = "default_academy_increment")]
     pub academy_increment: u8,
+    /// 科技耗时覆盖(M1.2): 覆盖特定科技的 turns, 空=用 ALL_NODES 默认。
+    #[serde(default)]
+    pub turns_override: std::collections::HashMap<String, u8>,
 }
 
 fn default_academy_increment() -> u8 { 2 }
@@ -91,6 +94,7 @@ impl TechManager {
             research_ticks: 0,
             has_academy: false,
             academy_increment: default_academy_increment(),
+            turns_override: std::collections::HashMap::new(),
         }
     }
 
@@ -163,9 +167,10 @@ impl TechManager {
         let increment: u8 = if self.has_academy { self.academy_increment } else { 1 };
         self.research_ticks += increment;
 
-        // 找到对应节点获取所需回合数
+        // 找到对应节点获取所需回合数(M1.2: turns_override 可覆盖)
         let node = find_node(tech_id)?;
-        if self.research_ticks >= node.turns {
+        let required = self.turns_override.get(tech_id.as_str()).copied().unwrap_or(node.turns);
+        if self.research_ticks >= required {
             // 研究完成！
             let completed_id = self.researching.take().unwrap();
             // C3 学院效果: 完成后解锁加速研究(先检查再插入——insert 会 move)

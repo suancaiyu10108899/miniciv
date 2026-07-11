@@ -72,10 +72,16 @@
 
 ## 执行进度
 - [x] M1.1 GameConfig 参数可配置化(默认值=当前,行为不变,已验证 config 生效)
-- [ ] M1.2 科技树参数化 + 扫描工具
-- [ ] M1.3 调平衡到甜点 / 或产出限制清单
+- [x] M1.2 科技树 turns 参数化 + `bin/scan` 扫描工具 → **甜点=起手资源17-18**
+- [ ] M1.3 用甜点跑完整探针矩阵验证(维度A) / 微调到理想区间
 - [ ] M1.4 探针体检 + CI
 - [ ] M2 / M3 / M4
+
+### M1.2 已交付(2026-07-10)决定性发现
+`tech.rs` turns_override + `config.tech_turns`;`bin/scan` 数据驱动扫描。
+**甜点在纯数值范围内(不需机制改动)**:只降起手资源 25→17,速通 5T→30T、
+Rusher vs Builder ~53%(势均力敌)。设施门槛无效、科技耗时天花板10T、city_hp阶跃。
+机制=资源少逼迫"发育 vs 建设"张力。详见 `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md`。
 
 ### M1.1 已交付(2026-07-10)
 `config.rs`:`GameConfig` 纳入 max_turns/城市(hp/def/damage/base_food)/起手资源+单位/设施门槛/学院减半增量。

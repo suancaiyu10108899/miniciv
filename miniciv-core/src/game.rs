@@ -160,6 +160,7 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
     let mut techs = vec![TechManager::new(0), TechManager::new(1)];
     for t in &mut techs {
         t.academy_increment = config.academy_research_increment;
+        t.turns_override = config.tech_turns.clone();
     }
 
     GameState {

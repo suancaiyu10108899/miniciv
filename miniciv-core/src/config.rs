@@ -34,6 +34,10 @@ pub struct GameConfig {
     // ── 科技(建设速通最大杠杆)──
     /// C3 学院研究增量: has_academy 时每回合 +这个值(默认 2=减半)。设 1 = 关掉减半。
     pub academy_research_increment: u8,
+
+    /// 科技耗时覆盖(M1.2): 覆盖特定科技的研究回合数, 空=用默认。
+    /// 例: {"C5": 6} 让 C5 耗时从 2 变 6。是打破建设速通的直接杠杆。
+    pub tech_turns: std::collections::HashMap<String, u8>,
 }
 
 impl Default for GameConfig {
@@ -51,6 +55,7 @@ impl Default for GameConfig {
             starting_scouts: STARTING_SCOUTS,
             construction_require_facilities: CONSTRUCTION_VICTORY_REQUIRE_FACILITIES,
             academy_research_increment: 2,
+            tech_turns: std::collections::HashMap::new(),
         }
     }
 }

@@ -13,7 +13,7 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent};
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent};
 use miniciv_core::config::GameConfig;
 use miniciv_core::snapshot::run_replay;
 
@@ -23,6 +23,7 @@ fn make_agent(name: &str) -> Box<dyn Agent> {
         "rusher" => Box::new(RusherAgent),
         "harasser" => Box::new(HarasserAgent),
         "turtle" => Box::new(TurtleAgent),
+        "defender" => Box::new(DefenderAgent),
         "greedy" => Box::new(GreedyAgent::new()),
         "evo" => Box::new(EvoAgent::new()),
         "random" => Box::new(RandomAgent),

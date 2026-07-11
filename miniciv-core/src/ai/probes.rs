@@ -259,6 +259,104 @@ impl Agent for TurtleAgent {
     fn name(&self) -> &str { "Turtle" }
 }
 
+// ═══════════════════════════════════════════════════════
+// Defender — 攻防兼顾(步兵+弓箭手协调防守)
+// ═══════════════════════════════════════════════════════
+//
+// 修正 Turtle 两个失败点:
+//   1. 产工人确保建够 4 设施(Turtle 只 3 个没触发建设胜利)
+//   2. 用弓箭手(战斗效率最高, 不还手)而非纯步兵
+// 目标: 既建够设施能建设胜利, 又用高效兵种守住城。
+
+pub struct DefenderAgent;
+
+impl Agent for DefenderAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let mut actions = Vec::new();
+        let (my_cq, my_cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+
+        // 研究: 直奔 C5
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let econ = &gs.economies[pid as usize];
+            let avail = tech.available_to_research();
+            for t in ["C1", "C3", "C4", "C5", "E1", "M1", "C2"] {
+                if avail.iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 统计己方各兵种
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive)
+            .collect();
+        let mut n_worker = 0u32;
+        let mut n_archer = 0u32;
+        let mut n_infantry = 0u32;
+        for (_, u) in &player_units {
+            match u.unit_type {
+                UnitType::Worker => n_worker += 1,
+                UnitType::Archer => n_archer += 1,
+                UnitType::Infantry => n_infantry += 1,
+                _ => {}
+            }
+        }
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            match unit.unit_type {
+                UnitType::Worker => {
+                    if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                        actions.push(a);
+                    }
+                }
+                UnitType::Scout => {}
+                _ => {
+                    // 战斗单位守城: 邻格有敌→攻击(弓箭手不还手先手); 否则回撤守城
+                    let mut acted = false;
+                    for (dq, dr) in HEX_DIRS.iter() {
+                        let nq = (unit.q + dq).rem_euclid(MAP_W as i32);
+                        let nr = (unit.r + dr).rem_euclid(MAP_H as i32);
+                        let has_enemy = gs.units.iter().any(|e|
+                            e.alive && e.player_id == opp && e.q == nq && e.r == nr);
+                        if has_enemy {
+                            actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
+                            acted = true;
+                            break;
+                        }
+                    }
+                    if acted { continue; }
+                    if hex_distance(unit.q, unit.r, my_cq, my_cr) > 1 {
+                        if let Some((dq, dr)) = step_toward(unit, my_cq, my_cr, &gs.grid) {
+                            actions.push(Action::Move { unit_idx: local_idx, dq, dr });
+                        }
+                    }
+                }
+            }
+        }
+
+        // 城市生产: 先保证 5 工人(建够设施), 再产弓箭手(主力)+ 少量步兵(前排)
+        let econ = &gs.economies[pid as usize];
+        if n_worker < 5 && econ.can_afford((3, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+        } else if n_archer < 3 && econ.can_afford((3, 3, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
+        } else if n_infantry < 2 && econ.can_afford((5, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+        }
+
+        actions
+    }
+
+    fn name(&self) -> &str { "Defender" }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

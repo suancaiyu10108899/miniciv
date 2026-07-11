@@ -27,6 +27,7 @@ use crate::constants::{
 use crate::tech::{TechManager, TechBonuses};
 use rand::RngCore;
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ═══════════════════════════════════════════════════════
 // 可调参数结构体 — 六边形几何重校准的核心
@@ -104,16 +105,18 @@ impl OpponentModel {
 pub struct GreedyAgent {
     /// 可调权重配置(运行时参数扫描用)
     pub config: GreedyConfig,
-    /// 对手模型 — 按 game seed 索引(同一局内跨回合持久)
-    opponent_models: std::sync::Mutex<HashMap<u64, OpponentModel>>,
+    /// 对手模型 — 按 game seed 索引(同一局内跨回合持久)。
+    /// B6 修复(S2): 用 BTreeMap 而非 HashMap —— 淘汰旧模型时 keys() 有序,
+    /// 淘汰的是确定的(最小 seed), 消除 HashMap 迭代顺序导致的同 seed 不同结果。
+    opponent_models: std::sync::Mutex<BTreeMap<u64, OpponentModel>>,
 }
 
 impl GreedyAgent {
     pub fn new() -> Self {
-        Self { config: GreedyConfig::default(), opponent_models: std::sync::Mutex::new(HashMap::new()) }
+        Self { config: GreedyConfig::default(), opponent_models: std::sync::Mutex::new(BTreeMap::new()) }
     }
     pub fn with_config(config: GreedyConfig) -> Self {
-        Self { config, opponent_models: std::sync::Mutex::new(HashMap::new()) }
+        Self { config, opponent_models: std::sync::Mutex::new(BTreeMap::new()) }
     }
 
     fn get_opponent_model(&self, seed: u64) -> OpponentModel {

@@ -19,7 +19,8 @@ use rand::SeedableRng;
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(15);
-    let cfg = GameConfig { c_line_cost_mult: 3.0, city_hp: 160, ..GameConfig::default() };
+    // S2: 读默认配置(已=甜点 成本×2 HP160), 不再写死。之前写死 3.0/160 = 已被推翻的旧甜点漂移。
+    let cfg = GameConfig::default();
 
     // 用不同对手推进 P0(观察 P0 该应变吗)
     let rusher = RusherAgent;
@@ -62,7 +63,7 @@ fn main() {
     gaps.sort_by(|a, b| a.partial_cmp(b).unwrap());
     let avg_gap = gaps.iter().sum::<f64>() / gaps.len().max(1) as f64;
     let tied = gaps.iter().filter(|&&g| g < 0.05).count();  // 最优次优几乎相等
-    println!("=== 深度体检(甜点带 成本×3 HP160, {} 采样点)===\n", samples);
+    println!("=== 深度体检(默认甜点 成本×2 HP160, {} 采样点)===\n", samples);
     println!("【1. 决策分叉】最优 vs 次优策略评分 gap:");
     println!("  平均 gap: {:.3}  (小=多策略接近=有选择; 大=一策略碾压=浅)", avg_gap);
     println!("  gap<0.05(几乎并列)占比: {:.0}%  (高=经常有多个等优选择=深)",

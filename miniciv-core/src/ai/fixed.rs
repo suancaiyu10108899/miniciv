@@ -178,26 +178,27 @@ mod tests {
         }
     }
 
-    /// 反速通哨兵(阶段 0.3)。
+    /// 反速通哨兵(S2 立裁判阶段翻面, 2026-07-11 第四个 AI)。
     ///
-    /// 当前记录的是**不健康基线**: 存在 5 回合建设速通, Builder 100% 通杀 Random。
+    /// 历史: 门禁2b 曾在此记录**不健康基线**(5T建设速通, Builder 100%通杀 Random),
+    ///       故意"速通被打破时 fail"逼迫更新。S2 把默认翻为甜点后, 该守护对象也翻面:
+    ///       现在守的是**健康甜点不变量**——默认配置下不存在裸建设速通、无单一策略碾压。
     ///
-    /// ⚠️ 这个测试故意在"速通被打破时 fail",作为门禁 3 的强制检查点:
-    ///    门禁 3 改好设计后, avg_turns 会上升越过阈值 → 本测试 fail → 那时必须:
-    ///      1. 跑探针套件, 确认 Builder 不再对所有对手 100% 通杀
-    ///      2. 把下面断言改成 `assert!(p.avg_turns >= 30.0)` 并删除"不健康基线"注释
-    ///    在此之前, 它守着"我们知道这里有个洞"这个事实, 防止无声退化。
+    /// 断言(健康):
+    ///   1. Builder(裸建设不设防) vs Random 平均结束回合 > 5(成本×2 拖慢建设, 无 5T 速通)。
+    ///   2. Builder 不再 100% 通杀(不设防在甜点下会被军事惩罚, 胜率 < 100%)。
+    /// 若这里 fail: 要么甜点被无声改回坏基线, 要么平衡漂移——都该查。
     #[test]
-    fn test_反速通哨兵_门禁3打破后需更新() {
+    fn test_反速通哨兵_守健康甜点() {
         use crate::eval::run_pair;
         let b = BuilderAgent;
         let r = RandomAgent;
         let p = run_pair(&b, &r, 50, 50000, "balanced", &crate::config::GameConfig::default());
-        assert!(p.avg_turns < 10.0,
-            "反速通哨兵: Builder vs Random 平均结束回合={:.1}。\
-             若 >10 说明速通已被打破 —— 请按本测试文档注释更新(改为 >=30 并跑探针套件)。",
-            p.avg_turns);
-        assert_eq!(p.a_win_rate, 1.0,
-            "不健康基线记录: Builder 当前应 100% 通杀 Random。实际={:.3}", p.a_win_rate);
+        assert!(p.avg_turns > 5.0,
+            "反速通哨兵: Builder vs Random 平均结束回合={:.1} 应 >5(甜点拖慢建设)。\
+             若 ~5 说明默认被改回 5T 速通坏基线。", p.avg_turns);
+        assert!(p.a_win_rate < 1.0,
+            "反速通哨兵: Builder 裸建设在甜点下不该 100% 通杀 Random(实际={:.3})。\
+             100% 说明军事惩罚失效或默认漂移回坏基线。", p.a_win_rate);
     }
 }

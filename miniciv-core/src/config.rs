@@ -3,9 +3,13 @@
 // 目的: 把平衡参数从硬编码常量变成运行时可配置, 让"找平衡甜点"是跑扫描,
 //       而不是手工改常量重编译。这是应对下一阶段复杂度的地基之一。
 //
-// 原则: Default = 当前 constants.rs 锁定值 → 行为完全不变。
-//       本轮(M1.1)只接线速通/军事平衡最相关的杠杆; 科技树 turns/cost 的
-//       完整覆盖放 M1.2(见 tech.rs)。
+// ⚠️ 变更(S2 立裁判阶段, 2026-07-11 第四个 AI):
+//   Default 从"历史基线(成本×1, 5T速通坏基线)"改为"一阶深度健康甜点":
+//   c_line_cost_mult = 2.0, city_hp = 160(硬伤修复后重测的三方制衡甜点)。
+//   动机: 让真相活在默认配置里, 不活在 CLI 魔法参数 `25 2.0 160`。
+//   之前 depth.rs 写死成本×3、哨兵测试守 5T 坏基线, 都是"甜点不在默认"导致的漂移/自欺。
+//   现在跑 eval/table/depth/replay 无需传参即为甜点。深化再次改变甜点时, 同步改这里。
+//   数据依据: experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md(成本×2 HP160 完整矩阵)。
 
 use serde::{Deserialize, Serialize};
 use crate::constants::*;
@@ -48,7 +52,7 @@ impl Default for GameConfig {
     fn default() -> Self {
         Self {
             max_turns: MAX_TURNS,
-            city_hp: CITY_HP,
+            city_hp: 160,               // S2 甜点(非 CITY_HP=80 历史基线)
             city_def: CITY_DEF,
             city_damage: CITY_DAMAGE,
             city_base_food: CITY_BASE_FOOD,
@@ -60,7 +64,7 @@ impl Default for GameConfig {
             construction_require_facilities: CONSTRUCTION_VICTORY_REQUIRE_FACILITIES,
             academy_research_increment: 2,
             tech_turns: std::collections::HashMap::new(),
-            c_line_cost_mult: 1.0,
+            c_line_cost_mult: 2.0,       // S2 甜点(非 ×1 历史基线): C线科技成本×2
         }
     }
 }
@@ -90,10 +94,12 @@ mod tests {
     }
 
     #[test]
-    fn test_默认config_行为不变_5T速通() {
+    fn test_默认config_是健康甜点_非5T速通() {
+        // S2: 默认已从"5T速通坏基线"翻为"成本×2 HP160 健康甜点"。
+        // Builder(裸建设不设防) vs Random 不该再 5T 速通——成本×2 拖慢建设。
         let (turn, winner) = run_builder_vs_random(GameConfig::default(), 50000);
-        assert_eq!(turn, 5, "默认 config 应保持当前行为(5T 速通)");
-        assert_eq!(winner, Some(0));
+        assert!(turn > 5, "默认应为健康甜点(非5T速通), 实际 {}T", turn);
+        assert!(winner.is_some(), "阶梯判定保证有胜者");
     }
 
     #[test]

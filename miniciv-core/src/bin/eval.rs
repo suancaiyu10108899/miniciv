@@ -24,10 +24,12 @@ fn main() {
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(100);
     let generator = args.get(2).map(|s| s.as_str()).unwrap_or("balanced").to_string();
     let out_path = args.get(3).cloned();
-    // 第4参数: 起手资源(默认25=当前)。甜点候选=17。
-    let starting_res: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(25);
-    let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(1.0);
-    let city_hp: i32 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(80);
+    // S2: 参数默认取自 GameConfig::default()(已=甜点), 不再写死 25/1.0/80。
+    //     只在显式传参时覆盖。这样"跑 eval 无参"= 默认甜点, 消除工具漂移。
+    let def = GameConfig::default();
+    let starting_res: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(def.starting_food);
+    let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(def.c_line_cost_mult);
+    let city_hp: i32 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(def.city_hp);
     let seed_base = 50000u64;
 
     let config = GameConfig {

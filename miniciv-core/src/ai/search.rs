@@ -92,8 +92,8 @@ mod tests {
 
     #[test]
     fn test_search_单局可跑完() {
-        // 甜点带 config
-        let cfg = GameConfig { c_line_cost_mult: 3.0, city_hp: 160, ..GameConfig::default() };
+        // S2: 用默认配置(已=甜点 成本×2 HP160), 不再写死。
+        let cfg = GameConfig::default();
         let mut gs = init_game_with_config(50000, "balanced", cfg);
         let s = SearchAgent;
         let r = RusherAgent;

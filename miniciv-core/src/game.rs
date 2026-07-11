@@ -236,6 +236,12 @@ pub fn step_game(
                                 && from == crate::map::Terrain::Plain;
                             match do_move(gs, global_idx, *dq, *dr, charged) {
                                 MoveOutcome::Moved => {
+                                    // 遇林停(改进): 骑兵进入森林后本回合停(能穿林但慢, 不再原地卡死)
+                                    let now = gs.grid.get(gs.units[global_idx].q, gs.units[global_idx].r).terrain;
+                                    if gs.units[global_idx].unit_type == UnitType::Cavalry
+                                        && now == crate::map::Terrain::Forest {
+                                        break;
+                                    }
                                     if from == crate::map::Terrain::Plain { plains_run += 1; }
                                     else { plains_run = 0; }
                                 }
@@ -402,21 +408,8 @@ fn unit_category(ut: &UnitType) -> &str {
 enum MoveOutcome { Moved, Fought, Blocked }
 
 fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32, charged: bool) -> MoveOutcome {
-    // 骑兵遇林检查: 进入森林 → 停
-    let (dq, dr) = if gs.units[unit_idx].unit_type == UnitType::Cavalry {
-        let nq = (gs.units[unit_idx].q + dq).rem_euclid(MAP_W as i32);
-        let nr = (gs.units[unit_idx].r + dr).rem_euclid(MAP_H as i32);
-        if gs.grid.get(nq, nr).terrain == crate::map::Terrain::Forest {
-            (0, 0)  // 遇林则停
-        } else {
-            (dq, dr)
-        }
-    } else {
-        (dq, dr)
-    };
-
     if dq == 0 && dr == 0 {
-        return MoveOutcome::Blocked;  // 遇林/无实际移动
+        return MoveOutcome::Blocked;  // 无实际移动
     }
 
     let nq = (gs.units[unit_idx].q + dq).rem_euclid(MAP_W as i32);

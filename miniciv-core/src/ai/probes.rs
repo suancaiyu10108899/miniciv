@@ -426,6 +426,36 @@ impl Agent for CavalryRusherAgent {
     fn name(&self) -> &str { "CavRusher" }
 }
 
+// ═══════════════════════════════════════════════════════
+// Adaptive — 自适应 AI(比固定探针强: 会根据威胁切换)
+// ═══════════════════════════════════════════════════════
+//
+// 桥接 M2/M3: 观察对手威胁, 无威胁时专注建设(Builder), 有威胁时防守(Defender)。
+// 用来暴露"应变是否是关键深度"——若它显著强于固定探针, 说明深度在切换/应变。
+
+pub struct AdaptiveAgent;
+
+impl Agent for AdaptiveAgent {
+    fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+        // 威胁: 对手战斗单位逼近我城(距离 ≤ 3)
+        let threat = gs.units.iter().filter(|u|
+            u.alive && u.player_id == opp
+            && !matches!(u.unit_type, UnitType::Worker | UnitType::Scout)
+            && hex_distance(u.q, u.r, mcq, mcr) <= 3
+        ).count();
+
+        if threat >= 2 {
+            DefenderAgent.decide(gs, pid, rng)     // 有威胁 → 攻防兼顾防守
+        } else {
+            crate::ai::fixed::BuilderAgent.decide(gs, pid, rng)  // 无威胁 → 专注建设
+        }
+    }
+
+    fn name(&self) -> &str { "Adaptive" }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

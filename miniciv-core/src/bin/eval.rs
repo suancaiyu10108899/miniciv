@@ -15,7 +15,7 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent};
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent, CavalryRusherAgent, AdaptiveAgent};
 use miniciv_core::config::GameConfig;
 use miniciv_core::eval::run_matrix_with_config;
 
@@ -26,27 +26,30 @@ fn main() {
     let out_path = args.get(3).cloned();
     // 第4参数: 起手资源(默认25=当前)。甜点候选=17。
     let starting_res: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(25);
+    let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(1.0);
+    let city_hp: i32 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(80);
     let seed_base = 50000u64;
 
     let config = GameConfig {
         starting_food: starting_res,
         starting_wood: starting_res,
         starting_gold: starting_res,
+        c_line_cost_mult: cost_mult,
+        city_hp,
         ..GameConfig::default()
     };
 
-    let greedy = GreedyAgent::new();
-    let evo = EvoAgent::new();
     let random = RandomAgent;
     let builder = BuilderAgent;
     let rusher = RusherAgent;
-    let harasser = HarasserAgent;
-    let turtle = TurtleAgent;
+    let cavrusher = CavalryRusherAgent;
     let defender = DefenderAgent;
-    let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &harasser, &turtle, &defender, &greedy, &evo, &random];
+    let adaptive = AdaptiveAgent;
+    let _ = (GreedyAgent::new(), EvoAgent::new(), HarasserAgent, TurtleAgent);
+    let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &cavrusher, &defender, &adaptive, &random];
 
-    eprintln!("跑矩阵: {} AI × {} seeds paired (每对 {} 局), generator={}, 起手资源={}",
-              agents.len(), seeds, seeds * 2, generator, starting_res);
+    eprintln!("跑矩阵: {} AI × {} seeds paired, 起手资源={} C线成本×{} cityHP={}",
+              agents.len(), seeds, starting_res, cost_mult, city_hp);
 
     let m = run_matrix_with_config(&agents, seeds, seed_base, &generator, &config);
 

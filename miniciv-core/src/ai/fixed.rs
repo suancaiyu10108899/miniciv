@@ -53,6 +53,16 @@ impl Agent for BuilderAgent {
         }
 
         // ── 工人 + 战斗单位 ──
+        // M2 诊断修正: 数自己设施, 建够 5(超门槛4)后工人转采集,
+        // 避免"只建不采"导致研究缺资源(旧版在资源17下被拖到30T的假象根因)。
+        let mut my_facs = 0u32;
+        for r in 0..crate::constants::MAP_H as i32 {
+            for q in 0..crate::constants::MAP_W as i32 {
+                if let Some(f) = &gs.grid.get(q, r).facility {
+                    if f.player_id == pid { my_facs += 1; }
+                }
+            }
+        }
         let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
             .filter(|(_, u)| u.player_id == pid && u.alive)
             .collect();
@@ -66,34 +76,38 @@ impl Agent for BuilderAgent {
 
             let tile = gs.grid.get(unit.q, unit.r);
             let can_build_here = buildable(tile.terrain) && tile.facility.is_none();
+            let on_own_facility = tile.facility.as_ref()
+                .map(|f| f.player_id == pid).unwrap_or(false);
 
-            if can_build_here {
+            // 建够 5 设施前: 优先建; 建够后: 采集供研究
+            if can_build_here && my_facs < 5 {
                 actions.push(Action::Build { unit_idx: local_idx });
                 continue;
             }
-
-            // 当前格不能建: 找相邻可建空格移动过去
-            let moves = legal_moves(unit, &gs.grid);
-            let mut moved = false;
-            for (dq, dr) in &moves {
-                let nq = (unit.q + dq).rem_euclid(crate::constants::MAP_W as i32);
-                let nr = (unit.r + dr).rem_euclid(crate::constants::MAP_H as i32);
-                let ntile = gs.grid.get(nq, nr);
-                if buildable(ntile.terrain) && ntile.facility.is_none() {
-                    actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
-                    moved = true;
-                    break;
-                }
-            }
-            if moved { continue; }
-
-            // 没有相邻可建空格: 站在自己设施上则采集, 否则移动一步找机会
-            let on_own_facility = tile.facility.as_ref()
-                .map(|f| f.player_id == pid).unwrap_or(false);
             if on_own_facility {
                 actions.push(Action::Produce { unit_idx: local_idx });
-            } else if let Some((dq, dr)) = moves.first() {
-                actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
+                continue;
+            }
+
+            // 需要建但当前格不行→找相邻空可建格; 否则移动一步(去找设施采集)
+            let moves = legal_moves(unit, &gs.grid);
+            let mut acted = false;
+            if my_facs < 5 {
+                for (dq, dr) in &moves {
+                    let nq = (unit.q + dq).rem_euclid(crate::constants::MAP_W as i32);
+                    let nr = (unit.r + dr).rem_euclid(crate::constants::MAP_H as i32);
+                    let ntile = gs.grid.get(nq, nr);
+                    if buildable(ntile.terrain) && ntile.facility.is_none() {
+                        actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
+                        acted = true;
+                        break;
+                    }
+                }
+            }
+            if !acted {
+                if let Some((dq, dr)) = moves.first() {
+                    actions.push(Action::Move { unit_idx: local_idx, dq: *dq, dr: *dr });
+                }
             }
         }
 

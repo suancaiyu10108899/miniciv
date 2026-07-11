@@ -13,7 +13,7 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent};
+use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent, CavalryRusherAgent, AdaptiveAgent};
 use miniciv_core::config::GameConfig;
 use miniciv_core::snapshot::run_replay;
 
@@ -24,12 +24,14 @@ fn make_agent(name: &str) -> Box<dyn Agent> {
         "harasser" => Box::new(HarasserAgent),
         "turtle" => Box::new(TurtleAgent),
         "defender" => Box::new(DefenderAgent),
+        "cavrusher" => Box::new(CavalryRusherAgent),
+        "adaptive" => Box::new(AdaptiveAgent),
+        "search" => Box::new(miniciv_core::ai::search::SearchAgent),
         "greedy" => Box::new(GreedyAgent::new()),
         "evo" => Box::new(EvoAgent::new()),
         "random" => Box::new(RandomAgent),
         other => {
-            // 不静默 fallback: 未知 AI 直接退出, 避免拿错误对局误导决策
-            eprintln!("错误: 未知 AI '{}'。可选: Builder/Rusher/Harasser/Turtle/Greedy/Evo/Random", other);
+            eprintln!("错误: 未知 AI '{}'。可选: Builder/Rusher/CavRusher/Harasser/Turtle/Defender/Adaptive/Search/Greedy/Evo/Random", other);
             std::process::exit(1);
         }
     }
@@ -42,9 +44,12 @@ fn main() {
     let seed: u64 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(50000);
     let out_path = args.get(4).cloned();
     let res: i32 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(25);
+    let cost: f64 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(1.0);
+    let hp: i32 = args.get(7).and_then(|s| s.parse().ok()).unwrap_or(80);
 
     let config = GameConfig {
         starting_food: res, starting_wood: res, starting_gold: res,
+        c_line_cost_mult: cost, city_hp: hp,
         ..GameConfig::default()
     };
     let a = make_agent(name_a);

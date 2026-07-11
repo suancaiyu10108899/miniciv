@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>miniciv 回放查看器 — M4</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #1a1d23; color: #e0e0e0; }
+  header { padding: 10px 16px; background: #23272e; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  h1 { font-size: 16px; margin: 0; color: #7fd; }
+  #info { font-size: 13px; color: #aaa; }
+  #main { display: flex; gap: 16px; padding: 16px; }
+  canvas { background: #12141a; border-radius: 6px; }
+  #side { min-width: 260px; font-size: 13px; }
+  .row { margin: 6px 0; }
+  .p0 { color: #f77; } .p1 { color: #7af; }
+  #controls { padding: 10px 16px; background: #23272e; display: flex; gap: 12px; align-items: center; }
+  input[type=range] { flex: 1; }
+  button { background: #3a4150; color: #e0e0e0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  button:hover { background: #4a5160; }
+  .bar { height: 10px; background: #333; border-radius: 3px; overflow: hidden; display: inline-block; width: 80px; vertical-align: middle; }
+  .bar > i { display: block; height: 100%; }
+  code { background: #2a2f38; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>miniciv 回放查看器</h1>
+  <input type="file" id="file" accept=".json">
+  <span id="info">选一个回放 JSON — 生成: <code>cargo run --release --bin replay -- Adaptive Rusher 50000 out.json 25 3.0 160</code></span>
+</header>
+<div id="main">
+  <canvas id="cv" width="640" height="620"></canvas>
+  <div id="side"></div>
+</div>
+<div id="controls">
+  <button id="play">▶ 播放</button>
+  <span id="turnlbl">回合 0</span>
+  <input type="range" id="slider" min="0" max="0" value="0">
+</div>
+<script>
+const TERRAIN = {0:['#3a5',''],1:['#164',''],2:['#778',''],3:['#25a',''],4:['#ca4','']}; // 平原/森林/山/水/城
+const UNIT_LETTER = {Infantry:'步',Cavalry:'骑',Archer:'弓',Scout:'侦',Worker:'工'};
+let replay = null, turnIdx = 0, playing = false, timer = null;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const HEX = 20; // 六边尺寸(像素)
+
+function hexToPixel(q, r) {
+  // pointy-top axial → 像素 + 边距
+  const x = HEX * Math.sqrt(3) * (q + r/2) % (HEX*Math.sqrt(3)*15);
+  const y = HEX * 1.5 * r;
+  return { x: x + 30, y: y + 30 };
+}
+function drawHex(cx, cy, fill, stroke) {
+  ctx.beginPath();
+  for (let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30); const px=cx+HEX*Math.cos(a), py=cy+HEX*Math.sin(a); i?ctx.lineTo(px,py):ctx.moveTo(px,py); }
+  ctx.closePath(); ctx.fillStyle=fill; ctx.fill();
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}
+}
+function render() {
+  if (!replay) return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const grid = replay.config.terrain_grid; // [r][q]
+  const H = grid.length, W = grid[0].length;
+  for (let r=0;r<H;r++) for (let q=0;q<W;q++){
+    const {x,y} = hexToPixel(q,r);
+    drawHex(x,y, TERRAIN[grid[r][q]][0], '#0008');
+  }
+  const t = replay.turns[turnIdx];
+  // 设施
+  for (const f of t.facilities){ const {x,y}=hexToPixel(f.q,f.r); ctx.fillStyle=f.pid?'#7af8':'#f778'; ctx.fillRect(x-4,y-4,8,8); }
+  // 城市
+  for (const c of t.cities){ const {x,y}=hexToPixel(c.q,c.r); drawHex(x,y,'#ca4', c.pid?'#7af':'#f77'); ctx.fillStyle='#000';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(c.hp,x,y+3); }
+  // 单位
+  for (const u of t.units){ const {x,y}=hexToPixel(u.q,u.r); ctx.beginPath();ctx.arc(x,y,7,0,7); ctx.fillStyle=u.pid?'#7af':'#f77';ctx.fill(); ctx.fillStyle='#000';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(UNIT_LETTER[u.unit_type]||'?',x,y+3); }
+  // 侧栏
+  const side = document.getElementById('side');
+  const eco = t.economies, tech = t.techs;
+  const fc = t.facility_count || {};
+  side.innerHTML = `<div class="row"><b>${replay.config.ai_a}</b> <span class="p0">P0</span> vs <b>${replay.config.ai_b}</b> <span class="p1">P1</span></div>`
+    + `<div class="row">回合 ${t.turn} / ${replay.result.final_turn}</div><hr>`
+    + [0,1].map(p=>{
+      const e=eco[p], tc=tech[p];
+      return `<div class="row"><span class="${p?'p1':'p0'}">P${p}</span> 粮${e.food} 木${e.wood} 金${e.gold} | 设施${fc[p]||0}</div>`
+        +`<div class="row" style="font-size:11px;color:#999">科技: ${tc.completed.join(',')||'—'}${tc.researching?' (+'+tc.researching+')':''}</div>`;
+    }).join('')
+    + (turnIdx===replay.turns.length-1 ? `<hr><div class="row"><b>结果:</b> 胜者 P${replay.result.winner} · ${replay.result.victory_type}</div>` : '');
+  document.getElementById('turnlbl').textContent = '回合 '+t.turn;
+  document.getElementById('slider').value = turnIdx;
+}
+document.getElementById('file').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const rd=new FileReader(); rd.onload=()=>{ replay=JSON.parse(rd.result); turnIdx=0;
+    document.getElementById('slider').max=replay.turns.length-1;
+    document.getElementById('info').textContent=`${f.name} — ${replay.turns.length} 帧`;
+    render(); }; rd.readAsText(f);
+});
+document.getElementById('slider').addEventListener('input', e=>{ turnIdx=+e.target.value; render(); });
+document.getElementById('play').addEventListener('click', ()=>{
+  playing=!playing; document.getElementById('play').textContent=playing?'⏸ 暂停':'▶ 播放';
+  if(playing){ timer=setInterval(()=>{ if(turnIdx<replay.turns.length-1){turnIdx++;render();}else{playing=false;document.getElementById('play').textContent='▶ 播放';clearInterval(timer);} }, 600); }
+  else clearInterval(timer);
+});
+</script>
+</body>
+</html>

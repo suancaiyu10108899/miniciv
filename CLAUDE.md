@@ -11,7 +11,9 @@
 > 附带修正:v0.8.0 招牌"Greedy 60.8%/7x"是拿坏 Evo 刷平均的假象(Greedy vs Random 实为 41%,反优化)。
 > P0 偏差:✅ 已修(门禁2a,tiebreak murmur3)。镜像 P0 Greedy 49%/Random 53%/Evo 54%。
 > **方法论锚点:验证金字塔(探针→手写→训练→自己玩→社区)→ `docs/planning/2026-07-10-validation-pyramid.md`**
-> 阶段0 已交付:回放 CLI(`bin/replay`)+ 反速通哨兵回归。**下一步:阶段1 探针套件 → 阶段2 打破速通(门禁3)。**
+> 阶段0-1 已交付:回放 CLI + 反速通哨兵 + 探针套件支配矩阵。
+> 诊断:军事有效(Rusher 碾压除 Builder 外所有人)但打不过速通(Rusher vs Builder=0%)。
+> **门禁3靶心:让 Rusher vs Builder 从 0% 爬起来(拖慢建设,给军事攻城时间)。待人拍板方向。**
 
 | Phase | 内容 | 状态 | 测试 | 学习笔记 |
 |-------|------|------|------|---------|

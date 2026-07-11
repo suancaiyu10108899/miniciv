@@ -71,9 +71,16 @@
 - [x] 阶段 0.1 分层标注旧数据(GAME.md/DECISIONS 加作废警告)
 - [x] 阶段 0.2 snapshot 回放 + `bin/replay` CLI(能"看一局"了)
 - [x] 阶段 0.3 Builder 反速通哨兵回归(速通被打破时故意 fail)
-- [ ] 阶段 1 探针套件(Rush攻城/骚扰/龟缩 + 支配性矩阵)
-- [ ] 阶段 2 设计迭代(门禁 3)
+- [x] 阶段 1 探针套件(Rusher/Harasser + 支配性矩阵)→ `experiments/v0.8.1-honest-eval/PROBE-MATRIX.md`
+- [ ] 阶段 2 设计迭代(门禁 3):靶心=让 Rusher vs Builder 从 0% 爬起来
 - [ ] 阶段 3+ ...
+
+### 阶段 1 已交付(2026-07-10)
+- `ai/probes.rs`:Rusher(攻城)+ Harasser(骚扰工人)探针 + `step_toward` 辅助。
+- 支配矩阵(6 AI,300 seeds):Builder 100% 唯一支配,Rusher 72.7% 准支配。
+- **关键诊断**:军事有效(Rusher 碾压除 Builder 外所有人),但打不过速通(Rusher vs Builder=0%)——
+  不是军事无用,是建设太快军事来不及。
+- **门禁 3 靶心量化**:Builder 最低胜率 <70% + Rusher vs Builder >0% + Builder avg 结束 ≥30T。
 
 ### 阶段 0 已交付(2026-07-10)
 - `snapshot.rs` 落地(原 todo!()):`snapshot_turn` + `run_replay`,还工程债。

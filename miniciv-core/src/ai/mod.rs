@@ -7,6 +7,7 @@ pub mod random;
 pub mod greedy;
 pub mod evo;
 pub mod fixed;
+pub mod probes;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Action {

@@ -77,7 +77,7 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 1. **DQN 生产决策不经 NN**：结构性问题，需动作空间重新设计
 2. **BC 完整 AI 未完成**：只有预测器（91.7% acc），per-turn 行为克隆数据格式不匹配
 3. **FOW 未执行**：代码存在但所有 AI 使用全信息
-4. **回放浏览器不支持六边**：`replay_viewer.html` 是方格专用
+4. ~~**回放浏览器不支持六边**~~：✅ 已解决 — 根目录 `replay_viewer.html` 是六边版(读 Rust GameReplay JSON, M4)。
 5. **check_docs.py 3 个 warning**：正则需更新
 
 ### Rust 端（v0.8.0 新增，v0.8.1 更新）
@@ -85,7 +85,8 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 7. ~~**snapshot.rs todo!()**~~：✅ **已解决(阶段0.2)** — `snapshot_turn`+`run_replay` 落地,`bin/replay` CLI 可逐回合看一局。
 8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
 9. ~~**tiebreak P0 偏向**~~：✅ **已修(门禁2a)** — tiebreak 随机分支原用 `gs.turn % 2`,但恒在 turn==80(偶数)触发→恒判 P0。改为 `unbiased_coin(seed)`(murmur3 双轮 + 单测)。镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达标)。剩余 ~3% 是随机对局真实先手优势(Greedy 建设 P0=47.7% 证明引擎干净)。
-10. **⚠️ 存在意义级:5 回合建设速通支配策略**(门禁2b 裁决)。纯建设固定策略(Builder,`ai/fixed.rs`)5 回合合法完成 C5+设施,100% 通杀 Greedy/Evo/Random,同类对决先手 90.8%。军事/战术全是摆设。北极星"AI 玩出深度"当前不合格——有单一支配解。根因:C3学院减半+设施门槛太易+建设无时间下限+征服太弱。裁决与门禁3方向 → `experiments/v0.8.1-honest-eval/VERDICT.md`。Greedy vs Random 41% 是这个漏洞的次生现象(Greedy 分心军事,比裸建设更慢)。
+10. ~~**存在意义级:5 回合建设速通支配**~~：✅ **已解决(2026-07-10)** — 门禁2b 发现纯建设 Builder 5T 速通 100% 通杀。修完硬伤(B1-B7 攻城/移速/射程/冲锋/遇林停)+ 甜点带(C线成本×2 + city_hp160)后,变成**建设↔军事↔防守三方制衡、有克制环(骑兵>步兵>防守>骑兵)、无单一支配、征服43/建设47均衡**。见 `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md` + `docs/BUGS.md`。
+11. **待深化/待修**：B6 Greedy HashMap 迭代非确定(只影响 Greedy)、骑兵精确平衡(成本×2 下 CavRusher 66% 可接受)、弓箭手 kiting 未充分利用、FOW 未实现(迷雾深化时做)。详见 `docs/BUGS.md`。
 
 ---
 

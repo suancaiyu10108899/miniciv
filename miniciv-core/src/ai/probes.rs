@@ -17,12 +17,15 @@ use crate::tech::TechManager;
 use crate::constants::{MAP_W, MAP_H};
 use rand::RngCore;
 
-/// 朝目标 (tq,tr) 移动一步: 选使六边距离最小的合法方向。确定性(无 rng)。
+/// 朝目标 (tq,tr) 移动一步。确定性。
+/// 改进(暴露探针可靠性): 原版只选"严格减小距离"的move, 被山林挡住就卡死(骑兵尤甚)。
+/// 现版选合法move里到目标最近的(允许持平/绕路), 避免卡死。
 fn step_toward(unit: &crate::unit::Unit, tq: i32, tr: i32, grid: &crate::map::Grid) -> Option<(i32, i32)> {
     let moves = legal_moves(unit, grid);
+    if moves.is_empty() { return None; }
     let cur_d = hex_distance(unit.q, unit.r, tq, tr);
     let mut best: Option<(i32, i32)> = None;
-    let mut best_d = cur_d;
+    let mut best_d = u8::MAX;
     for (dq, dr) in moves {
         let nq = (unit.q + dq).rem_euclid(MAP_W as i32);
         let nr = (unit.r + dr).rem_euclid(MAP_H as i32);
@@ -32,7 +35,8 @@ fn step_toward(unit: &crate::unit::Unit, tq: i32, tr: i32, grid: &crate::map::Gr
             best = Some((dq, dr));
         }
     }
-    best
+    // 允许持平移动绕路; 只在会明显远离时才不动(避免来回震荡到无意义)
+    if best_d <= cur_d { best } else { None }
 }
 
 fn buildable(t: Terrain) -> bool {

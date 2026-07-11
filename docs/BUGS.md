@@ -73,3 +73,11 @@ B4/B5 随 B2 一并处理。
   HashMap(顺序随机)删对手模型 → 同 seed 不同结果。只影响 Greedy(探针/Builder 不受影响)。
   确定性测试已改用 Builder。修复留待(改 BTreeMap 或排序迭代)。
 - **B3(range_dist 弓箭手射程2)⚠️ 仍待修** — 下一步。
+
+- **B3(range_dist 弓箭手射程2)✅ 已修**: try_ranged_attack, 弓箭手站射程2内攻击不移动、不还手。
+  Move 处理集成(有射程内目标则射击不移动)。Defender 弓箭手守城生效, 但攻城修复后步兵 rush 太强, 仍挡不住。
+
+## 全部硬伤修复完成
+B1(攻城渐进)/B2(move_speed)/B3(射程2)/B5(冲锋) 全修; B4 本已实现; B6(Greedy非确定)只影响Greedy待修。
+**兵种机制现在完整。** 重测(修完后甜点带矩阵): 军事变强、征服/建设均衡(44/42), 但Rusher偏强需重新平衡。
+数据 → experiments/v0.8.2-balance-scan/matrix-sweet-bugfixed.json

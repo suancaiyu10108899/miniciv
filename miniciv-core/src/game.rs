@@ -219,6 +219,12 @@ pub fn step_game(
             match act {
                 Action::Move { unit_idx, dq, dr } => {
                     if let Some(&global_idx) = player_units.get(*unit_idx) {
+                        // B3: 弓箭手先尝试射程内远程攻击(站原地, 不还手)。有目标则不移动。
+                        let is_archer = gs.units[global_idx].ranged
+                            && gs.units[global_idx].range_dist >= 2;
+                        if is_archer && try_ranged_attack(gs, global_idx) {
+                            continue;
+                        }
                         // B2 修复: 按 move_speed 走多步(遇敌/占城/受阻停)。
                         // 冲锋(B5): 骑兵连续走过平原后攻击 → +10。
                         let speed = gs.units[global_idx].move_speed.max(1);
@@ -486,6 +492,36 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32, charged: bool)
         gs.units[unit_idx].r = nr;
         // 进敌城格 = 占领; 城 HP 由回合结算的"渐进攻城"持续削(不在移入时一次性扣)
         MoveOutcome::Moved
+    }
+}
+
+/// B3: 弓箭手远程攻击。射程 range_dist 内最近敌人 → 单向输出(不还手, 不移动)。
+/// 返回是否攻击了(攻击了则本回合不再移动)。
+fn try_ranged_attack(gs: &mut GameState, archer_idx: usize) -> bool {
+    let (aq, ar, rng, pid) = {
+        let a = &gs.units[archer_idx];
+        (a.q, a.r, a.range_dist, a.player_id)
+    };
+    let opp = 1 - pid;
+    // 射程内(1..=rng)最近的敌方单位
+    let target = gs.units.iter().enumerate()
+        .filter(|(_, u)| u.alive && u.player_id == opp)
+        .map(|(i, u)| (i, crate::movement::hex_distance(aq, ar, u.q, u.r)))
+        .filter(|&(_, d)| d >= 1 && d <= rng)
+        .min_by_key(|&(_, d)| d)
+        .map(|(i, _)| i);
+    if let Some(tgt) = target {
+        let terrain = gs.grid.get(gs.units[tgt].q, gs.units[tgt].r).terrain;
+        if archer_idx < tgt {
+            let (left, right) = gs.units.split_at_mut(tgt);
+            resolve_ranged(&mut left[archer_idx], &mut right[0], terrain);
+        } else {
+            let (left, right) = gs.units.split_at_mut(archer_idx);
+            resolve_ranged(&mut right[0], &mut left[tgt], terrain);
+        }
+        true
+    } else {
+        false
     }
 }
 

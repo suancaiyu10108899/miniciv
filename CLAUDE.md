@@ -104,9 +104,11 @@
 | Rust 学习路线 | `docs/planning/2026-07-05-rust-implementation-plan.md` |
 | 集成测试标准 | `docs/INTEGRATION-TESTS.md` |
 | 工程状态+技术债务 | `docs/ENGINEERING.md` |
-| 六边形 AI 基线数据 | `experiments/v0.7.0-hex-baseline/` |
+| 硬伤记录(攻城/兵种机制 B1-B7) | `docs/BUGS.md` |
+| 当前甜点数据+平衡全过程 | `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md` |
+| 文档索引(活跃/历史分层) | `docs/INDEX.md` |
 | Rust 代码 | `miniciv-core/src/` |
 | Python 六边引擎 | `prototype_hex/` |
-| 交接文档 | `docs/HANDOFF.md` |
+| 交接文档(深化起点) | `docs/HANDOFF.md` |
 | Session 日志 | `docs/sessions/` |
 | 学习笔记 | `docs/learning/` |

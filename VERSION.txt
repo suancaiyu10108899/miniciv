@@ -1,3 +1,3 @@
-miniciv v0.8.0 — Rust Engine First Release
-"9/9 Phases Complete — 68 Tests — Greedy 60.8% — 3 AIs Operational"
-2026-07-05
+miniciv — 一阶深度阶段 (2026-07-10, 第三个 AI)
+"79 tests | 硬伤全修复(B1-B7) | 甜点=C线成本×2 HP160 | 建设↔军事↔防守三方制衡, 无支配, 有克制环"
+下一步: 深化游戏内容(科技强互斥→迷雾→多城)。交接 → docs/HANDOFF.md

@@ -2,21 +2,78 @@
 
 ## 当前阶段
 
-**S2「立裁判」完成:默认配置落地为甜点 + FlatMC 非循环裁判裁决"深度温和偏浅(H0)"。99 tests (+3 ignored)。**
+**P1.5 深度推进 — 全局压缩延寿甜点锁定, 交接给自动化会话跑完整矩阵。**
 
-> 🧭 **下一步已定方向(2026-07-12 用户+第四AI 设计讨论):** S2 裁出"浅"的根因=游戏只有单标量正向轴、无取舍。
-> 新方向 = **北极星愿景(中国史4X/红白反滚雪球) → P1.5「立红白」闸门**。
-> 愿景 → `docs/planning/2026-07-12-north-star-vision.md`(尤其 §8.5 负面维度 / §8.6 多人协作 / §8.7 设计轴库)。
-> **P1.5 合同(下个对话执行)** → `docs/planning/2026-07-12-stage-P1.5-goal-acceptance.md`:
-> 支持度负面维度 + 红白取舍管理 + 配置化分组(1v1→2v2)+ EGTA。**本阶段已开工 build。**
+> 🧭 **交接状态(2026-07-13 第五个 AI):**
+> P1.5 基础验证完成(H1方向成立), 全局压缩延寿找到甜点区(ttM=9.0/hp=1200/fBT=8→44.6T)。
+> 目标: 65-80T均结束, 30-40T分叉, 征服/建设各30-40%, 阶梯<20%。
+> **下一个 AI 需要**: 继续扫参推高回合数 + 跑完整矩阵 + FlatMC升级 + 学习型AI + EGTA。
+> **规划详情**: `docs/planning/2026-07-13-P1.5-deep-dive.md`。
 
-> ⚠️ **P1.5 深度推进中(2026-07-12~13 第五个 AI):**
-> **基础完成**: N玩家+支持度+红白+扩张, H1方向成立(~30,000局, 103 tests)。
-> **深度推进**: 全局压缩延寿(tech_turns_mult/all_tech_cost_mult/unit_cost_mult/facility_build_turns),
->   目标100T阶梯/60-80T均结束/30-40T分叉。
-> **Phase A✅**: 补全可配置化(5新Config字段, max_turns→100)。
-> **Phase B进行中**: 粗扫972组参数(自动跑)。
-> **规划**: `docs/planning/2026-07-13-P1.5-deep-dive.md`。
+---
+
+## 交接清单
+
+### 1. 当前甜点参数
+```
+max_turns: 150-200        tech_turns_mult: 9.0       all_tech_cost_mult: 3.0
+unit_cost_mult: 8.0       facility_build_turns: 8     city_hp: 1200
+c_line_cost_mult: 1.0     starting_resources: 30      facility_output: 4
+starting_workers: 2       branch_available_turn: 25
+```
+**结果**: Builder vs Rusher 53.6T, 55%征服/39%建设/5%阶梯。但仅200 seeds, StateAware非最强, CavRusher坏了。
+
+### 2. 需要继续做的事(按优先级)
+| # | 任务 | 工具 | 预计 |
+|---|------|------|------|
+| 1 | 扫参推高回合数→65-80T | `bin/scan-fine` 扩参数范围(ttM=10-14, fBT=10-12, hp=1500-2000) | 自动 20min |
+| 2 | 红白分叉点扫描 branch@20-40T | 修改 scan-fine 加入 branch_turn 扫描 | 自动 15min |
+| 3 | 完整1v1 500s矩阵 | `bin/sweet-eval 500` | 自动 1-2h |
+| 4 | 完整2v2 200s矩阵 | 需更新 team-eval 支持新Config字段 | 编码30min + 自动1h |
+| 5 | 修CavRusher(极端参数下骑兵成本40粮不可行) | 修改 probes.rs | 10min |
+| 6 | FlatMC分层评估升级 | 修改 flatmc.rs | 1-2h |
+| 7 | Evo重训(Rust端遗传算法) | 新bin或lib | 1h编码+训练 |
+| 8 | 统计输出(方差/标准差/每胜利类型回合分布) | 扩sweet-eval | 30min |
+| 9 | 文档+裁决+VERDICT更新 | 写experiments/v0.10-redwhite/VERDICT.md | 1h |
+
+### 3. 新增Config字段(所有AI需感知)
+```
+tech_turns_mult: f64      (tech.rs tick_research)
+all_tech_cost_mult: f64   (tech.rs cost_of)
+unit_cost_mult: f64       (economy.rs produce_unit + game.rs)
+facility_build_turns: u8  (unit.rs build_ticks + game.rs)
+construction_team_facilities: u8 (game.rs check_construction_victory)
+```
+
+### 4. 新增二进制工具
+```
+bin/sweet-eval   — 甜点专用矩阵(硬编码甜点Config)
+bin/scan-coarse  — 粗扫(修改源码改参数范围)
+bin/scan-fine    — 细扫(同上)
+bin/scan2v2      — 2v2快速参数扫描
+bin/scan-length  — 游戏长度单维扫描
+bin/team-eval    — 2v2团队评估(需更新Config支持新字段)
+```
+
+### 5. 已知Bug/问题
+- CavRusher在极端参数下不可用(骑兵成本过高) — 需修探针
+- StateAware不如AlwaysWhite(60.8% vs 70.7%) — 分叉点或判断逻辑需调整
+- team-eval未支持新Config字段(ttM/tcM/uM/fBT) — 需更新
+- FlatMC候选爆炸(2000+候选) — 需分层评估
+
+### 6. 测试: 103 passed / 0 failed / 3 ignored
+
+### 7. 数据目录
+```
+experiments/v0.10-redwhite/
+├── scan-coarse.txt/v2/v3   — 粗扫(972+648+432组)
+├── scan-fine.txt/v2/v3/v4  — 细扫(216+144+192+96组)
+├── sweet-1v1-200seeds.json — 甜点完整矩阵
+├── final-1v1-500seeds.json — 基础阶段最终矩阵(hp=100旧甜点)
+├── final-2v2-200seeds.json — 基础阶段2v2
+├── VERDICT.md              — 基础阶段裁决
+└── (其他中间数据文件)
+```
 
 > ⚠️ **顶层真相(2026-07-11 第四个 AI, S2 立裁判):**
 > **接手判断**:此前"一阶深度成立"是**循环论证**——旧 Search/depth 只在 4 手写剧本里选,

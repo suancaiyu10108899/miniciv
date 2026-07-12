@@ -776,7 +776,7 @@ fn do_research(gs: &GameState, pid: u8, strategy: Strategy, actions: &mut Vec<Ac
     if avail.contains(&"C5".to_string())
         && (in_construction || gs.turn > 20)
     {
-        if let Some(cost) = TechManager::tech_cost("C5") {
+        if let Some(cost) = tech.cost_of("C5") {
             if econ.can_afford(cost) {
                 actions.push(Action::Research { tech_id: "C5".to_string() });
                 return;
@@ -793,7 +793,7 @@ fn do_research(gs: &GameState, pid: u8, strategy: Strategy, actions: &mut Vec<Ac
             if gs.turn > 15 {
                 for ct in &["C2", "C3", "C4", "C5", "C1"] {
                     if avail.contains(&ct.to_string()) {
-                        if let Some(cost) = TechManager::tech_cost(ct) {
+                        if let Some(cost) = tech.cost_of(ct) {
                             if econ.can_afford(cost) {
                                 actions.push(Action::Research { tech_id: ct.to_string() });
                                 return;
@@ -808,7 +808,7 @@ fn do_research(gs: &GameState, pid: u8, strategy: Strategy, actions: &mut Vec<Ac
 
     for t in order {
         if avail.contains(&t.to_string()) {
-            if let Some(cost) = TechManager::tech_cost(t) {
+            if let Some(cost) = tech.cost_of(t) {
                 if econ.can_afford(cost) {
                     actions.push(Action::Research { tech_id: t.to_string() });
                     return;
@@ -822,13 +822,34 @@ fn do_research(gs: &GameState, pid: u8, strategy: Strategy, actions: &mut Vec<Ac
 // 生产决策 (v4: 自适应克制 + strategy-aware)
 // ═══════════════════════════════════════════════════════
 
+/// P1.5深度: 获取单位在给定 config 下的实际成本(base × unit_cost_mult)。
+fn effective_unit_cost_g(ut: &str, config: &crate::config::GameConfig) -> (i32, i32, i32) {
+    let base = match ut {
+        "infantry" => (5, 0, 0),
+        "cavalry"  => (5, 0, 3),
+        "archer"   => (3, 3, 0),
+        "scout"    => (3, 0, 0),
+        "worker"   => (3, 0, 0),
+        _ => return (i32::MAX, i32::MAX, i32::MAX),
+    };
+    let m = config.unit_cost_mult;
+    if (m - 1.0).abs() < 1e-9 { base } else {
+        ((base.0 as f64 * m).ceil() as i32, (base.1 as f64 * m).ceil() as i32, (base.2 as f64 * m).ceil() as i32)
+    }
+}
+
 fn do_production(
     gs: &GameState, pid: u8, strategy: Strategy,
     counter: &Option<String>, a: &StrategicAssessment,
     actions: &mut Vec<Action>,
 ) {
     let econ = &gs.economies[pid as usize];
-    let size = MAP_W as i32;
+    let cfg = &gs.config;
+    // P1.5深度: config-aware成本
+    let a_cost = effective_unit_cost_g("archer", cfg);
+    let c_cost = effective_unit_cost_g("cavalry", cfg);
+    let i_cost = effective_unit_cost_g("infantry", cfg);
+    let w_cost = effective_unit_cost_g("worker", cfg);
 
     let my_combat: Vec<&Unit> = gs.units.iter()
         .filter(|u| u.player_id == pid && u.alive && u.unit_type != UnitType::Worker)
@@ -846,27 +867,24 @@ fn do_production(
             && eu.unit_type != UnitType::Worker
             && hex_distance(eu.q, eu.r, my_city.q, my_city.r) <= 3
     });
-    if enemy_near && econ.wood >= 5 {
-        if econ.can_afford((3, 3, 0)) {
-            // archer cost: 3/3/0
-            actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
-            return;
-        }
+    if enemy_near && econ.can_afford(a_cost) {
+        actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
+        return;
     }
 
     // 弓手比例维持 ~30%
-    if n_total > 2 && econ.wood >= 5 {
+    if n_total > 2 {
         let archer_ratio = n_arc as f64 / n_total as f64;
-        if archer_ratio < 0.3 && econ.can_afford((3, 3, 0)) {
+        if archer_ratio < 0.3 && econ.can_afford(a_cost) {
             actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
             return;
         }
     }
 
     // 骑兵比例维持 ~30%
-    if n_total > 2 && econ.gold >= 6 {
+    if n_total > 2 {
         let cav_ratio = n_cav as f64 / n_total as f64;
-        if cav_ratio < 0.3 && econ.can_afford((5, 0, 3)) {
+        if cav_ratio < 0.3 && econ.can_afford(c_cost) {
             actions.push(Action::ProduceUnit { unit_type: "cavalry".to_string() });
             return;
         }
@@ -875,9 +893,9 @@ fn do_production(
     // 自适应克制
     if let Some(ct) = counter {
         let cost = match ct.as_str() {
-            "cavalry" => (5, 0, 3),
-            "infantry" => (5, 0, 0),
-            _ => (5, 0, 0),
+            "cavalry" => c_cost,
+            "infantry" => i_cost,
+            _ => i_cost,
         };
         if econ.can_afford(cost) && econ.food > 8 {
             actions.push(Action::ProduceUnit { unit_type: ct.clone() });
@@ -888,68 +906,46 @@ fn do_production(
     // 策略模式生产
     match strategy {
         Strategy::Aggressive => {
-            for ut in &["cavalry", "archer", "infantry"] {
-                if try_produce(econ, ut, actions) { return; }
+            for (ut, cost) in &[("cavalry", c_cost), ("archer", a_cost), ("infantry", i_cost)] {
+                if econ.can_afford(*cost) { actions.push(Action::ProduceUnit { unit_type: ut.to_string() }); return; }
             }
         }
         Strategy::Defensive | Strategy::DefensiveConstruction => {
-            for ut in &["infantry", "archer", "cavalry"] {
-                if try_produce(econ, ut, actions) { return; }
+            for (ut, cost) in &[("infantry", i_cost), ("archer", a_cost), ("cavalry", c_cost)] {
+                if econ.can_afford(*cost) { actions.push(Action::ProduceUnit { unit_type: ut.to_string() }); return; }
             }
         }
         Strategy::Construction => {
-            // 建设策略: 维持防御+可能造工人
             let n_workers = gs.units.iter()
                 .filter(|u| u.player_id == pid && u.alive && u.unit_type == UnitType::Worker)
                 .count();
-            if n_workers < 4 && econ.food >= 15 && n_total >= 3 {
-                if econ.can_afford((3, 0, 0)) {
-                    actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
-                    return;
-                }
+            if n_workers < 4 && econ.food >= 15 && n_total >= 3 && econ.can_afford(w_cost) {
+                actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+                return;
             }
-            if econ.gold >= 10 && n_cav < n_inf && econ.can_afford((5, 0, 3)) {
+            if n_cav < n_inf && econ.can_afford(c_cost) {
                 actions.push(Action::ProduceUnit { unit_type: "cavalry".to_string() });
                 return;
             }
-            if econ.wood >= 8 && n_arc < n_inf && econ.can_afford((3, 3, 0)) {
+            if n_arc < n_inf && econ.can_afford(a_cost) {
                 actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
                 return;
             }
-            if try_produce(econ, "infantry", actions) { return; }
+            if econ.can_afford(i_cost) { actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() }); return; }
         }
         Strategy::Balanced => {
-            // Balanced: 可能造工人 + 多样兵种
             let n_workers = gs.units.iter()
                 .filter(|u| u.player_id == pid && u.alive && u.unit_type == UnitType::Worker)
                 .count();
             let n_combat = my_combat.len();
-            if n_workers < 4 && econ.food >= 15 && n_combat >= 3 {
-                if econ.can_afford((3, 0, 0)) {
-                    actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
-                    return;
-                }
+            if n_workers < 4 && econ.food >= 15 && n_combat >= 3 && econ.can_afford(w_cost) {
+                actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+                return;
             }
-            for ut in &["cavalry", "archer", "infantry"] {
-                if try_produce(econ, ut, actions) { return; }
+            for (ut, cost) in &[("cavalry", c_cost), ("archer", a_cost), ("infantry", i_cost)] {
+                if econ.can_afford(*cost) { actions.push(Action::ProduceUnit { unit_type: ut.to_string() }); return; }
             }
         }
-    }
-}
-
-fn try_produce(econ: &crate::economy::Economy, ut: &str, actions: &mut Vec<Action>) -> bool {
-    let cost = match ut {
-        "infantry" => (5, 0, 0),
-        "cavalry" => (5, 0, 3),
-        "archer" => (3, 3, 0),
-        "scout" => (3, 0, 0),
-        _ => return false,
-    };
-    if econ.can_afford(cost) {
-        actions.push(Action::ProduceUnit { unit_type: ut.to_string() });
-        true
-    } else {
-        false
     }
 }
 

@@ -1,0 +1,318 @@
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\map.rs:25:24
+   |
+25 | use crate::constants::{MAP_W, MAP_H};
+   |                        ^^^^^  ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `FACILITY_OUTPUT`
+  --> src\economy.rs:18:5
+   |
+18 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\game.rs:23:5
+   |
+23 |     MAP_W, MAP_H,
+   |     ^^^^^  ^^^^^
+
+warning: unused import: `step_game`
+  --> src\eval.rs:13:53
+   |
+13 | use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
+   |                                                     ^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\greedy.rs:17:45
+   |
+17 | use crate::game::{GameState, primary_enemy, same_team};
+   |                                             ^^^^^^^^^
+
+warning: unused import: `City`
+  --> src\ai\greedy.rs:18:35
+   |
+18 | use crate::unit::{Unit, UnitType, City};
+   |                                   ^^^^
+
+warning: unused import: `Grid`
+  --> src\ai\greedy.rs:19:18
+   |
+19 | use crate::map::{Grid, Terrain};
+   |                  ^^^^
+
+warning: unused imports: `CAVALRY_CHARGE_BONUS`, `CITY_BASE_FOOD`, `CITY_DEF`, `CITY_HP`, `FACILITY_OUTPUT`, `STARTING_FOOD`, `STARTING_GOLD`, and `STARTING_WOOD`
+  --> src\ai\greedy.rs:23:19
+   |
+23 |     MAP_W, MAP_H, CITY_HP, CITY_DEF, CAVALRY_CHARGE_BONUS,
+   |                   ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+24 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+25 |     STARTING_FOOD, STARTING_WOOD, STARTING_GOLD,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused imports: `TechBonuses` and `TechManager`
+  --> src\ai\greedy.rs:27:19
+   |
+27 | use crate::tech::{TechManager, TechBonuses};
+   |                   ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\evo.rs:14:5
+   |
+14 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\fixed.rs:21:5
+   |
+21 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\probes.rs:19:5
+   |
+19 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `primary_enemy`
+  --> src\ai\search.rs:12:41
+   |
+12 | use crate::game::{GameState, step_game, primary_enemy};
+   |                                         ^^^^^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\flatmc.rs:23:41
+   |
+23 | use crate::game::{GameState, step_game, same_team, primary_enemy};
+   |                                         ^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\flatmc.rs:29:5
+   |
+29 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `generator_id`
+   --> src\map.rs:156:32
+    |
+156 | pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_generator_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\combat.rs:73:9
+   |
+73 |     let mut def_damage = calc_damage(defender.atk, def_bonus, attacker.def, att_bonus);
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `opp`
+  --> src\ai\random.rs:29:13
+   |
+29 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+   |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `rng`
+   --> src\ai\greedy.rs:146:47
+    |
+146 |     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+    |                                               ^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `opp`
+   --> src\ai\greedy.rs:147:13
+    |
+147 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `size`
+   --> src\ai\greedy.rs:330:9
+    |
+330 |     let size = MAP_W as i32;
+    |         ^^^^ help: if this is intentional, prefix it with an underscore: `_size`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:501:25
+    |
+501 |     strategy: Strategy, a: &StrategicAssessment,
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `pid`
+   --> src\ai\greedy.rs:720:34
+    |
+720 |     unit: &Unit, gs: &GameState, pid: u8,
+    |                                  ^^^ help: if this is intentional, prefix it with an underscore: `_pid`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:843:31
+    |
+843 |     counter: &Option<String>, a: &StrategicAssessment,
+    |                               ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `cfg`
+   --> src\ai\evo.rs:481:75
+    |
+481 |     tx: i32, ty: i32, dist_weight: f64, high_ground: f64, terrain_w: f64, cfg: &GreedyConfig,
+    |                                                                           ^^^ help: if this is intentional, prefix it with an underscore: `_cfg`
+
+warning: function `team_alive` is never used
+   --> src\game.rs:210:4
+    |
+210 | fn team_alive(team: u8, gs: &GameState) -> bool {
+    |    ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+   --> src\ai\greedy.rs:230:5
+    |
+226 | struct StrategicAssessment {
+    |        ------------------- fields in this struct
+...
+230 |     res_ratio: f64,
+    |     ^^^^^^^^^
+231 |     tech_lead: i32,
+    |     ^^^^^^^^^
+...
+234 |     my_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^
+235 |     opp_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+236 |     opp_near_city_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+237 |     enemy_defense_strong: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+238 |     weak_point: Option<(i32, i32)>,
+239 |     my_power: i32,
+    |     ^^^^^^^^
+240 |     opp_power: i32,
+    |     ^^^^^^^^^
+    |
+    = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `miniciv-core` (lib) generated 27 warnings (run `cargo fix --lib -p miniciv-core` to apply 25 suggestions)
+warning: variable `ttM_vals` should have a snake case name
+  --> src\bin\scan-push.rs:29:9
+   |
+29 |     let ttM_vals: Vec<f64> = vec![10.0, 12.0, 14.0, 16.0];
+   |         ^^^^^^^^ help: convert the identifier to snake case: `tt_m_vals`
+   |
+   = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: variable `uM_vals` should have a snake case name
+  --> src\bin\scan-push.rs:30:9
+   |
+30 |     let uM_vals: Vec<f64> = vec![8.0, 10.0, 12.0, 14.0];
+   |         ^^^^^^^ help: convert the identifier to snake case: `u_m_vals`
+
+warning: variable `fBT_vals` should have a snake case name
+  --> src\bin\scan-push.rs:31:9
+   |
+31 |     let fBT_vals: Vec<u8> = vec![10, 12, 14];
+   |         ^^^^^^^^ help: convert the identifier to snake case: `f_bt_vals`
+
+warning: variable `tcM_vals` should have a snake case name
+  --> src\bin\scan-push.rs:33:9
+   |
+33 |     let tcM_vals: Vec<f64> = vec![3.0, 4.0, 5.0];
+   |         ^^^^^^^^ help: convert the identifier to snake case: `tc_m_vals`
+
+warning: variable `startR_vals` should have a snake case name
+  --> src\bin\scan-push.rs:34:9
+   |
+34 |     let startR_vals: Vec<i32> = vec![30, 40, 50];
+   |         ^^^^^^^^^^^ help: convert the identifier to snake case: `start_r_vals`
+
+warning: structure field `ttM` should have a snake case name
+  --> src\bin\scan-push.rs:38:35
+   |
+38 |     struct ParamCombo { idx: u64, ttM: f64, uM: f64, fBT: u8, hp: i32, tcM: f64, startR: i32, branch: u16 }
+   |                                   ^^^ help: convert the identifier to snake case: `tt_m`
+
+warning: structure field `uM` should have a snake case name
+  --> src\bin\scan-push.rs:38:45
+   |
+38 |     struct ParamCombo { idx: u64, ttM: f64, uM: f64, fBT: u8, hp: i32, tcM: f64, startR: i32, branch: u16 }
+   |                                             ^^ help: convert the identifier to snake case: `u_m`
+
+warning: structure field `fBT` should have a snake case name
+  --> src\bin\scan-push.rs:38:54
+   |
+38 |     struct ParamCombo { idx: u64, ttM: f64, uM: f64, fBT: u8, hp: i32, tcM: f64, startR: i32, branch: u16 }
+   |                                                      ^^^ help: convert the identifier to snake case: `f_bt`
+
+warning: structure field `tcM` should have a snake case name
+  --> src\bin\scan-push.rs:38:72
+   |
+38 |     struct ParamCombo { idx: u64, ttM: f64, uM: f64, fBT: u8, hp: i32, tcM: f64, startR: i32, branch: u16 }
+   |                                                                        ^^^ help: convert the identifier to snake case: `tc_m`
+
+warning: structure field `startR` should have a snake case name
+  --> src\bin\scan-push.rs:38:82
+   |
+38 |     struct ParamCombo { idx: u64, ttM: f64, uM: f64, fBT: u8, hp: i32, tcM: f64, startR: i32, branch: u16 }
+   |                                                                                  ^^^^^^ help: convert the identifier to snake case: `start_r`
+
+warning: variable `ttM` should have a snake case name
+  --> src\bin\scan-push.rs:40:10
+   |
+40 |     for &ttM in &ttM_vals { for &uM in &uM_vals { for &fBT in &fBT_vals {
+   |          ^^^ help: convert the identifier to snake case: `tt_m`
+
+warning: variable `uM` should have a snake case name
+  --> src\bin\scan-push.rs:40:34
+   |
+40 |     for &ttM in &ttM_vals { for &uM in &uM_vals { for &fBT in &fBT_vals {
+   |                                  ^^ help: convert the identifier to snake case: `u_m`
+
+warning: variable `fBT` should have a snake case name
+  --> src\bin\scan-push.rs:40:56
+   |
+40 |     for &ttM in &ttM_vals { for &uM in &uM_vals { for &fBT in &fBT_vals {
+   |                                                        ^^^ help: convert the identifier to snake case: `f_bt`
+
+warning: variable `tcM` should have a snake case name
+  --> src\bin\scan-push.rs:41:32
+   |
+41 |     for &hp in &hp_vals { for &tcM in &tcM_vals { for &startR in &startR_vals {
+   |                                ^^^ help: convert the identifier to snake case: `tc_m`
+
+warning: variable `startR` should have a snake case name
+  --> src\bin\scan-push.rs:41:56
+   |
+41 |     for &hp in &hp_vals { for &tcM in &tcM_vals { for &startR in &startR_vals {
+   |                                                        ^^^^^^ help: convert the identifier to snake case: `start_r`
+
+warning: `miniciv-core` (bin "scan-push") generated 15 warnings
+    Finished `release` profile [optimized] target(s) in 0.12s
+     Running `target\release\scan-push.exe 30 200000`
+scan-push: 6912 参数组合 × 30 seeds × 4 pairs = 829440 局 (rayon并行)
+参数范围: ttM=[10.0, 12.0, 14.0, 16.0], uM=[8.0, 10.0, 12.0, 14.0], fBT=[10, 12, 14], hp=[1500, 2000, 2500, 3000], tcM=[3.0, 4.0, 5.0], startR=[30, 40, 50], branch=[25, 30, 35, 40]
+进度: 345/6912 (5%)
+进度: 690/6912 (10%)
+进度: 1035/6912 (15%)
+进度: 1380/6912 (20%)
+进度: 1725/6912 (25%)
+进度: 2070/6912 (30%)
+进度: 2415/6912 (35%)
+进度: 2760/6912 (40%)
+进度: 3105/6912 (45%)
+进度: 3450/6912 (50%)
+进度: 3795/6912 (55%)
+进度: 4140/6912 (60%)
+进度: 4485/6912 (65%)
+进度: 4830/6912 (70%)
+进度: 5175/6912 (75%)
+进度: 5520/6912 (80%)
+进度: 5865/6912 (85%)
+进度: 6210/6912 (90%)
+进度: 6555/6912 (95%)
+进度: 6900/6912 (100%)
+完成。6912 条结果写到 stdout
+分析提示: grep ',55,' 筛选回合>55T的组合
+          awk -F, '$8>55 && $9>20 && $10>20' 找候选区

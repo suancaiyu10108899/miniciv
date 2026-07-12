@@ -1,4 +1,4 @@
-// 探针套件 — 阶段 1(第三个 AI)
+// 探针套件 — 阶段 1(第三个 AI) + P1.5深度适配(第六个 AI)
 //
 // 目的: 每个探针钉死一条设计假设, 组成"支配性矩阵"作为第一层锚点。
 //   Rusher   — 纯军事攻城: 检验"进攻能不能威胁到建设者"
@@ -7,6 +7,9 @@
 // 用法: 和 Builder 一起进 eval 矩阵。健康游戏里没有单探针对其他所有 >70% 胜。
 //
 // 这些不是"聪明 AI", 是针对性对抗构造 —— 便宜、证伪导向。
+//
+// P1.5深度适配(2026-07-13): 所有探针的 can_afford 改用 config-aware 成本,
+// 避免极端参数(unit_cost_mult=8-12)下探针自欺"付得起"但 produce_unit 拒执行。
 
 use crate::game::GameState;
 use crate::unit::UnitType;
@@ -15,7 +18,28 @@ use crate::ai::{Action, Agent};
 use crate::movement::{legal_moves, hex_distance, HEX_DIRS};
 use crate::tech::TechManager;
 use crate::constants::{MAP_W, MAP_H};
+use crate::config::GameConfig;
 use rand::RngCore;
+
+/// P1.5深度: 获取单位在给定 config 下的实际成本(base × unit_cost_mult)。
+fn effective_unit_cost(ut: &str, config: &GameConfig) -> (i32, i32, i32) {
+    let base = match ut {
+        "infantry" => (5, 0, 0),
+        "cavalry"  => (5, 0, 3),
+        "archer"   => (3, 3, 0),
+        "scout"    => (3, 0, 0),
+        "worker"   => (3, 0, 0),
+        _ => return (i32::MAX, i32::MAX, i32::MAX),
+    };
+    let m = config.unit_cost_mult;
+    if (m - 1.0).abs() < 1e-9 {
+        base
+    } else {
+        ((base.0 as f64 * m).ceil() as i32,
+         (base.1 as f64 * m).ceil() as i32,
+         (base.2 as f64 * m).ceil() as i32)
+    }
+}
 
 /// 朝目标 (tq,tr) 移动一步。确定性。
 /// 改进(暴露探针可靠性): 原版只选"严格减小距离"的move, 被山林挡住就卡死(骑兵尤甚)。
@@ -84,7 +108,7 @@ impl Agent for RusherAgent {
             let econ = &gs.economies[pid as usize];
             for t in ["M1", "M4"] {  // M1 攻击, M4 全军 HP+10
                 if tech.available_to_research().iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -115,9 +139,10 @@ impl Agent for RusherAgent {
             }
         }
 
-        // 城市: 每回合尽量产步兵(便宜 5/0/0, ATK 高)
+        // 城市: 每回合尽量产步兵(便宜, ATK 高)。P1.5深度: 用config-aware成本。
         let econ = &gs.economies[pid as usize];
-        if econ.can_afford((5, 0, 0)) {
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if econ.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
 
@@ -166,11 +191,13 @@ impl Agent for HarasserAgent {
             }
         }
 
-        // 城市: 产骑兵(移速 2, 快速扑杀工人)
+        // 城市: 产骑兵(移速 2, 快速扑杀工人)。P1.5深度: 用config-aware成本。
         let econ = &gs.economies[pid as usize];
-        if econ.can_afford((5, 0, 3)) {
+        let cav_cost = effective_unit_cost("cavalry", &gs.config);
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if econ.can_afford(cav_cost) {
             actions.push(Action::ProduceUnit { unit_type: "cavalry".to_string() });
-        } else if econ.can_afford((5, 0, 0)) {
+        } else if econ.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
 
@@ -202,7 +229,7 @@ impl Agent for TurtleAgent {
             let avail = tech.available_to_research();
             for t in ["C1", "C3", "C4", "C5", "E1", "C2"] {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -251,9 +278,10 @@ impl Agent for TurtleAgent {
             }
         }
 
-        // 城市: 产步兵守家, 上限 4(留资源推建设)
+        // 城市: 产步兵守家, 上限 4(留资源推建设)。P1.5深度: 用config-aware成本。
         let econ = &gs.economies[pid as usize];
-        if soldier_count < 4 && econ.can_afford((5, 0, 0)) {
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if soldier_count < 4 && econ.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
 
@@ -287,7 +315,7 @@ impl Agent for DefenderAgent {
             let avail = tech.available_to_research();
             for t in ["C1", "C3", "C4", "C5", "E1", "M1", "C2"] {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -345,13 +373,17 @@ impl Agent for DefenderAgent {
             }
         }
 
-        // 城市生产: 先保证 5 工人(建够设施), 再产弓箭手(主力)+ 少量步兵(前排)
+        // 城市生产: 先保证 5 工人(建够设施), 再产弓箭手(主力)+ 少量步兵(前排)。
+        // P1.5深度: 用config-aware成本。
         let econ = &gs.economies[pid as usize];
-        if n_worker < 5 && econ.can_afford((3, 0, 0)) {
+        let w_cost = effective_unit_cost("worker", &gs.config);
+        let a_cost = effective_unit_cost("archer", &gs.config);
+        let i_cost = effective_unit_cost("infantry", &gs.config);
+        if n_worker < 5 && econ.can_afford(w_cost) {
             actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
-        } else if n_archer < 3 && econ.can_afford((3, 3, 0)) {
+        } else if n_archer < 3 && econ.can_afford(a_cost) {
             actions.push(Action::ProduceUnit { unit_type: "archer".to_string() });
-        } else if n_infantry < 2 && econ.can_afford((5, 0, 0)) {
+        } else if n_infantry < 2 && econ.can_afford(i_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
 
@@ -382,7 +414,7 @@ impl Agent for CavalryRusherAgent {
             let econ = &gs.economies[pid as usize];
             for t in ["M1", "M2"] {
                 if tech.available_to_research().iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -412,11 +444,13 @@ impl Agent for CavalryRusherAgent {
             }
         }
 
-        // 城市: 产骑兵(5/0/3), 资源不够退步兵
+        // 城市: 产骑兵优先, 资源不够退步兵。P1.5深度: 用config-aware成本。
         let econ = &gs.economies[pid as usize];
-        if econ.can_afford((5, 0, 3)) {
+        let cav_cost = effective_unit_cost("cavalry", &gs.config);
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if econ.can_afford(cav_cost) {
             actions.push(Action::ProduceUnit { unit_type: "cavalry".to_string() });
-        } else if econ.can_afford((5, 0, 0)) {
+        } else if econ.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
 
@@ -482,7 +516,7 @@ impl Agent for AlwaysWhiteAgent {
             let econ = &gs.economies[pid as usize];
             for t in ["M1", "M4"] {
                 if tech.available_to_research().iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -511,7 +545,8 @@ impl Agent for AlwaysWhiteAgent {
         }
 
         let econ = &gs.economies[pid as usize];
-        if econ.can_afford((5, 0, 0)) {
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if econ.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
         actions
@@ -545,7 +580,7 @@ impl Agent for AlwaysRedAgent {
             let avail = tech.available_to_research();
             for t in ["C1", "C3", "C4", "C5", "E1", "C2"] {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -572,9 +607,11 @@ impl Agent for AlwaysRedAgent {
         }
 
         let econ2 = &gs.economies[pid as usize];
-        if n_worker < 5 && econ2.can_afford((3, 0, 0)) {
+        let w_cost = effective_unit_cost("worker", &gs.config);
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        if n_worker < 5 && econ2.can_afford(w_cost) {
             actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
-        } else if econ2.can_afford((5, 0, 0)) {
+        } else if econ2.can_afford(inf_cost) {
             actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
         }
         actions
@@ -583,7 +620,8 @@ impl Agent for AlwaysRedAgent {
 }
 
 /// StateAware — 领先→选白, 落后→选红。
-/// 领先条件: 设施≥3 且城HP≥对手。
+/// P1.5深度改进(第六个AI): 领先判断从"设施≥3且城HP≥对手"
+/// 改为多维信号(资源/军事/科技/支持度风险), 适配极端参数下设施建造极慢的情况。
 /// 检验规格 R-1: "处境决定路线"是否优于 AlwaysWhite/AlwaysRed。
 pub struct StateAwareAgent;
 
@@ -593,7 +631,7 @@ impl Agent for StateAwareAgent {
         let mut actions = Vec::new();
         let econ = &gs.economies[pid as usize];
 
-        // 判断领先/落后
+        // P1.5深度: 多维领先判断(不只依赖设施数——极端参数下建得极慢)
         let mut my_facs = 0u32;
         let ms = gs.config.map_size as i32;
         for r in 0..ms { for q in 0..ms {
@@ -601,14 +639,47 @@ impl Agent for StateAwareAgent {
                 if f.player_id == pid { my_facs += 1; }
             }
         }}
-        let leading = my_facs >= 3 && gs.cities[pid as usize].hp >= gs.cities[opp as usize].hp;
+        // 军事力: 己方战斗单位 vs 对手
+        let my_mil = gs.units.iter()
+            .filter(|u| u.alive && u.player_id == pid
+                     && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout)
+            .count();
+        let opp_mil = gs.units.iter()
+            .filter(|u| u.alive && u.player_id == opp
+                     && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout)
+            .count();
+        // 资源总量
+        let my_res = econ.food + econ.wood + econ.gold;
+        let opp_res = gs.economies[opp as usize].food + gs.economies[opp as usize].wood + gs.economies[opp as usize].gold;
+        // 科技数
+        let my_techs = gs.techs[pid as usize].completed.len();
+        let opp_techs = gs.techs[opp as usize].completed.len();
+        let my_city_hp = gs.cities[pid as usize].hp;
+        let opp_city_hp = gs.cities[opp as usize].hp;
 
-        // 领先→白, 落后→红
+        // 综合领先评分(每个维度 >对手 积1分, 共5维)
+        let mut lead_score = 0i32;
+        if my_facs > 0 && my_facs >= 2 { lead_score += 1; }  // 至少建了2设施
+        if my_mil >= opp_mil { lead_score += 1; }
+        if my_res >= opp_res { lead_score += 1; }
+        if my_techs >= opp_techs { lead_score += 1; }
+        if my_city_hp >= opp_city_hp { lead_score += 1; }
+
+        // 领先(≥3/5维度占优) → 白; 落后(≤1) → 红; 均势(2)→看支持度风险
+        let leading = lead_score >= 3;
+        let trailing = lead_score <= 1;
+
+        // P1.5深度: 支持度风险评估——如果支持度已偏低, 选白会加速危机, 可能不如选红稳
+        let support_risky = econ.support < gs.config.support_penalty_threshold + 15;
+
         if econ.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
-            if leading {
+            if leading && !support_risky {
                 actions.push(Action::ChooseBranch { branch: "White".to_string() });
-            } else {
+            } else if trailing || support_risky {
                 actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+            } else {
+                // 均势且支持度安全: 略倾向白(利用产出加成扩大优势)
+                actions.push(Action::ChooseBranch { branch: "White".to_string() });
             }
         }
 
@@ -618,18 +689,18 @@ impl Agent for StateAwareAgent {
             actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
         }
 
-        // 研究: 白线走M兵, 红线走C建设
+        // 研究: 白线走M兵 → C1(解锁经济基础), 红线走C建设
         let tech = &gs.techs[pid as usize];
         if tech.researching.is_none() {
             let order: &[&str] = if econ.branch == Some(crate::economy::Branch::White) {
-                &["M1", "M4", "M2", "C1"]
+                &["M1", "C1", "M4", "M2", "E1"]
             } else {
-                &["C1", "C3", "C4", "C5", "E1"]
+                &["C1", "C3", "C4", "C5", "E1", "M1"]
             };
             let avail = tech.available_to_research();
             for t in order {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -667,12 +738,14 @@ impl Agent for StateAwareAgent {
         }
 
         let econ2 = &gs.economies[pid as usize];
+        let inf_cost = effective_unit_cost("infantry", &gs.config);
+        let w_cost = effective_unit_cost("worker", &gs.config);
         if econ.branch == Some(crate::economy::Branch::White) {
-            if econ2.can_afford((5, 0, 0)) {
+            if econ2.can_afford(inf_cost) {
                 actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
             }
         } else {
-            if econ2.can_afford((3, 0, 0)) {
+            if econ2.can_afford(w_cost) {
                 actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
             }
         }
@@ -711,7 +784,7 @@ impl Agent for TankThenRedAgent {
             let avail = tech.available_to_research();
             for t in ["C1", "C3", "C4", "C5", "E1"] {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;
@@ -734,10 +807,11 @@ impl Agent for TankThenRedAgent {
         }
 
         // 不主动产战斗单位(只在 Mobilize 兑换时才产)
-        // 只产工人保证建设
+        // 只产工人保证建设。P1.5深度: 用config-aware成本。
         let worker_count = player_units.iter()
             .filter(|(_, u)| u.unit_type == UnitType::Worker).count();
-        if worker_count < 6 && econ.can_afford((3, 0, 0)) {
+        let w_cost = effective_unit_cost("worker", &gs.config);
+        if worker_count < 6 && econ.can_afford(w_cost) {
             actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
         }
 

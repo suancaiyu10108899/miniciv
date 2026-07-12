@@ -20,7 +20,7 @@
 
 | 项 | 状态 | 备注 |
 |----|------|------|
-| 单元测试 | ✅ | 80 tests (+3 ignored), 覆盖 combat/mapgen/movement/terrain/unit/config/flatmc |
+| 单元测试 | ✅ | 103 tests (+3 ignored), 覆盖 combat/mapgen/movement/terrain/unit/config/flatmc/game(P1.5) |
 | 未测试模块 | ⚠️ | game/ economy/ tech/ snapshot/ eval/ 部分 AI 模块单测薄(但 eval/flatmc 有确定性测试) |
 | 集成测试标准 | ✅ | `docs/INTEGRATION-TESTS.md` 已定义 |
 | check_docs.py | ✅ | 检测 constants.py ↔ GAME.md 一致性（已补全至 8 个值） |
@@ -86,12 +86,12 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 8. ~~**eval.rs todo!()**~~：✅ **已解决(门禁1)** — eval.rs 落地为批量 paired 评估 + `bin/eval` CLI + 3 测试。500-seed 矩阵见 `experiments/v0.8.1-honest-eval/`。
 9. ~~**tiebreak P0 偏向**~~：✅ **已修(门禁2a)** — tiebreak 随机分支原用 `gs.turn % 2`,但恒在 turn==80(偶数)触发→恒判 P0。改为 `unbiased_coin(seed)`(murmur3 双轮 + 单测)。镜像 P0:Greedy 49% / Random 53% / Evo 54%(全达标)。剩余 ~3% 是随机对局真实先手优势(Greedy 建设 P0=47.7% 证明引擎干净)。
 10. ~~**存在意义级:5 回合建设速通支配**~~：✅ **已解决(2026-07-10)** — 门禁2b 发现纯建设 Builder 5T 速通 100% 通杀。修完硬伤(B1-B7 攻城/移速/射程/冲锋/遇林停)+ 甜点带(C线成本×2 + city_hp160)后,变成**建设↔军事↔防守三方制衡、有克制环(骑兵>步兵>防守>骑兵)、无单一支配、征服43/建设47均衡**。见 `experiments/v0.8.2-balance-scan/SCAN-FINDINGS.md` + `docs/BUGS.md`。
-11. **待深化/待修**：~~B6 Greedy HashMap 迭代非确定~~(✅ S2 修复: BTreeMap)、骑兵精确平衡(成本×2 下 CavRusher 可接受)、弓箭手 kiting 未充分利用、FOW 未实现(迷雾深化时做)。详见 `docs/BUGS.md`。
+11. **待深化/待修**：B6 ✅ S2已修复(BTreeMap)、骑兵精确平衡(P1.5深度参数下CavRusher崩溃待修✅第六AI已修)、弓箭手 kiting 未充分利用、FOW 未实现(迷雾深化时做)。详见 `docs/BUGS.md`。
 
 ### Rust 端（v0.9 S2 新增）
 12. **默认配置已落地为甜点**(成本×2 HP160): 消除"甜点只活在 CLI 参数"的漂移源。见 DECISIONS #19。
-13. **FlatMC 裁判**(`ai/flatmc.rs` + `bin/judge`): 首个非循环深度裁判。裁决"深度温和偏浅"。见 `experiments/v0.9-judge/S2-VERDICT.md`。
-14. **性能债(已还 P1.5 Step 0)**: ~~评估/裁判全单线程(无 rayon), FlatMC 矩阵只用 1 核。paired seeds 天然可并行, `par_iter` 可近线性加速。规范里也无"性能"纪律~~ → **✅ 已修**: rayon 并行 `run_pair_par`/`run_matrix_par`, `bin/eval`/`bin/judge` 默认走并行,"并行==串行"确定性测试守卫。
+13. **FlatMC 裁判**(`ai/flatmc.rs` + `bin/judge`): 首个非循环深度裁判。裁决"深度温和偏浅"。P1.5深度推进中待升级分层评估。见 `experiments/v0.9-judge/S2-VERDICT.md`。
+14. **性能债(✅ P1.5 Step 0 已修)**: rayon 并行 `run_pair_par`/`run_matrix_par`, `bin/eval`/`bin/judge` 默认走并行,"并行==串行"确定性测试守卫。
 
 ---
 

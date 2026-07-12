@@ -4,10 +4,11 @@
 
 **P1.5 深度推进 — 全局压缩延寿甜点锁定, 交接给自动化会话跑完整矩阵。**
 
-> 🧭 **交接状态(2026-07-13 第五个 AI):**
-> P1.5 基础验证完成(H1方向成立), 全局压缩延寿找到甜点区(ttM=9.0/hp=1200/fBT=8→44.6T)。
-> 目标: 65-80T均结束, 30-40T分叉, 征服/建设各30-40%, 阶梯<20%。
-> **下一个 AI 需要**: 继续扫参推高回合数 + 跑完整矩阵 + FlatMC升级 + 学习型AI + EGTA。
+> 🧭 **交接状态(2026-07-13 第六个 AI 接手):**
+> Phase 1 完成: 修复CavRusher/StateAware/config-aware成本(全AI `tech_cost`→`cost_of` + `unit_cost`×mult),
+> 修复6处文档腐烂。103 tests ✅。
+> 甜点基线: ttM=9.0/hp=1200/fBT=8/uM=8.0→44.6T(60s)/53.6T(200s), 目标65-80T。
+> **当前 Phase 2**: 粗扫扩参数(ttM=10-16, hp=1500-2500)推向65-80T, overnight 自动。
 > **规划详情**: `docs/planning/2026-07-13-P1.5-deep-dive.md`。
 
 ---
@@ -110,19 +111,6 @@ experiments/v0.10-redwhite/
 | 9 | 集成验证矩阵 | ✅ | 1 | ~~Greedy 60.8%~~ 30-seed 噪声,见门禁1修正 |
 | G1 | eval.rs 批量评估 (第三AI) | ✅ | 3 | 500-seed 诚实矩阵: Greedy vs Random 41.4% |
 | S1 | 一阶深度 M1-M2 (第三AI) | 🔄 | +tests | 起手资源=甜点杠杆; 步兵+弓箭手防守有效 |
-
-| Phase | 内容 | 状态 | 测试 | 学习笔记 |
-|-------|------|------|------|---------|
-| 1 | cargo 骨架 | ✅ | — | — |
-| 2 | map.rs — 地图生成 | ✅ | 7 | enum/struct ≈ C++，rem_euclid 是 Python % |
-| 3 | movement.rs — 移动+距离 | ✅ | 10 | hex_distance 9种wrap取最短，cube distance公式 |
-| 4 | unit.rs + combat.rs — 单位+战斗 | ✅ | 21 | &mut 可变引用，split_at_mut 解决双借用 |
-| 5 | economy.rs + tech.rs — 经济+科技 | ✅ | 20 | HashSet Borrow 泛型推导坑，static 数组替代 Vec |
-| 6 | game.rs + ai/random.rs — 游戏循环+Random | ✅ | 4 | 首次端到端！split_at_mut 实战，所有权移动 |
-| 7 | ai/greedy.rs — Greedy AI | ✅ | 4 | 600局参数扫描: TW=0.15最优, hex_distance修复是关键 |
-| 8 | ai/evo.rs — Evo AI | ✅ | 3 | 权重从JSON加载, 但需Rust引擎上重训 |
-| 9 | 集成验证矩阵 | ✅ | 1 | ~~Greedy 60.8%~~ 30-seed 噪声,见门禁1修正 |
-| G1 | eval.rs 批量评估 (第三AI) | ✅ | 3 | 500-seed 诚实矩阵: Greedy vs Random 41.4% |
 
 > **~~Rust 集成矩阵 (30 seeds paired)~~ — 已被 500-seed 修正,勿引用:**
 > ~~Greedy 60.8% | Random 78.3%~~ 这是 30-seed 噪声 + 拿坏 Evo 刷平均。

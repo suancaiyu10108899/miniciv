@@ -102,7 +102,7 @@ impl Agent for RandomAgent {
                 let pick = (rng.next_u32() as usize) % avail.len();
                 let econ = &gs.economies[pid as usize];
                 let tech_id = &avail[pick];
-                if let Some(cost) = crate::tech::TechManager::tech_cost(tech_id) {
+                if let Some(cost) = tech.cost_of(tech_id) {
                     if econ.can_afford(cost) {
                         actions.push(Action::Research { tech_id: tech_id.clone() });
                     }

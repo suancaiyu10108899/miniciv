@@ -42,7 +42,7 @@ impl Agent for BuilderAgent {
             let order = ["C1", "C3", "C4", "C5", "E1", "C2", "E3", "E2", "E4"];
             for t in order {
                 if avail.iter().any(|a| a == t) {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;

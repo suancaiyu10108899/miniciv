@@ -137,7 +137,7 @@ impl Agent for EvoAgent {
                 else { avail.iter().collect() };
 
                 for t in &preferred {
-                    if let Some(cost) = TechManager::tech_cost(t) {
+                    if let Some(cost) = tech.cost_of(t) {
                         if econ.can_afford(cost) {
                             actions.push(Action::Research { tech_id: t.to_string() });
                             break;

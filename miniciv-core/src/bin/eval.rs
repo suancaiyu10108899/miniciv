@@ -17,7 +17,7 @@ use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
 use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent, CavalryRusherAgent, AdaptiveAgent};
 use miniciv_core::config::GameConfig;
-use miniciv_core::eval::run_matrix_with_config;
+use miniciv_core::eval::run_matrix_par;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -53,7 +53,7 @@ fn main() {
     eprintln!("跑矩阵: {} AI × {} seeds paired, 起手资源={} C线成本×{} cityHP={}",
               agents.len(), seeds, starting_res, cost_mult, city_hp);
 
-    let m = run_matrix_with_config(&agents, seeds, seed_base, &generator, &config);
+    let m = run_matrix_par(&agents, seeds, seed_base, &generator, &config);
 
     println!("\n═══ Pairwise paired (先手偏差已抵消) ═══");
     println!("{:>8} vs {:<8} {:>8}  | A靠[征/建/平]赢  B靠[征/建/平]赢",

@@ -165,6 +165,109 @@ pub fn run_pair(
     }
 }
 
+// ─── 并行评估(P1.5 Step 0: rayon) ─────────────────
+
+/// 单 seed 的统计片段(并行安全: 每个线程独立生产, 最后 reduce 聚合)。
+/// 内部类型, 不对外暴露。
+#[derive(Default, Clone)]
+struct SeedTally {
+    a_wins: u32,
+    p0_wins: u32,
+    conquest: u32,
+    construction: u32,
+    tiebreak: u32,
+    awc: u32, aws: u32, awt: u32,  // A 靠各类型赢
+    bwc: u32, bws: u32, bwt: u32,  // B 靠各类型赢
+    turn_sum: u64,
+    games: u32,
+}
+
+impl SeedTally {
+    fn merge(mut self, other: &SeedTally) -> Self {
+        self.a_wins += other.a_wins;
+        self.p0_wins += other.p0_wins;
+        self.conquest += other.conquest;
+        self.construction += other.construction;
+        self.tiebreak += other.tiebreak;
+        self.awc += other.awc; self.aws += other.aws; self.awt += other.awt;
+        self.bwc += other.bwc; self.bws += other.bws; self.bwt += other.bwt;
+        self.turn_sum += other.turn_sum;
+        self.games += other.games;
+        self
+    }
+
+    fn to_pair_result(&self, a_name: &str, b_name: &str, seeds: u32) -> PairResult {
+        let g = self.games;
+        PairResult {
+            a: a_name.to_string(),
+            b: b_name.to_string(),
+            seeds,
+            games: g,
+            a_wins: self.a_wins,
+            a_win_rate: self.a_wins as f64 / g as f64,
+            conquest: self.conquest,
+            construction: self.construction,
+            tiebreak: self.tiebreak,
+            p0_wins: self.p0_wins,
+            p0_win_rate: self.p0_wins as f64 / g as f64,
+            avg_turns: self.turn_sum as f64 / g as f64,
+            a_win_conquest: self.awc,
+            a_win_construction: self.aws,
+            a_win_tiebreak: self.awt,
+            b_win_conquest: self.bwc,
+            b_win_construction: self.bws,
+            b_win_tiebreak: self.bwt,
+        }
+    }
+}
+
+/// 从 paired 两局提取统计(每个 seed 调一次, 纯函数, 并行安全)。
+fn tally_seed(g1: &GameOutcome, g2: &GameOutcome) -> SeedTally {
+    use crate::game::VictoryType as VT;
+    let mut t = SeedTally { games: 2, ..SeedTally::default() };
+
+    for (g, a_is_p0) in [(g1, true), (g2, false)] {
+        let a_won = g.winner == Some(if a_is_p0 { 0 } else { 1 });
+        if a_won { t.a_wins += 1; }
+        if g.winner == Some(0) { t.p0_wins += 1; }
+        let is_cq = matches!(g.victory_type, Some(VT::Conquest));
+        let is_cs = matches!(g.victory_type, Some(VT::Construction));
+        if is_cq { t.conquest += 1; } else if is_cs { t.construction += 1; } else { t.tiebreak += 1; }
+        if a_won {
+            if is_cq { t.awc += 1; } else if is_cs { t.aws += 1; } else { t.awt += 1; }
+        } else {
+            if is_cq { t.bwc += 1; } else if is_cs { t.bws += 1; } else { t.bwt += 1; }
+        }
+        t.turn_sum += g.turns as u64;
+    }
+    t
+}
+
+/// `run_pair` 的并行版(P1.5 Step 0)。
+///
+/// 用 rayon 把 seed 循环并行化。每 seed 两局独立 → embarrassingly parallel。
+/// 确定性: 每局仍用 `seed`/`seed+1` 初始化 RNG, 和串行版完全相同的对局结果,
+/// 只是 seed 的处理顺序不同。外部结果完全相同(见 `test_并行等于串行`)。
+pub fn run_pair_par(
+    ai_a: &dyn Agent,
+    ai_b: &dyn Agent,
+    seeds: u32,
+    seed_base: u64,
+    generator_id: &str,
+    config: &GameConfig,
+) -> PairResult {
+    use rayon::prelude::*;
+    let total = (0..seeds).into_par_iter()
+        .map(|i| {
+            let seed = seed_base + i as u64 * 100;
+            let g1 = run_one_game(seed, ai_a, ai_b, generator_id, config);
+            let g2 = run_one_game(seed, ai_b, ai_a, generator_id, config);
+            tally_seed(&g1, &g2)
+        })
+        .reduce(|| SeedTally::default(), |a, b| a.merge(&b));
+    total.to_pair_result(&ai_a.name(), &ai_b.name(), seeds)
+}
+
 // ─── 镜像对局(自我对战,先手偏差诊断)──────────────
 
 #[derive(Clone, Debug, Serialize)]
@@ -301,6 +404,56 @@ pub fn run_matrix_with_config(agents: &[&dyn Agent], seeds: u32, seed_base: u64,
     run_matrix(agents, seeds, seed_base, generator_id, config)
 }
 
+/// 并行跑全矩阵(P1.5 Step 0)。pair 循环用 rayon 并行。
+pub fn run_matrix_par(
+    agents: &[&dyn Agent],
+    seeds: u32,
+    seed_base: u64,
+    generator_id: &str,
+    config: &GameConfig,
+) -> MatrixResult {
+    use rayon::prelude::*;
+    // 无序对列表
+    let mut pair_indices: Vec<(usize, usize)> = Vec::new();
+    for i in 0..agents.len() {
+        for j in (i + 1)..agents.len() {
+            pair_indices.push((i, j));
+        }
+    }
+    let pairs: Vec<PairResult> = pair_indices.into_par_iter()
+        .map(|(i, j)| run_pair_par(agents[i], agents[j], seeds, seed_base, generator_id, config))
+        .collect();
+
+    let mirrors: Vec<MirrorResult> = agents.par_iter()
+        .map(|a| run_mirror(*a, seeds, seed_base, generator_id, config))
+        .collect();
+
+    let mut summaries = Vec::new();
+    for a in agents {
+        let name = a.name();
+        let mut sum = 0.0;
+        let mut n = 0u32;
+        for p in &pairs {
+            if p.a == name { sum += p.a_win_rate; n += 1; }
+            else if p.b == name { sum += 1.0 - p.a_win_rate; n += 1; }
+        }
+        summaries.push(AgentSummary {
+            agent: name.to_string(),
+            avg_vs_others: if n > 0 { sum / n as f64 } else { 0.0 },
+        });
+    }
+
+    MatrixResult {
+        generator: generator_id.to_string(),
+        seeds,
+        seed_base,
+        max_turns: config.max_turns,
+        pairs,
+        mirrors,
+        summaries,
+    }
+}
+
 // ═══════════════════════════════════════════════════════
 // 测试
 // ═══════════════════════════════════════════════════════
@@ -347,5 +500,25 @@ mod tests {
         assert_eq!(m.pairs.len(), 1);       // 2 个 AI → 1 对
         assert_eq!(m.mirrors.len(), 2);
         assert_eq!(m.summaries.len(), 2);
+    }
+
+    #[test]
+    fn test_并行等于串行() {
+        // P1.5 Step 0: rayon 并行必须和串行产生完全相同的数字。
+        // 每局 RNG 由 seed 初始化, 和线程调度无关 → 每局结果相同。
+        // 汇总只是加法(可交换可结合) → 总数相同。
+        let b = crate::ai::fixed::BuilderAgent;
+        let r = RandomAgent;
+        let cfg = GameConfig::default();
+        let serial = run_pair(&b, &r, 30, 60000, "balanced", &cfg);
+        let parallel = run_pair_par(&b, &r, 30, 60000, "balanced", &cfg);
+        assert_eq!(serial.a_wins, parallel.a_wins, "并行应=串行: a_wins");
+        assert_eq!(serial.games, parallel.games, "并行应=串行: games");
+        assert_eq!(serial.p0_wins, parallel.p0_wins, "并行应=串行: p0_wins");
+        assert_eq!(serial.conquest, parallel.conquest, "并行应=串行: conquest");
+        assert_eq!(serial.construction, parallel.construction, "并行应=串行: construction");
+        assert_eq!(serial.tiebreak, parallel.tiebreak, "并行应=串行: tiebreak");
+        assert!((serial.avg_turns - parallel.avg_turns).abs() < 0.01,
+                "并行avg_turns={:.2} 串行={:.2}", parallel.avg_turns, serial.avg_turns);
     }
 }

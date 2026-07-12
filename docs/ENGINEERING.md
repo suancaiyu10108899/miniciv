@@ -91,7 +91,7 @@ eval_final/          — 4×4 核心矩阵 (16,000 games)
 ### Rust 端（v0.9 S2 新增）
 12. **默认配置已落地为甜点**(成本×2 HP160): 消除"甜点只活在 CLI 参数"的漂移源。见 DECISIONS #19。
 13. **FlatMC 裁判**(`ai/flatmc.rs` + `bin/judge`): 首个非循环深度裁判。裁决"深度温和偏浅"。见 `experiments/v0.9-judge/S2-VERDICT.md`。
-14. **性能债(新)**: 评估/裁判全单线程(无 rayon), FlatMC 矩阵只用 1 核。paired seeds 天然可并行, `par_iter` 可近线性加速。**规范里也无"性能"纪律** → 建议立项加并行 + 写进 WORKFLOW。
+14. **性能债(已还 P1.5 Step 0)**: ~~评估/裁判全单线程(无 rayon), FlatMC 矩阵只用 1 核。paired seeds 天然可并行, `par_iter` 可近线性加速。规范里也无"性能"纪律~~ → **✅ 已修**: rayon 并行 `run_pair_par`/`run_matrix_par`, `bin/eval`/`bin/judge` 默认走并行,"并行==串行"确定性测试守卫。
 
 ---
 

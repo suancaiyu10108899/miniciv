@@ -597,8 +597,20 @@ mod tests {
     use super::*;
     use crate::ai::random::RandomAgent;
     use crate::ai::Agent;
+    use crate::config::GameConfig;
+    use crate::unit::{Unit, UnitType};
+    use crate::map::Terrain;
     use rand_chacha::ChaCha12Rng;
     use rand::SeedableRng;
+
+    // ── 辅助 ──────────────────────────────────────────
+
+    /// 统计某玩家的存活单位数
+    fn count_alive(gs: &GameState, pid: u8) -> usize {
+        gs.units.iter().filter(|u| u.alive && u.player_id == pid).count()
+    }
+
+    // ── 基础测试(已有) ────────────────────────────────
 
     #[test]
     fn test_初始化游戏() {
@@ -607,9 +619,8 @@ mod tests {
         assert_eq!(gs.cities.len(), 2);
         assert_eq!(gs.economies.len(), 2);
         assert_eq!(gs.techs.len(), 2);
-        // 初始单位: 每方应至少有 1 个(城市邻格平原不够时可能放不全)
-        let p0_count = gs.units.iter().filter(|u| u.player_id == 0 && u.alive).count();
-        let p1_count = gs.units.iter().filter(|u| u.player_id == 1 && u.alive).count();
+        let p0_count = count_alive(&gs, 0);
+        let p1_count = count_alive(&gs, 1);
         assert!(p0_count >= 1, "P0 应该至少有 1 个初始单位, 实际: {}", p0_count);
         assert!(p1_count >= 1, "P1 应该至少有 1 个初始单位, 实际: {}", p1_count);
         assert!(gs.winner.is_none());
@@ -620,7 +631,6 @@ mod tests {
         let gs = init_game(777, "balanced");
         for u in &gs.units {
             let city = &gs.cities[u.player_id as usize];
-            // 初始单位应该放在城市 6 邻格内
             let dq = (u.q - city.q).abs();
             let dr = (u.r - city.r).abs();
             assert!(dq <= 1 && dr <= 1, "初始单位离城市太远");
@@ -633,15 +643,11 @@ mod tests {
         let agent = RandomAgent;
         let mut rng0 = ChaCha12Rng::seed_from_u64(123);
         let mut rng1 = ChaCha12Rng::seed_from_u64(456);
-
-        // 跑 80 回合或直到有人获胜
         while gs.winner.is_none() && gs.turn < gs.config.max_turns {
             let a0 = agent.decide(&gs, 0, &mut rng0);
             let a1 = agent.decide(&gs, 1, &mut rng1);
             step_game(&mut gs, &a0, &a1);
         }
-
-        // 游戏必须结束(有人赢或达到回合上限)
         assert!(gs.winner.is_some() || gs.turn >= gs.config.max_turns);
     }
 
@@ -660,7 +666,6 @@ mod tests {
             }
             (gs.turn, gs.cities[0].hp, gs.units.len())
         };
-
         let r1 = run(9999);
         let r2 = run(9999);
         assert_eq!(r1, r2, "同 seed 必须产生完全相同的游戏");
@@ -668,14 +673,190 @@ mod tests {
 
     #[test]
     fn test_unbiased_coin_无偏() {
-        // 用 eval 实际使用的种子分布 50000+i*100(全偶数,曾导致 seed%2 恒 P0)
         let n = 2000u64;
         let p0 = (0..n).filter(|i| unbiased_coin(50000 + i * 100) == 0).count();
         let rate = p0 as f64 / n as f64;
-        // 无偏应 ~50%,允许 ±3%(2000 样本 95% CI 约 ±2.2%)
         assert!((rate - 0.5).abs() < 0.03,
                 "unbiased_coin 在 50000+i*100 种子上偏向: P0={:.1}%", rate * 100.0);
-        // paired 抵消性:同 seed 恒返回同值
         assert_eq!(unbiased_coin(12345), unbiased_coin(12345));
+    }
+
+    // ── 胜利路径测试(重构安全网) ──────────────────────
+
+    #[test]
+    fn test_征服胜利_城HP归零触发() {
+        // 直接设 P1 城 HP=0, 回合结束后 P0 征服胜
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        gs.cities[1].hp = 0;
+        step_game(&mut gs, &[], &[]);
+        assert_eq!(gs.winner, Some(0));
+        assert_eq!(gs.victory_type, Some(VictoryType::Conquest));
+    }
+
+    #[test]
+    fn test_建设胜利_C5加4设施触发() {
+        // 手动完成 C5 + 放 4 个 P0 设施 → 建设胜利
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // 完成 C5 前置链
+        for t in &["C1", "C3", "C4", "C5"] {
+            gs.techs[0].completed.insert(t.to_string());
+        }
+        // 在 P0 城周围 4 个邻格放设施
+        let (cq, cr) = (gs.cities[0].q, gs.cities[0].r);
+        for i in 0..4 {
+            let nq = (cq + HEX_DIRS[i].0).rem_euclid(MAP_W as i32);
+            let nr = (cr + HEX_DIRS[i].1).rem_euclid(MAP_H as i32);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 0, q: nq, r: nr,
+            });
+        }
+        step_game(&mut gs, &[], &[]);
+        assert_eq!(gs.winner, Some(0), "C5+4设施应触发建设胜利");
+        assert_eq!(gs.victory_type, Some(VictoryType::Construction));
+    }
+
+    #[test]
+    fn test_建设胜利_设施不足不触发() {
+        // C5 完成但设施 <4 → 不触发建设胜利
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        for t in &["C1", "C3", "C4", "C5"] {
+            gs.techs[0].completed.insert(t.to_string());
+        }
+        // 只放 3 个设施(不足 4)
+        let (cq, cr) = (gs.cities[0].q, gs.cities[0].r);
+        for i in 0..3 {
+            let nq = (cq + HEX_DIRS[i].0).rem_euclid(MAP_W as i32);
+            let nr = (cr + HEX_DIRS[i].1).rem_euclid(MAP_H as i32);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 0, q: nq, r: nr,
+            });
+        }
+        step_game(&mut gs, &[], &[]);
+        assert!(gs.winner != Some(0) || gs.victory_type != Some(VictoryType::Construction),
+            "设施不足4不应触发建设胜利");
+    }
+
+    #[test]
+    fn test_阶梯判定_建设数多者胜() {
+        // max_turns=1 强制回合1触发阶梯; P0 建设数 > P1
+        let cfg = GameConfig { max_turns: 1, ..GameConfig::default() };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        gs.techs[0].completed.insert("C1".to_string());
+        gs.techs[0].completed.insert("C2".to_string());
+        gs.techs[1].completed.insert("C1".to_string());
+        step_game(&mut gs, &[], &[]);
+        assert_eq!(gs.winner, Some(0));
+        assert_eq!(gs.victory_type, Some(VictoryType::TiebreakConstruction));
+    }
+
+    #[test]
+    fn test_阶梯判定_城HP多者胜() {
+        // max_turns=1, 建设数相同(0), P0 城HP 更高
+        let cfg = GameConfig { max_turns: 1, ..GameConfig::default() };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        gs.cities[0].hp = 140;
+        gs.cities[1].hp = 100;
+        step_game(&mut gs, &[], &[]);
+        assert_eq!(gs.winner, Some(0));
+        assert_eq!(gs.victory_type, Some(VictoryType::TiebreakCityHp));
+    }
+
+    #[test]
+    fn test_阶梯判定_随机平局有胜者() {
+        // max_turns=1, 建设数相同 + 城HP 相同 → 随机判定, 但必有胜者
+        let cfg = GameConfig { max_turns: 1, ..GameConfig::default() };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // 两边全相同
+        step_game(&mut gs, &[], &[]);
+        assert!(gs.winner.is_some(), "阶梯随机判定也必须有胜者");
+        assert_eq!(gs.victory_type, Some(VictoryType::TiebreakRandom));
+    }
+
+    // ── 机制修复测试(B系列硬伤回归) ──────────────────
+
+    #[test]
+    fn test_渐进攻城_占城步兵每回合削城HP() {
+        // B1 修复: 步兵占领城格 → 每回合持续削城 HP(不在移入时一次性)
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(99999, "balanced", cfg);
+        // 手动放 P0 步兵在 P1 城格上
+        let (cq1, cr1) = (gs.cities[1].q, gs.cities[1].r);
+        gs.units.push(Unit::create(UnitType::Infantry, 0, cq1, cr1));
+        let hp_before = gs.cities[1].hp;
+        step_game(&mut gs, &[], &[]);
+        assert!(gs.cities[1].hp < hp_before,
+            "渐进攻城: 敌方步占城后城HP应下降(before={}, after={})",
+            hp_before, gs.cities[1].hp);
+    }
+
+    #[test]
+    fn test_渐进攻城_弓手占城不削城HP() {
+        // 弓箭手不能占城/攻城(只有近战非工人能削城)
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(99999, "balanced", cfg);
+        let (cq1, cr1) = (gs.cities[1].q, gs.cities[1].r);
+        gs.units.push(Unit::create(UnitType::Archer, 0, cq1, cr1));
+        let hp_before = gs.cities[1].hp;
+        step_game(&mut gs, &[], &[]);
+        assert_eq!(gs.cities[1].hp, hp_before,
+            "弓手占城不应削城HP(ranged单位无攻城力)");
+    }
+
+    #[test]
+    fn test_远攻触发_弓手不移动射击射程内敌人() {
+        // B3 修复: 弓手射程 2 内有敌 → try_ranged_attack 先触发, 不移动
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // 在 P1 城附近放弓手和敌方步兵(距离2且无遮挡)
+        // 用环面坐标, 选开阔区域
+        let ax = 10i32; let ay = 10i32;
+        gs.grid.get_mut(ax, ay).terrain = Terrain::Plain;
+        gs.grid.get_mut(ax + 1, ay).terrain = Terrain::Plain;
+        // P0 弓手在 (ax, ay)
+        let n_p0_before = count_alive(&gs, 0);
+        gs.units.push(Unit::create(UnitType::Archer, 0, ax, ay));
+        // P1 步兵在射程 1 处(ax+1, ay)——弓手发 Move(1,0) 前先 try_ranged_attack
+        gs.units.push(Unit::create(UnitType::Infantry, 1, ax + 1, ay));
+        let archer_hp_before = gs.units[gs.units.len() - 2].hp;
+        let target_hp_before = gs.units[gs.units.len() - 1].hp;
+        // P0 弓手发 Move(1,0) → 射程内检测到 P1 步兵 → 远程攻击, 跳过移动
+        let p0_actions = vec![Action::Move { unit_idx: n_p0_before, dq: 1, dr: 0 }];
+        step_game(&mut gs, &p0_actions, &[]);
+        let archer = &gs.units[gs.units.len() - 2];
+        let target = &gs.units[gs.units.len() - 1];
+        // 弓手不应受伤(远程单向)
+        assert_eq!(archer.hp, archer_hp_before,
+            "弓手远程攻击不应受伤");
+        // 目标应受伤或死亡
+        assert!(target.hp < target_hp_before || !target.alive,
+            "远程目标应受伤(before={}, after={})", target_hp_before, target.hp);
+        // 弓手不应移动(仍站在原位)
+        assert_eq!((archer.q, archer.r), (ax, ay),
+            "弓手触发远程攻击后不应移动");
+    }
+
+    #[test]
+    fn test_堆叠限制_同格不能有两战斗单位() {
+        // 己方战斗单位不能移入已有己方战斗单位的格
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        let q = 7i32; let r = 7i32;
+        gs.grid.get_mut(q, r).terrain = Terrain::Plain;
+        gs.grid.get_mut(q + 1, r).terrain = Terrain::Plain;
+        // 放两个 P0 步兵: 一个在 (q,r), 另一个在 (q+1,r) 尝试移入 (q,r)
+        let n_before = count_alive(&gs, 0);
+        gs.units.push(Unit::create(UnitType::Infantry, 0, q, r));
+        gs.units.push(Unit::create(UnitType::Infantry, 0, q + 1, r));
+        // 第二个步兵发 Move(-1,0) → 目标格已有己方步兵 → 应被堆叠限制挡住
+        let p0_actions = vec![Action::Move { unit_idx: n_before + 1, dq: -1, dr: 0 }];
+        step_game(&mut gs, &p0_actions, &[]);
+        let u2 = &gs.units[gs.units.len() - 1]; // 第二个步兵
+        assert_eq!((u2.q, u2.r), (q + 1, r),
+            "第二个步兵不应移入己方步兵所在格(堆叠限制)");
     }
 }

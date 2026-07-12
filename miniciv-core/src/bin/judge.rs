@@ -10,7 +10,7 @@ use miniciv_core::ai::fixed::BuilderAgent;
 use miniciv_core::ai::probes::{RusherAgent, CavalryRusherAgent, DefenderAgent, AdaptiveAgent};
 use miniciv_core::ai::Action;
 use miniciv_core::config::GameConfig;
-use miniciv_core::eval::run_pair;
+use miniciv_core::eval::run_pair_par as run_pair;
 use miniciv_core::game::{init_game_with_config, step_game};
 use miniciv_core::unit::UnitType;
 use rand_chacha::ChaCha12Rng;

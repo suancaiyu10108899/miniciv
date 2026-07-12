@@ -97,6 +97,7 @@
 | 找什么 | 去哪 |
 |--------|------|
 | Phase 进度 + 当前状态 | **本文件**（唯一真相源） |
+| **北极星愿景(中国史4X/红白反滚雪球/三步走)** | **`docs/planning/2026-07-12-north-star-vision.md`**（活文档,最长远愿景+深度规格） |
 | **个人管理体系(vault)对接** | **`docs/personal-management/README.md`**（阶段结束向 dev-hub 同步纪律） |
 | 游戏参数（唯一真相源） | `docs/GAME.md` |
 | 设计决策 | `docs/DECISIONS.md` |

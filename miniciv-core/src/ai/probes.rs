@@ -74,7 +74,7 @@ pub struct RusherAgent;
 
 impl Agent for RusherAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
 
@@ -135,7 +135,7 @@ pub struct HarasserAgent;
 
 impl Agent for HarasserAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
 
         let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
@@ -191,7 +191,7 @@ pub struct TurtleAgent;
 
 impl Agent for TurtleAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let (my_cq, my_cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
 
@@ -276,7 +276,7 @@ pub struct DefenderAgent;
 
 impl Agent for DefenderAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let (my_cq, my_cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
 
@@ -372,7 +372,7 @@ pub struct CavalryRusherAgent;
 
 impl Agent for CavalryRusherAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
 
@@ -437,7 +437,7 @@ pub struct AdaptiveAgent;
 
 impl Agent for AdaptiveAgent {
     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
         // 威胁: 对手战斗单位逼近我城(距离 ≤ 3)
         let threat = gs.units.iter().filter(|u|
@@ -466,7 +466,7 @@ pub struct AlwaysWhiteAgent;
 
 impl Agent for AlwaysWhiteAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
 
@@ -589,7 +589,7 @@ pub struct StateAwareAgent;
 
 impl Agent for StateAwareAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
         let econ = &gs.economies[pid as usize];
 

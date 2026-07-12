@@ -10,12 +10,31 @@
 // 诚实原则:pairwise paired 表全量输出,读者能直接看到 Greedy vs Random,
 // 不用"跨对手平均"这种会被坏对手刷高的数字下结论。
 
-use crate::game::{GameState, init_game_with_config, step_game, VictoryType};
+use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
 use crate::config::GameConfig;
-use crate::ai::Agent;
+use crate::ai::{Action, Agent};
 use rand_chacha::ChaCha12Rng;
 use rand::SeedableRng;
 use serde::Serialize;
+
+// ─── P1.5: 终态快照(每局 instrumentation) ──────────
+
+/// 单个玩家在一局结束时的状态快照(P1.5 instrumentation)。
+#[derive(Clone, Debug, Serialize)]
+pub struct PlayerEndState {
+    pub pid: u8,
+    pub support: i32,
+    pub branch: Option<String>,    // "Red" / "White" / null
+    pub organization: i32,
+    pub expansion_level: u8,
+    pub military_units: u8,        // 结束时存活战斗单位数
+    pub facilities: u8,            // 结束时拥有设施数
+    pub crisis_count: u8,          // 白线危机触发次数
+    pub redeem_count: u8,          // 红线兑换次数
+    pub city_hp: i32,
+    pub techs_completed: u8,
+    pub construction_count: u8,    // C1-C5 完成数
+}
 
 // ─── 单局结果 ────────────────────────────────────────
 
@@ -29,27 +48,72 @@ pub struct GameOutcome {
     pub p1_alive: u16,
     pub p0_dead: u16,
     pub p1_dead: u16,
+    /// P1.5: 每局结束时所有玩家的状态快照(长度=player_count)。
+    pub end_state: Vec<PlayerEndState>,
 }
 
-/// 驱动一局到结束。
-/// P0 的 RNG = seed, P1 的 RNG = seed+1(和既有 integration_matrix 约定一致)。
-/// 地图由 init_game(seed) 决定 → paired 对局用同 seed 得到同一张图。
+/// P1.5: 提取一局结束时的终态快照(instrumentation)。
+fn extract_end_state(gs: &GameState) -> Vec<PlayerEndState> {
+    let ms = gs.config.map_size as i32;
+    (0..gs.config.player_count).map(|pid| {
+        let units: Vec<&crate::unit::Unit> = gs.units.iter()
+            .chain(gs.dead_units.iter())
+            .filter(|u| u.player_id == pid)
+            .collect();
+        let military = units.iter()
+            .filter(|u| u.alive && u.unit_type != crate::unit::UnitType::Worker
+                     && u.unit_type != crate::unit::UnitType::Scout)
+            .count() as u8;
+        let mut facs: u8 = 0;
+        for r in 0..ms { for q in 0..ms {
+            if let Some(f) = &gs.grid.get(q, r).facility {
+                if f.player_id == pid { facs += 1; }
+            }
+        }}
+        PlayerEndState {
+            pid,
+            support: gs.economies[pid as usize].support,
+            branch: gs.economies[pid as usize].branch.map(|b| format!("{:?}", b)),
+            organization: gs.economies[pid as usize].organization,
+            expansion_level: gs.economies[pid as usize].expansion_level,
+            military_units: military,
+            facilities: facs,
+            crisis_count: gs.economies[pid as usize].crisis_count,
+            redeem_count: gs.economies[pid as usize].redeem_count,
+            city_hp: gs.cities[pid as usize].hp,
+            techs_completed: gs.techs[pid as usize].completed.len() as u8,
+            construction_count: gs.techs[pid as usize].construction_count(),
+        }
+    }).collect()
+}
+
+/// 驱动一局到结束(1v1, 向后兼容)。
 pub fn run_one_game(
+    seed: u64, ai0: &dyn Agent, ai1: &dyn Agent,
+    generator_id: &str, config: &GameConfig,
+) -> GameOutcome {
+    run_one_game_n(seed, &[ai0, ai1], generator_id, config)
+}
+
+/// 驱动一局到结束(N 玩家, P1.5)。
+pub fn run_one_game_n(
     seed: u64,
-    ai0: &dyn Agent,
-    ai1: &dyn Agent,
+    agents: &[&dyn Agent],
     generator_id: &str,
     config: &GameConfig,
 ) -> GameOutcome {
+    let n = agents.len() as u8;
     let mut gs: GameState = init_game_with_config(seed, generator_id, config.clone());
     let max_turns = config.max_turns;
-    let mut rng0 = ChaCha12Rng::seed_from_u64(seed);
-    let mut rng1 = ChaCha12Rng::seed_from_u64(seed + 1);
+    let mut rngs: Vec<ChaCha12Rng> = (0..n)
+        .map(|i| ChaCha12Rng::seed_from_u64(seed + i as u64))
+        .collect();
 
     while gs.winner.is_none() && gs.turn < max_turns {
-        let a0 = ai0.decide(&gs, 0, &mut rng0);
-        let a1 = ai1.decide(&gs, 1, &mut rng1);
-        step_game(&mut gs, &a0, &a1);
+        let all_actions: Vec<Vec<Action>> = (0..n).map(|pid| {
+            agents[pid as usize].decide(&gs, pid, &mut rngs[pid as usize])
+        }).collect();
+        step_game_multi(&mut gs, &all_actions);
     }
 
     let count = |pid: u8, alive: bool| {
@@ -62,9 +126,10 @@ pub fn run_one_game(
         victory_type: gs.victory_type.clone(),
         turns: gs.turn,
         p0_alive: count(0, true),
-        p1_alive: count(1, true),
+        p1_alive: if n > 1 { count(1, true) } else { 0 },
         p0_dead: count(0, false),
-        p1_dead: count(1, false),
+        p1_dead: if n > 1 { count(1, false) } else { 0 },
+        end_state: extract_end_state(&gs),
     }
 }
 

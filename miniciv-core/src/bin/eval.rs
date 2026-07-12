@@ -34,6 +34,13 @@ fn main() {
     let starting_res: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(def.starting_food);
     let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(def.c_line_cost_mult);
     let city_hp: i32 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(def.city_hp);
+    // P1.5: 多人+团队 CLI
+    let player_count: u8 = args.get(7).and_then(|s| s.parse().ok()).unwrap_or(def.player_count);
+    let teams_str: String = args.get(8).cloned().unwrap_or_else(|| {
+        (0..player_count).map(|i| i.to_string()).collect::<Vec<_>>().join(",")
+    });
+    let teams: Vec<u8> = teams_str.split(',').filter_map(|s| s.trim().parse().ok()).collect();
+    let branch_turn: u16 = args.get(9).and_then(|s| s.parse().ok()).unwrap_or(def.branch_available_turn);
     let seed_base = 50000u64;
 
     let config = GameConfig {
@@ -42,6 +49,9 @@ fn main() {
         starting_gold: starting_res,
         c_line_cost_mult: cost_mult,
         city_hp,
+        player_count,
+        teams,
+        branch_available_turn: branch_turn,
         ..GameConfig::default()
     };
 
@@ -56,13 +66,21 @@ fn main() {
     let state_aware = StateAwareAgent;
     let tank_then_red = TankThenRedAgent;
     let _ = (GreedyAgent::new(), EvoAgent::new(), HarasserAgent, TurtleAgent);
-    let agents: Vec<&dyn Agent> = vec![
+    let all_agents: Vec<&dyn Agent> = vec![
         &builder, &rusher, &cavrusher, &defender, &adaptive, &random,
         &always_white, &always_red, &state_aware, &tank_then_red,
     ];
+    // P1.5: player_count用于引擎(每局几个玩家), agents用于矩阵(几个AI互测)
+    // 1v1(player_count=2): 矩阵=10个AI互测, 每局2个玩家
+    // 2v2(player_count=4): 矩阵=4个AI互测, 每局4个玩家
+    let agents: Vec<&dyn Agent> = if player_count <= 2 {
+        all_agents.clone()  // 1v1: 全矩阵
+    } else {
+        all_agents[..player_count as usize].to_vec()  // 多人: 只取够用的
+    };
 
-    eprintln!("跑矩阵: {} AI × {} seeds paired, 起手资源={} C线成本×{} cityHP={}",
-              agents.len(), seeds, starting_res, cost_mult, city_hp);
+    eprintln!("跑矩阵: {} AI × {} seeds paired, {}p, branch@T{}, 资源={} cost×{:.1} HP={}",
+              agents.len(), seeds, player_count, branch_turn, starting_res, cost_mult, city_hp);
 
     let m = run_matrix_par(&agents, seeds, seed_base, &generator, &config);
 

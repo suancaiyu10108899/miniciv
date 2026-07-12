@@ -63,6 +63,10 @@ pub struct Economy {
     pub crisis_timer: u8,
     /// P1.5: 本回合是否已执行组织度兑换(防止同回合补回)。
     pub redeemed_this_turn: bool,
+    /// P1.5: 白线危机触发累计次数(instrumentation)。
+    pub crisis_count: u8,
+    /// P1.5: 红线组织度兑换累计次数(instrumentation)。
+    pub redeem_count: u8,
 }
 
 impl Economy {
@@ -79,6 +83,8 @@ impl Economy {
             organization: 0,
             crisis_timer: 0,
             redeemed_this_turn: false,
+            crisis_count: 0,
+            redeem_count: 0,
         }
     }
 

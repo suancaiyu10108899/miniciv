@@ -370,6 +370,7 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                     let econ = &mut gs.economies[pid as usize];
                     if econ.branch != Some(Branch::Red) { continue; }
                     econ.redeemed_this_turn = true;
+                    econ.redeem_count += 1;  // P1.5 instrumentation
                     match mode.as_str() {
                         "LianDa" => {
                             if econ.organization >= gs.config.red_lian_da_org_cost {
@@ -451,6 +452,7 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                 }
                 if econ.crisis_timer == 0 {
                     // 危机触发: 扣支持度 + 随机毁设施
+                    econ.crisis_count += 1;  // P1.5 instrumentation
                     econ.support = (econ.support - gs.config.white_crisis_support_damage).max(0);
                     // 随机毁一个己方设施(确定性: 用 seed+turn+pid 哈希选)
                     let hash = hash_for(gs.seed, gs.turn, pid);

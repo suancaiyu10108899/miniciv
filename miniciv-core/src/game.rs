@@ -578,17 +578,18 @@ enum MoveOutcome { Moved, Fought, Blocked }
 
 fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32, charged: bool) -> MoveOutcome {
     if dq == 0 && dr == 0 {
-        return MoveOutcome::Blocked;  // 无实际移动
+        return MoveOutcome::Blocked;
     }
+    let ms = gs.config.map_size as i32;
+    let nq = (gs.units[unit_idx].q + dq).rem_euclid(ms);
+    let nr = (gs.units[unit_idx].r + dr).rem_euclid(ms);
 
-    let nq = (gs.units[unit_idx].q + dq).rem_euclid(MAP_W as i32);
-    let nr = (gs.units[unit_idx].r + dr).rem_euclid(MAP_H as i32);
-
-    // 堆叠检查
+    // 堆叠检查(P1.5: 同队也计入, 防止队友无限堆叠)
+    let my_pid = gs.units[unit_idx].player_id;
     let cat = unit_category(&gs.units[unit_idx].unit_type);
     let max_allowed = if cat == "combat" { MAX_COMBAT_PER_TILE } else { MAX_CIVILIAN_PER_TILE };
     let friendly_count = gs.units.iter().filter(|u| {
-        u.alive && u.player_id == gs.units[unit_idx].player_id
+        u.alive && (u.player_id == my_pid || same_team(u.player_id, my_pid, &gs.config))
             && u.q == nq && u.r == nr
             && unit_category(&u.unit_type) == cat
     }).count();
@@ -666,10 +667,10 @@ fn try_ranged_attack(gs: &mut GameState, archer_idx: usize) -> bool {
         let a = &gs.units[archer_idx];
         (a.q, a.r, a.range_dist, a.player_id)
     };
-    let opp = 1 - pid;
-    // 射程内(1..=rng)最近的敌方单位
+    // P1.5: 射程内最近的敌方单位(任意敌对队伍, 非特定opp)
     let target = gs.units.iter().enumerate()
-        .filter(|(_, u)| u.alive && u.player_id == opp)
+        .filter(|(_, u)| u.alive && u.player_id != pid
+                 && !same_team(u.player_id, pid, &gs.config))
         .map(|(i, u)| (i, crate::movement::hex_distance(aq, ar, u.q, u.r)))
         .filter(|&(_, d)| d >= 1 && d <= rng)
         .min_by_key(|&(_, d)| d)
@@ -691,25 +692,56 @@ fn try_ranged_attack(gs: &mut GameState, archer_idx: usize) -> bool {
 
 // ─── 胜利判定 ────────────────────────────────────────
 
-/// 建设胜利(P1.5: 任一人达成 → 其队伍赢)。
-/// C5 完成 + 设施 ≥ 4, 每回合检查。
+/// 建设胜利(P1.5: 团队模式=队内C5任一人+设施合计达标)。
 fn check_construction_victory(gs: &mut GameState) {
     if gs.winner.is_some() { return; }
     let ms = gs.config.map_size as i32;
-    for pid in 0..gs.config.player_count {
-        if gs.techs[pid as usize].completed.iter().any(|c| c == "C5") {
-            let mut facility_count: u8 = 0;
-            for r in 0..ms {
-                for q in 0..ms {
+    let n = gs.config.player_count;
+    let team_threshold = gs.config.construction_team_facilities;
+
+    if team_threshold > 0 {
+        // P1.5 团队模式: 队内至少1人C5 + 队内设施合计≥门槛
+        // 收集各队数据
+        let mut team_has_c5: std::collections::BTreeMap<u8, bool> = std::collections::BTreeMap::new();
+        let mut team_facs: std::collections::BTreeMap<u8, u32> = std::collections::BTreeMap::new();
+        for pid in 0..n {
+            let team = gs.config.teams.get(pid as usize).copied().unwrap_or(pid);
+            if gs.techs[pid as usize].completed.iter().any(|c| c == "C5") {
+                *team_has_c5.entry(team).or_insert(false) = true;
+            }
+            for r in 0..ms { for q in 0..ms {
+                if let Some(f) = &gs.grid.get(q, r).facility {
+                    if f.player_id == pid { *team_facs.entry(team).or_insert(0) += 1; }
+                }
+            }}
+        }
+        for team in team_has_c5.keys() {
+            if *team_has_c5.get(team).unwrap_or(&false)
+               && team_facs.get(team).copied().unwrap_or(0) >= team_threshold as u32
+            {
+                // 找该队第一个玩家作为 winner
+                gs.winner = (0..n).find(|&p| {
+                    gs.config.teams.get(p as usize).copied().unwrap_or(p) == *team
+                });
+                gs.victory_type = Some(VictoryType::Construction);
+                return;
+            }
+        }
+    } else {
+        // 个人模式(1v1, 向后兼容)
+        for pid in 0..n {
+            if gs.techs[pid as usize].completed.iter().any(|c| c == "C5") {
+                let mut facility_count: u8 = 0;
+                for r in 0..ms { for q in 0..ms {
                     if let Some(f) = &gs.grid.get(q, r).facility {
                         if f.player_id == pid { facility_count += 1; }
                     }
+                }}
+                if facility_count >= gs.config.construction_require_facilities {
+                    gs.winner = Some(pid);
+                    gs.victory_type = Some(VictoryType::Construction);
+                    return;
                 }
-            }
-            if facility_count >= gs.config.construction_require_facilities {
-                gs.winner = Some(pid);
-                gs.victory_type = Some(VictoryType::Construction);
-                return;
             }
         }
     }
@@ -1224,6 +1256,111 @@ mod tests {
             &[]);
         assert_eq!(gs.economies[0].branch, None,
             "回合1<50不应允许选分叉");
+    }
+
+    #[test]
+    fn test_队友堆叠限制_同格队友也不能无限堆() {
+        // P1.5 audit: 队友同格也应受堆叠限制
+        let cfg = GameConfig {
+            player_count: 4,
+            teams: vec![0, 0, 1, 1],
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        let q = 10i32; let r = 10i32;
+        gs.grid.get_mut(q, r).terrain = Terrain::Plain;
+        // P0 和 P1 是队友(team 0)
+        // 放 P0 步兵在 (q,r), P1 步兵尝试移入 → 应被阻止
+        let n_before = count_alive(&gs, 0);
+        gs.units.push(Unit::create(UnitType::Infantry, 0, q, r));
+        // P1 步兵在隔壁
+        gs.units.push(Unit::create(UnitType::Infantry, 1, q + 1, r));
+        let all_actions = vec![
+            vec![],  // P0 不动
+            vec![Action::Move { unit_idx: 0, dq: -1, dr: 0 }],  // P1 尝试移入 P0 的格
+            vec![],  // P2
+            vec![],  // P3
+        ];
+        step_game_multi(&mut gs, &all_actions);
+        // P1 步兵不应移入队友所在格(堆叠限制)
+        let p1_units: Vec<&Unit> = gs.units.iter().filter(|u| u.player_id == 1 && u.alive).collect();
+        if let Some(u) = p1_units.first() {
+            assert!(!(u.q == q && u.r == r),
+                "队友不应堆叠在同一格");
+        }
+    }
+
+    #[test]
+    fn test_团队建设胜利_设施合计门槛() {
+        // P1.5: team construction with shared facility count
+        let cfg = GameConfig {
+            player_count: 4,
+            teams: vec![0, 0, 1, 1],
+            construction_team_facilities: 6,  // 队内两玩家合计需6设施
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // P0(team0)完成C5, 建3设施; P1(team0)建3设施 → 合计6 → 胜利
+        for t in &["C1", "C3", "C4", "C5"] {
+            gs.techs[0].completed.insert(t.to_string());
+        }
+        let ms = gs.config.map_size as i32;
+        // P0 3 facilities
+        for i in 0..3 {
+            let nq = (gs.cities[0].q + HEX_DIRS[i].0).rem_euclid(ms);
+            let nr = (gs.cities[0].r + HEX_DIRS[i].1).rem_euclid(ms);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 0, q: nq, r: nr,
+            });
+        }
+        // P1 3 facilities
+        for i in 0..3 {
+            let nq = (gs.cities[1].q + HEX_DIRS[i].0).rem_euclid(ms);
+            let nr = (gs.cities[1].r + HEX_DIRS[i].1).rem_euclid(ms);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 1, q: nq, r: nr,
+            });
+        }
+        step_game_multi(&mut gs, &vec![vec![]; 4]);
+        assert!(gs.winner.is_some(), "团队设施合计6应触发建设胜利");
+        assert_eq!(gs.victory_type, Some(VictoryType::Construction));
+    }
+
+    #[test]
+    fn test_团队建设_设施不足不触发() {
+        let cfg = GameConfig {
+            player_count: 4,
+            teams: vec![0, 0, 1, 1],
+            construction_team_facilities: 6,
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        for t in &["C1", "C3", "C4", "C5"] {
+            gs.techs[0].completed.insert(t.to_string());
+        }
+        // P0 3设施, P1 2设施 → 合计5 < 6 → 不触发
+        let ms = gs.config.map_size as i32;
+        for i in 0..3 {
+            let nq = (gs.cities[0].q + HEX_DIRS[i].0).rem_euclid(ms);
+            let nr = (gs.cities[0].r + HEX_DIRS[i].1).rem_euclid(ms);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 0, q: nq, r: nr,
+            });
+        }
+        for i in 0..2 {
+            let nq = (gs.cities[1].q + HEX_DIRS[i].0).rem_euclid(ms);
+            let nr = (gs.cities[1].r + HEX_DIRS[i].1).rem_euclid(ms);
+            gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
+                facility_type: crate::unit::FacilityType::Farm,
+                player_id: 1, q: nq, r: nr,
+            });
+        }
+        step_game_multi(&mut gs, &vec![vec![]; 4]);
+        assert!(gs.winner.is_none() || gs.victory_type != Some(VictoryType::Construction),
+            "团队设施合计5<6不应触发建设胜利");
     }
 
     #[test]

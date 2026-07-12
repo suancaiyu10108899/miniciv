@@ -33,7 +33,11 @@ pub struct GameConfig {
     pub starting_scouts: u8,
 
     // ── 建设胜利(建设侧杠杆)──
+    /// 个人建设胜利所需设施数(1v1)。默认 4。
     pub construction_require_facilities: u8,
+    /// P1.5: 团队建设胜利设施门槛。0=用个人门槛, >0=队内设施合计需达此数。
+    /// 2v2 推荐 6(比 2×4=8 容易, 比 4 难)。
+    pub construction_team_facilities: u8,
 
     // ── 科技(建设速通最大杠杆)──
     /// C3 学院研究增量: has_academy 时每回合 +这个值(默认 2=减半)。设 1 = 关掉减半。
@@ -113,6 +117,7 @@ impl Default for GameConfig {
             starting_workers: STARTING_WORKERS,
             starting_scouts: STARTING_SCOUTS,
             construction_require_facilities: CONSTRUCTION_VICTORY_REQUIRE_FACILITIES,
+            construction_team_facilities: 0,  // P1.5: 默认个人门槛
             academy_research_increment: 2,
             tech_turns: std::collections::HashMap::new(),
             c_line_cost_mult: 2.0,       // S2 甜点(非 ×1 历史基线): C线科技成本×2

@@ -21,11 +21,20 @@ fn main() {
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(60);
     let depth: u16 = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(25);
     let instr_seeds: u32 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(20);
-    let hp: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(100);
-    let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(2.0);
-    let cfg = GameConfig { city_hp: hp, c_line_cost_mult: cost_mult, ..GameConfig::default() };
+    // P1.5深度: 默认使用C1甜点参数(hp=2000, ttM=12, fBT=14, uM=8, tcM=4)
+    let hp: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(2000);
+    let _cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(1.0);
+    let cfg = GameConfig {
+        city_hp: hp, c_line_cost_mult: 1.0,
+        max_turns: 250,
+        tech_turns_mult: 12.0, all_tech_cost_mult: 4.0,
+        unit_cost_mult: 8.0, facility_build_turns: 14,
+        starting_food: 40, starting_wood: 40, starting_gold: 40,
+        branch_available_turn: 40,
+        ..GameConfig::default()
+    };
     let seed_base = 50000u64;
-    eprintln!("FlatMC judge: hp={} cost×{:.1}", hp, cost_mult);
+    eprintln!("FlatMC judge: hp={} ttM=12 fBT=14 uM=8 tcM=4 startR=40 branch@T40", hp);
 
     let judge = FlatMcAgent::with_depth(depth);
     let builder = BuilderAgent;

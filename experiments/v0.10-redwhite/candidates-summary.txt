@@ -1,0 +1,300 @@
+
+═══ C1_平衡70-90T ═══
+     Builder vs Rusher       59.0%  Cq:164 Cs:201 Tb:35 avgT:82.9
+     Builder vs CavRusher    61.0%  Cq:156 Cs:209 Tb:35 avgT:84.3
+     Builder vs Defender     86.0%  Cq:0 Cs:243 Tb:157 avgT:137.4
+     Builder vs AlwaysWhite   48.8%  Cq:205 Cs:193 Tb:2 avgT:68.7
+     Builder vs AlwaysRed    66.5%  Cq:0 Cs:268 Tb:132 avgT:125.6
+     Builder vs StateAware   58.8%  Cq:165 Cs:233 Tb:2 avgT:77.6
+     Builder vs TankThenRed   53.0%  Cq:0 Cs:348 Tb:52 avgT:85.1
+     Builder vs Greedy       45.0%  Cq:0 Cs:307 Tb:93 avgT:131.2
+     Builder vs Evo          98.8%  Cq:5 Cs:117 Tb:278 avgT:201.4
+      Rusher vs CavRusher    49.2%  Cq:160 Cs:0 Tb:240 avgT:180.8
+      Rusher vs Defender      4.0%  Cq:16 Cs:106 Tb:278 avgT:193.7
+      Rusher vs AlwaysWhite    7.5%  Cq:396 Cs:0 Tb:4 avgT:93.6
+      Rusher vs AlwaysRed    49.5%  Cq:198 Cs:183 Tb:19 avgT:92.5
+      Rusher vs StateAware   20.0%  Cq:394 Cs:0 Tb:6 avgT:98.2
+      Rusher vs TankThenRed   32.2%  Cq:129 Cs:242 Tb:29 avgT:79.5
+      Rusher vs Greedy       43.0%  Cq:141 Cs:99 Tb:160 avgT:159.1
+      Rusher vs Evo          96.0%  Cq:125 Cs:0 Tb:275 avgT:196.3
+   CavRusher vs Defender      2.2%  Cq:9 Cs:88 Tb:303 avgT:205.4
+   CavRusher vs AlwaysWhite    5.5%  Cq:396 Cs:0 Tb:4 avgT:86.9
+   CavRusher vs AlwaysRed    37.8%  Cq:151 Cs:200 Tb:49 avgT:117.9
+   CavRusher vs StateAware   14.8%  Cq:394 Cs:0 Tb:6 avgT:100.9
+   CavRusher vs TankThenRed   30.0%  Cq:120 Cs:251 Tb:29 avgT:80.5
+   CavRusher vs Greedy       36.2%  Cq:145 Cs:106 Tb:149 avgT:156.5
+   CavRusher vs Evo          95.5%  Cq:95 Cs:0 Tb:305 avgT:210.2
+    Defender vs AlwaysWhite   27.5%  Cq:290 Cs:101 Tb:9 avgT:81.0
+    Defender vs AlwaysRed     9.5%  Cq:0 Cs:63 Tb:337 avgT:223.0
+    Defender vs StateAware    1.8%  Cq:389 Cs:3 Tb:8 avgT:102.5
+    Defender vs TankThenRed   19.2%  Cq:0 Cs:273 Tb:127 avgT:121.7
+    Defender vs Greedy       43.5%  Cq:0 Cs:210 Tb:190 avgT:179.0
+    Defender vs Evo          99.5%  Cq:2 Cs:18 Tb:380 avgT:244.9
+  AlwaysWhite vs AlwaysRed    61.8%  Cq:247 Cs:147 Tb:6 avgT:75.8
+  AlwaysWhite vs StateAware   35.0%  Cq:392 Cs:0 Tb:8 avgT:101.4
+  AlwaysWhite vs TankThenRed   39.8%  Cq:159 Cs:239 Tb:2 avgT:68.0
+  AlwaysWhite vs Greedy       99.5%  Cq:398 Cs:0 Tb:2 avgT:84.0
+  AlwaysWhite vs Evo          99.5%  Cq:398 Cs:0 Tb:2 avgT:83.3
+   AlwaysRed vs StateAware   14.0%  Cq:342 Cs:48 Tb:10 avgT:100.5
+   AlwaysRed vs TankThenRed   33.8%  Cq:0 Cs:296 Tb:104 avgT:111.2
+   AlwaysRed vs Greedy       61.3%  Cq:1 Cs:285 Tb:114 avgT:154.1
+   AlwaysRed vs Evo          99.2%  Cq:3 Cs:156 Tb:241 avgT:202.4
+  StateAware vs TankThenRed   32.5%  Cq:130 Cs:268 Tb:2 avgT:74.5
+  StateAware vs Greedy       92.0%  Cq:347 Cs:49 Tb:4 avgT:106.6
+  StateAware vs Evo          99.8%  Cq:321 Cs:27 Tb:52 avgT:125.0
+  TankThenRed vs Greedy       64.2%  Cq:0 Cs:335 Tb:65 avgT:123.7
+  TankThenRed vs Evo          99.5%  Cq:2 Cs:203 Tb:195 avgT:175.4
+      Greedy vs Evo          96.0%  Cq:2 Cs:89 Tb:309 avgT:219.7
+  全局胜率:
+         Builder:  64.3%
+          Rusher:  38.9%
+       CavRusher:  35.2%
+        Defender:  45.1%
+        Adaptive:  66.9%
+          Random:  23.7%
+     AlwaysWhite:  74.2%
+       AlwaysRed:  55.5%
+      StateAware:  75.4%
+     TankThenRed:  69.2%
+          Greedy:  48.4%
+             Evo:   3.3%
+
+═══ C2_StateAware最强 ═══
+     Builder vs Rusher       57.0%  Cq:172 Cs:193 Tb:35 avgT:89.9
+     Builder vs CavRusher    55.8%  Cq:177 Cs:190 Tb:33 avgT:90.2
+     Builder vs Defender     88.8%  Cq:0 Cs:243 Tb:157 avgT:146.3
+     Builder vs AlwaysWhite   45.8%  Cq:217 Cs:181 Tb:2 avgT:75.3
+     Builder vs AlwaysRed    69.2%  Cq:0 Cs:257 Tb:143 avgT:140.2
+     Builder vs StateAware   51.2%  Cq:195 Cs:203 Tb:2 avgT:85.9
+     Builder vs TankThenRed   49.5%  Cq:0 Cs:348 Tb:52 avgT:97.2
+     Builder vs Greedy       63.0%  Cq:0 Cs:174 Tb:226 avgT:193.2
+     Builder vs Evo          99.2%  Cq:3 Cs:119 Tb:278 avgT:204.7
+      Rusher vs CavRusher    36.0%  Cq:41 Cs:0 Tb:359 avgT:232.8
+      Rusher vs Defender      4.0%  Cq:16 Cs:41 Tb:343 avgT:225.1
+      Rusher vs AlwaysWhite    3.5%  Cq:395 Cs:0 Tb:5 avgT:95.9
+      Rusher vs AlwaysRed    61.5%  Cq:246 Cs:133 Tb:21 avgT:98.7
+      Rusher vs StateAware   21.8%  Cq:393 Cs:0 Tb:7 avgT:99.4
+      Rusher vs TankThenRed   41.0%  Cq:164 Cs:205 Tb:31 avgT:87.6
+      Rusher vs Greedy       37.0%  Cq:149 Cs:1 Tb:250 avgT:186.8
+      Rusher vs Evo          96.5%  Cq:119 Cs:0 Tb:281 avgT:198.6
+   CavRusher vs Defender      3.0%  Cq:12 Cs:37 Tb:351 avgT:228.5
+   CavRusher vs AlwaysWhite    5.5%  Cq:395 Cs:0 Tb:5 avgT:97.6
+   CavRusher vs AlwaysRed    66.0%  Cq:264 Cs:95 Tb:41 avgT:102.4
+   CavRusher vs StateAware   24.0%  Cq:394 Cs:0 Tb:6 avgT:99.3
+   CavRusher vs TankThenRed   40.2%  Cq:161 Cs:210 Tb:29 avgT:87.8
+   CavRusher vs Greedy       32.5%  Cq:130 Cs:60 Tb:210 avgT:175.1
+   CavRusher vs Evo          97.5%  Cq:101 Cs:0 Tb:299 avgT:207.1
+    Defender vs AlwaysWhite   11.2%  Cq:355 Cs:36 Tb:9 avgT:84.0
+    Defender vs AlwaysRed     7.8%  Cq:0 Cs:46 Tb:354 avgT:232.3
+    Defender vs StateAware    1.5%  Cq:390 Cs:2 Tb:8 avgT:102.7
+    Defender vs TankThenRed   16.8%  Cq:0 Cs:273 Tb:127 avgT:130.6
+    Defender vs Greedy       62.5%  Cq:0 Cs:46 Tb:354 avgT:241.1
+    Defender vs Evo          99.5%  Cq:2 Cs:31 Tb:367 avgT:242.0
+  AlwaysWhite vs AlwaysRed    75.0%  Cq:300 Cs:93 Tb:7 avgT:81.1
+  AlwaysWhite vs StateAware   32.8%  Cq:392 Cs:0 Tb:8 avgT:103.1
+  AlwaysWhite vs TankThenRed   50.7%  Cq:203 Cs:195 Tb:2 avgT:75.0
+  AlwaysWhite vs Greedy       99.5%  Cq:398 Cs:0 Tb:2 avgT:86.1
+  AlwaysWhite vs Evo          99.2%  Cq:397 Cs:0 Tb:3 avgT:84.3
+   AlwaysRed vs StateAware   12.0%  Cq:352 Cs:39 Tb:9 avgT:101.6
+   AlwaysRed vs TankThenRed   32.2%  Cq:0 Cs:287 Tb:113 avgT:124.9
+   AlwaysRed vs Greedy      100.0%  Cq:0 Cs:216 Tb:184 avgT:190.2
+   AlwaysRed vs Evo          99.8%  Cq:1 Cs:173 Tb:226 avgT:196.2
+  StateAware vs TankThenRed   33.2%  Cq:133 Cs:265 Tb:2 avgT:83.3
+  StateAware vs Greedy       99.8%  Cq:398 Cs:0 Tb:2 avgT:102.7
+  StateAware vs Evo         100.0%  Cq:358 Cs:10 Tb:32 avgT:113.4
+  TankThenRed vs Greedy       96.0%  Cq:0 Cs:280 Tb:120 avgT:158.3
+  TankThenRed vs Evo          99.5%  Cq:2 Cs:211 Tb:187 avgT:175.2
+      Greedy vs Evo          96.0%  Cq:1 Cs:16 Tb:383 avgT:245.5
+  全局胜率:
+         Builder:  64.2%
+          Rusher:  39.0%
+       CavRusher:  40.9%
+        Defender:  43.4%
+        Adaptive:  63.8%
+          Random:  26.0%
+     AlwaysWhite:  80.0%
+       AlwaysRed:  53.3%
+      StateAware:  79.0%
+     TankThenRed:  70.0%
+          Greedy:  37.2%
+             Evo:   3.2%
+
+═══ C3_长游戏100T ═══
+     Builder vs Rusher       50.5%  Cq:198 Cs:169 Tb:33 avgT:86.2
+     Builder vs CavRusher    61.3%  Cq:155 Cs:212 Tb:33 avgT:87.1
+     Builder vs Defender     90.5%  Cq:0 Cs:246 Tb:154 avgT:140.1
+     Builder vs AlwaysWhite   40.2%  Cq:239 Cs:159 Tb:2 avgT:72.7
+     Builder vs AlwaysRed    55.2%  Cq:0 Cs:396 Tb:4 avgT:110.1
+     Builder vs StateAware   57.0%  Cq:172 Cs:226 Tb:2 avgT:80.4
+     Builder vs TankThenRed   49.5%  Cq:0 Cs:340 Tb:60 avgT:95.0
+     Builder vs Greedy       48.5%  Cq:0 Cs:302 Tb:98 avgT:131.6
+     Builder vs Evo          99.5%  Cq:2 Cs:130 Tb:268 avgT:199.1
+      Rusher vs CavRusher    50.7%  Cq:117 Cs:0 Tb:283 avgT:199.2
+      Rusher vs Defender      4.8%  Cq:19 Cs:47 Tb:334 avgT:221.0
+      Rusher vs AlwaysWhite    6.8%  Cq:395 Cs:0 Tb:5 avgT:91.2
+      Rusher vs AlwaysRed    39.5%  Cq:158 Cs:242 Tb:0 avgT:81.0
+      Rusher vs StateAware   27.8%  Cq:396 Cs:0 Tb:4 avgT:92.9
+      Rusher vs TankThenRed   30.2%  Cq:121 Cs:248 Tb:31 avgT:83.3
+      Rusher vs Greedy       38.0%  Cq:134 Cs:60 Tb:206 avgT:172.9
+      Rusher vs Evo          97.5%  Cq:132 Cs:0 Tb:268 avgT:193.4
+   CavRusher vs Defender      4.2%  Cq:17 Cs:49 Tb:334 avgT:221.0
+   CavRusher vs AlwaysWhite    6.0%  Cq:396 Cs:0 Tb:4 avgT:85.9
+   CavRusher vs AlwaysRed    21.5%  Cq:86 Cs:314 Tb:0 avgT:90.5
+   CavRusher vs StateAware   30.0%  Cq:395 Cs:0 Tb:5 avgT:95.7
+   CavRusher vs TankThenRed   30.0%  Cq:120 Cs:248 Tb:32 avgT:84.9
+   CavRusher vs Greedy       35.5%  Cq:142 Cs:19 Tb:239 avgT:184.5
+   CavRusher vs Evo          96.2%  Cq:124 Cs:0 Tb:276 avgT:198.0
+    Defender vs AlwaysWhite   10.2%  Cq:359 Cs:35 Tb:6 avgT:79.6
+    Defender vs AlwaysRed     2.5%  Cq:0 Cs:390 Tb:10 avgT:166.1
+    Defender vs StateAware    6.0%  Cq:373 Cs:18 Tb:9 avgT:98.5
+    Defender vs TankThenRed    8.8%  Cq:0 Cs:258 Tb:142 avgT:132.5
+    Defender vs Greedy       42.2%  Cq:0 Cs:177 Tb:223 avgT:187.0
+    Defender vs Evo         100.0%  Cq:0 Cs:37 Tb:363 avgT:240.4
+  AlwaysWhite vs AlwaysRed    46.2%  Cq:185 Cs:215 Tb:0 avgT:73.6
+  AlwaysWhite vs StateAware   46.0%  Cq:396 Cs:0 Tb:4 avgT:93.8
+  AlwaysWhite vs TankThenRed   38.0%  Cq:152 Cs:246 Tb:2 avgT:71.0
+  AlwaysWhite vs Greedy       99.5%  Cq:398 Cs:0 Tb:2 avgT:84.6
+  AlwaysWhite vs Evo          99.2%  Cq:397 Cs:0 Tb:3 avgT:83.2
+   AlwaysRed vs StateAware   31.5%  Cq:274 Cs:126 Tb:0 avgT:90.3
+   AlwaysRed vs TankThenRed   40.2%  Cq:0 Cs:395 Tb:5 avgT:104.5
+   AlwaysRed vs Greedy       69.2%  Cq:0 Cs:382 Tb:18 avgT:136.2
+   AlwaysRed vs Evo         100.0%  Cq:0 Cs:275 Tb:125 avgT:179.5
+  StateAware vs TankThenRed   35.2%  Cq:140 Cs:257 Tb:3 avgT:77.9
+  StateAware vs Greedy       98.2%  Cq:392 Cs:7 Tb:1 avgT:100.0
+  StateAware vs Evo         100.0%  Cq:374 Cs:5 Tb:21 avgT:107.5
+  TankThenRed vs Greedy       63.0%  Cq:0 Cs:340 Tb:60 avgT:120.1
+  TankThenRed vs Evo         100.0%  Cq:0 Cs:202 Tb:198 avgT:177.1
+      Greedy vs Evo         100.0%  Cq:0 Cs:63 Tb:337 avgT:227.2
+  全局胜率:
+         Builder:  61.9%
+          Rusher:  38.6%
+       CavRusher:  34.2%
+        Defender:  40.7%
+        Adaptive:  60.0%
+          Random:  26.9%
+     AlwaysWhite:  77.7%
+       AlwaysRed:  65.1%
+      StateAware:  74.4%
+     TankThenRed:  70.2%
+          Greedy:  48.5%
+             Evo:   1.8%
+
+═══ C4_缩短至70T ═══
+     Builder vs Rusher       65.5%  Cq:138 Cs:227 Tb:35 avgT:81.5
+     Builder vs CavRusher    65.2%  Cq:139 Cs:229 Tb:32 avgT:80.0
+     Builder vs Defender     88.0%  Cq:0 Cs:248 Tb:152 avgT:133.1
+     Builder vs AlwaysWhite   56.0%  Cq:176 Cs:222 Tb:2 avgT:67.2
+     Builder vs AlwaysRed    63.2%  Cq:0 Cs:274 Tb:126 avgT:120.0
+     Builder vs StateAware   59.5%  Cq:162 Cs:236 Tb:2 avgT:75.7
+     Builder vs TankThenRed   47.5%  Cq:0 Cs:348 Tb:52 avgT:82.8
+     Builder vs Greedy       66.5%  Cq:1 Cs:242 Tb:157 avgT:161.1
+     Builder vs Evo          99.0%  Cq:4 Cs:125 Tb:271 avgT:197.8
+      Rusher vs CavRusher    54.5%  Cq:176 Cs:0 Tb:224 avgT:172.8
+      Rusher vs Defender      3.0%  Cq:12 Cs:24 Tb:364 avgT:233.4
+      Rusher vs AlwaysWhite    4.5%  Cq:396 Cs:0 Tb:4 avgT:93.4
+      Rusher vs AlwaysRed    57.5%  Cq:230 Cs:120 Tb:50 avgT:94.7
+      Rusher vs StateAware   28.2%  Cq:395 Cs:0 Tb:5 avgT:95.0
+      Rusher vs TankThenRed   30.5%  Cq:122 Cs:249 Tb:29 avgT:75.6
+      Rusher vs Greedy       46.2%  Cq:136 Cs:117 Tb:147 avgT:157.0
+      Rusher vs Evo          95.5%  Cq:121 Cs:0 Tb:279 avgT:196.9
+   CavRusher vs Defender      2.2%  Cq:9 Cs:26 Tb:365 avgT:234.0
+   CavRusher vs AlwaysWhite    7.5%  Cq:396 Cs:0 Tb:4 avgT:86.3
+   CavRusher vs AlwaysRed    42.2%  Cq:169 Cs:136 Tb:95 avgT:125.4
+   CavRusher vs StateAware   22.0%  Cq:394 Cs:0 Tb:6 avgT:98.8
+   CavRusher vs TankThenRed   29.8%  Cq:119 Cs:253 Tb:28 avgT:76.1
+   CavRusher vs Greedy       47.0%  Cq:104 Cs:78 Tb:218 avgT:182.2
+   CavRusher vs Evo          96.2%  Cq:111 Cs:0 Tb:289 avgT:202.8
+    Defender vs AlwaysWhite    8.2%  Cq:367 Cs:22 Tb:11 avgT:84.2
+    Defender vs AlwaysRed     8.0%  Cq:0 Cs:94 Tb:306 avgT:206.3
+    Defender vs StateAware    3.0%  Cq:387 Cs:8 Tb:5 avgT:101.3
+    Defender vs TankThenRed   17.0%  Cq:0 Cs:278 Tb:122 avgT:116.6
+    Defender vs Greedy       65.5%  Cq:0 Cs:144 Tb:256 avgT:208.5
+    Defender vs Evo          99.0%  Cq:4 Cs:43 Tb:353 avgT:234.2
+  AlwaysWhite vs AlwaysRed    70.2%  Cq:281 Cs:110 Tb:9 avgT:75.3
+  AlwaysWhite vs StateAware   35.2%  Cq:391 Cs:0 Tb:9 avgT:99.5
+  AlwaysWhite vs TankThenRed   38.0%  Cq:152 Cs:246 Tb:2 avgT:63.8
+  AlwaysWhite vs Greedy       99.5%  Cq:398 Cs:0 Tb:2 avgT:84.3
+  AlwaysWhite vs Evo          99.5%  Cq:398 Cs:0 Tb:2 avgT:81.3
+   AlwaysRed vs StateAware   24.5%  Cq:302 Cs:81 Tb:17 avgT:97.8
+   AlwaysRed vs TankThenRed   38.0%  Cq:0 Cs:300 Tb:100 avgT:106.0
+   AlwaysRed vs Greedy       80.0%  Cq:1 Cs:251 Tb:148 avgT:165.9
+   AlwaysRed vs Evo          99.0%  Cq:4 Cs:170 Tb:226 avgT:190.1
+  StateAware vs TankThenRed   32.5%  Cq:129 Cs:268 Tb:3 avgT:71.8
+  StateAware vs Greedy       91.5%  Cq:281 Cs:98 Tb:21 avgT:117.1
+  StateAware vs Evo          99.8%  Cq:324 Cs:26 Tb:50 avgT:123.4
+  TankThenRed vs Greedy       80.8%  Cq:0 Cs:311 Tb:89 avgT:136.9
+  TankThenRed vs Evo          99.5%  Cq:2 Cs:215 Tb:183 avgT:166.2
+      Greedy vs Evo          89.5%  Cq:1 Cs:45 Tb:354 avgT:235.6
+  全局胜率:
+         Builder:  67.5%
+          Rusher:  39.2%
+       CavRusher:  36.1%
+        Defender:  44.4%
+        Adaptive:  68.6%
+          Random:  25.3%
+     AlwaysWhite:  77.4%
+       AlwaysRed:  57.1%
+      StateAware:  72.0%
+     TankThenRed:  72.0%
+          Greedy:  36.0%
+             Evo:   4.3%
+
+═══ C5_缩短v2 ═══
+     Builder vs Rusher       62.3%  Cq:151 Cs:214 Tb:35 avgT:80.1
+     Builder vs CavRusher    62.5%  Cq:150 Cs:216 Tb:34 avgT:80.7
+     Builder vs Defender     66.2%  Cq:0 Cs:277 Tb:123 avgT:115.2
+     Builder vs AlwaysWhite   53.5%  Cq:186 Cs:212 Tb:2 avgT:66.0
+     Builder vs AlwaysRed    49.0%  Cq:0 Cs:400 Tb:0 avgT:78.3
+     Builder vs StateAware   59.0%  Cq:164 Cs:234 Tb:2 avgT:71.2
+     Builder vs TankThenRed   52.2%  Cq:0 Cs:348 Tb:52 avgT:78.3
+     Builder vs Greedy       48.8%  Cq:0 Cs:301 Tb:99 avgT:121.8
+     Builder vs Evo          91.8%  Cq:1 Cs:170 Tb:229 avgT:184.4
+      Rusher vs CavRusher    43.8%  Cq:140 Cs:0 Tb:260 avgT:189.2
+      Rusher vs Defender      6.8%  Cq:27 Cs:215 Tb:158 avgT:134.0
+      Rusher vs AlwaysWhite   11.2%  Cq:395 Cs:0 Tb:5 avgT:90.5
+      Rusher vs AlwaysRed    31.2%  Cq:125 Cs:275 Tb:0 avgT:71.9
+      Rusher vs StateAware   35.8%  Cq:393 Cs:2 Tb:5 avgT:92.1
+      Rusher vs TankThenRed   35.2%  Cq:141 Cs:228 Tb:31 avgT:77.0
+      Rusher vs Greedy       37.8%  Cq:151 Cs:157 Tb:92 avgT:125.9
+      Rusher vs Evo          89.2%  Cq:155 Cs:16 Tb:229 avgT:181.3
+   CavRusher vs Defender      7.0%  Cq:28 Cs:214 Tb:158 avgT:134.3
+   CavRusher vs AlwaysWhite    2.2%  Cq:395 Cs:0 Tb:5 avgT:87.5
+   CavRusher vs AlwaysRed    31.5%  Cq:126 Cs:274 Tb:0 avgT:74.8
+   CavRusher vs StateAware   34.2%  Cq:392 Cs:0 Tb:8 avgT:95.6
+   CavRusher vs TankThenRed   35.2%  Cq:141 Cs:230 Tb:29 avgT:76.7
+   CavRusher vs Greedy       37.8%  Cq:151 Cs:150 Tb:99 avgT:127.7
+   CavRusher vs Evo          89.2%  Cq:148 Cs:19 Tb:233 avgT:184.7
+    Defender vs AlwaysWhite   53.8%  Cq:185 Cs:211 Tb:4 avgT:68.0
+    Defender vs AlwaysRed    19.5%  Cq:0 Cs:400 Tb:0 avgT:101.2
+    Defender vs StateAware   31.5%  Cq:274 Cs:121 Tb:5 avgT:84.4
+    Defender vs TankThenRed   36.5%  Cq:0 Cs:304 Tb:96 avgT:100.6
+    Defender vs Greedy       42.5%  Cq:0 Cs:268 Tb:132 avgT:141.3
+    Defender vs Evo          88.8%  Cq:1 Cs:106 Tb:293 avgT:214.7
+  AlwaysWhite vs AlwaysRed    38.2%  Cq:153 Cs:247 Tb:0 avgT:65.1
+  AlwaysWhite vs StateAware   61.8%  Cq:393 Cs:2 Tb:5 avgT:91.3
+  AlwaysWhite vs TankThenRed   43.0%  Cq:172 Cs:226 Tb:2 avgT:64.7
+  AlwaysWhite vs Greedy       99.2%  Cq:397 Cs:2 Tb:1 avgT:86.0
+  AlwaysWhite vs Evo          99.2%  Cq:397 Cs:0 Tb:3 avgT:83.9
+   AlwaysRed vs StateAware   60.8%  Cq:157 Cs:243 Tb:0 avgT:71.9
+   AlwaysRed vs TankThenRed   46.2%  Cq:0 Cs:400 Tb:0 avgT:73.0
+   AlwaysRed vs Greedy       58.5%  Cq:0 Cs:378 Tb:22 avgT:108.0
+   AlwaysRed vs Evo          97.8%  Cq:1 Cs:321 Tb:78 avgT:146.7
+  StateAware vs TankThenRed   33.0%  Cq:130 Cs:266 Tb:4 avgT:68.3
+  StateAware vs Greedy       95.8%  Cq:382 Cs:17 Tb:1 avgT:95.3
+  StateAware vs Evo         100.0%  Cq:390 Cs:2 Tb:8 avgT:98.6
+  TankThenRed vs Greedy       55.8%  Cq:0 Cs:345 Tb:55 avgT:109.7
+  TankThenRed vs Evo          94.5%  Cq:1 Cs:250 Tb:149 avgT:155.4
+      Greedy vs Evo          90.8%  Cq:1 Cs:152 Tb:247 avgT:194.1
+  全局胜率:
+         Builder:  60.1%
+          Rusher:  38.0%
+       CavRusher:  36.9%
+        Defender:  53.3%
+        Adaptive:  63.5%
+          Random:  30.9%
+     AlwaysWhite:  69.7%
+       AlwaysRed:  66.8%
+      StateAware:  62.3%
+     TankThenRed:  63.4%
+          Greedy:  48.0%
+             Evo:   7.2%

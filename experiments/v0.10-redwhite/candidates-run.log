@@ -1,0 +1,280 @@
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\map.rs:25:24
+   |
+25 | use crate::constants::{MAP_W, MAP_H};
+   |                        ^^^^^  ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `FACILITY_OUTPUT`
+  --> src\economy.rs:18:5
+   |
+18 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\game.rs:23:5
+   |
+23 |     MAP_W, MAP_H,
+   |     ^^^^^  ^^^^^
+
+warning: unused import: `step_game`
+  --> src\eval.rs:13:53
+   |
+13 | use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
+   |                                                     ^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\greedy.rs:17:45
+   |
+17 | use crate::game::{GameState, primary_enemy, same_team};
+   |                                             ^^^^^^^^^
+
+warning: unused import: `City`
+  --> src\ai\greedy.rs:18:35
+   |
+18 | use crate::unit::{Unit, UnitType, City};
+   |                                   ^^^^
+
+warning: unused import: `Grid`
+  --> src\ai\greedy.rs:19:18
+   |
+19 | use crate::map::{Grid, Terrain};
+   |                  ^^^^
+
+warning: unused imports: `CAVALRY_CHARGE_BONUS`, `CITY_BASE_FOOD`, `CITY_DEF`, `CITY_HP`, `FACILITY_OUTPUT`, `STARTING_FOOD`, `STARTING_GOLD`, and `STARTING_WOOD`
+  --> src\ai\greedy.rs:23:19
+   |
+23 |     MAP_W, MAP_H, CITY_HP, CITY_DEF, CAVALRY_CHARGE_BONUS,
+   |                   ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+24 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+25 |     STARTING_FOOD, STARTING_WOOD, STARTING_GOLD,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused imports: `TechBonuses` and `TechManager`
+  --> src\ai\greedy.rs:27:19
+   |
+27 | use crate::tech::{TechManager, TechBonuses};
+   |                   ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\evo.rs:14:5
+   |
+14 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\fixed.rs:21:5
+   |
+21 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\probes.rs:19:5
+   |
+19 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `primary_enemy`
+  --> src\ai\search.rs:12:41
+   |
+12 | use crate::game::{GameState, step_game, primary_enemy};
+   |                                         ^^^^^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\flatmc.rs:23:41
+   |
+23 | use crate::game::{GameState, step_game, same_team, primary_enemy};
+   |                                         ^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\flatmc.rs:29:5
+   |
+29 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `generator_id`
+   --> src\map.rs:156:32
+    |
+156 | pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_generator_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\combat.rs:73:9
+   |
+73 |     let mut def_damage = calc_damage(defender.atk, def_bonus, attacker.def, att_bonus);
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `opp`
+  --> src\ai\random.rs:29:13
+   |
+29 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+   |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `rng`
+   --> src\ai\greedy.rs:146:47
+    |
+146 |     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+    |                                               ^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `opp`
+   --> src\ai\greedy.rs:147:13
+    |
+147 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `size`
+   --> src\ai\greedy.rs:330:9
+    |
+330 |     let size = MAP_W as i32;
+    |         ^^^^ help: if this is intentional, prefix it with an underscore: `_size`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:501:25
+    |
+501 |     strategy: Strategy, a: &StrategicAssessment,
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `pid`
+   --> src\ai\greedy.rs:720:34
+    |
+720 |     unit: &Unit, gs: &GameState, pid: u8,
+    |                                  ^^^ help: if this is intentional, prefix it with an underscore: `_pid`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:843:31
+    |
+843 |     counter: &Option<String>, a: &StrategicAssessment,
+    |                               ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `cfg`
+   --> src\ai\evo.rs:481:75
+    |
+481 |     tx: i32, ty: i32, dist_weight: f64, high_ground: f64, terrain_w: f64, cfg: &GreedyConfig,
+    |                                                                           ^^^ help: if this is intentional, prefix it with an underscore: `_cfg`
+
+warning: function `team_alive` is never used
+   --> src\game.rs:210:4
+    |
+210 | fn team_alive(team: u8, gs: &GameState) -> bool {
+    |    ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+   --> src\ai\greedy.rs:230:5
+    |
+226 | struct StrategicAssessment {
+    |        ------------------- fields in this struct
+...
+230 |     res_ratio: f64,
+    |     ^^^^^^^^^
+231 |     tech_lead: i32,
+    |     ^^^^^^^^^
+...
+234 |     my_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^
+235 |     opp_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+236 |     opp_near_city_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+237 |     enemy_defense_strong: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+238 |     weak_point: Option<(i32, i32)>,
+239 |     my_power: i32,
+    |     ^^^^^^^^
+240 |     opp_power: i32,
+    |     ^^^^^^^^^
+    |
+    = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `miniciv-core` (lib) generated 27 warnings (run `cargo fix --lib -p miniciv-core` to apply 25 suggestions)
+warning: structure field `ttM` should have a snake case name
+  --> src\bin\sweet-candidates.rs:26:44
+   |
+26 |     struct Candidate { name: &'static str, ttM: f64, uM: f64, fBT: u8, tcM: f64, startR: i32, branch: u16 }
+   |                                            ^^^ help: convert the identifier to snake case: `tt_m`
+   |
+   = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: structure field `uM` should have a snake case name
+  --> src\bin\sweet-candidates.rs:26:54
+   |
+26 |     struct Candidate { name: &'static str, ttM: f64, uM: f64, fBT: u8, tcM: f64, startR: i32, branch: u16 }
+   |                                                      ^^ help: convert the identifier to snake case: `u_m`
+
+warning: structure field `fBT` should have a snake case name
+  --> src\bin\sweet-candidates.rs:26:63
+   |
+26 |     struct Candidate { name: &'static str, ttM: f64, uM: f64, fBT: u8, tcM: f64, startR: i32, branch: u16 }
+   |                                                               ^^^ help: convert the identifier to snake case: `f_bt`
+
+warning: structure field `tcM` should have a snake case name
+  --> src\bin\sweet-candidates.rs:26:72
+   |
+26 |     struct Candidate { name: &'static str, ttM: f64, uM: f64, fBT: u8, tcM: f64, startR: i32, branch: u16 }
+   |                                                                        ^^^ help: convert the identifier to snake case: `tc_m`
+
+warning: structure field `startR` should have a snake case name
+  --> src\bin\sweet-candidates.rs:26:82
+   |
+26 |     struct Candidate { name: &'static str, ttM: f64, uM: f64, fBT: u8, tcM: f64, startR: i32, branch: u16 }
+   |                                                                                  ^^^^^^ help: convert the identifier to snake case: `start_r`
+
+warning: `miniciv-core` (bin "sweet-candidates") generated 5 warnings
+    Finished `release` profile [optimized] target(s) in 0.34s
+     Running `target\release\sweet-candidates.exe 200 600000`
+
+═══ C1_平衡70-90T ═══
+ttM=12 uM=8 fBT=14 hp=2000 tcM=4 startR=40 branch@T40
+  BvR: T=80.7 Cq=0% Cs=88% Tb=14% P0=45.0%
+  SvA: T=98.6 WR=62.5%
+  SvR: T=99.1 WR=86.0%
+  WvR: T=76.3 WR=64.5%
+  完整 12-AI 矩阵...
+  已写入 experiments/v0.10-redwhite/candidate-C1_平衡70-90T-200s.json
+
+═══ C2_StateAware最强 ═══
+ttM=16 uM=8 fBT=14 hp=2000 tcM=3 startR=30 branch@T40
+  BvR: T=86.9 Cq=0% Cs=88% Tb=14% P0=46.5%
+  SvA: T=101.9 WR=66.8%
+  SvR: T=100.6 WR=87.5%
+  WvR: T=80.2 WR=75.8%
+  完整 12-AI 矩阵...
+  已写入 experiments/v0.10-redwhite/candidate-C2_StateAware最强-200s.json
+
+═══ C3_长游戏100T ═══
+ttM=12 uM=10 fBT=14 hp=2000 tcM=4 startR=50 branch@T35
+  BvR: T=84.3 Cq=0% Cs=76% Tb=14% P0=47.5%
+  SvA: T=93.0 WR=50.5%
+  SvR: T=90.6 WR=70.8%
+  WvR: T=73.7 WR=49.2%
+  完整 12-AI 矩阵...
+  已写入 experiments/v0.10-redwhite/candidate-C3_长游戏100T-200s.json
+
+═══ C4_缩短至70T ═══
+ttM=10 uM=8 fBT=10 hp=2000 tcM=4 startR=40 branch@T40
+  BvR: T=80.4 Cq=0% Cs=96% Tb=16% P0=45.5%
+  SvA: T=98.6 WR=65.2%
+  SvR: T=96.6 WR=78.2%
+  WvR: T=74.5 WR=74.0%
+  完整 12-AI 矩阵...
+  已写入 experiments/v0.10-redwhite/candidate-C4_缩短至70T-200s.json
+
+═══ C5_缩短v2 ═══
+ttM=10 uM=10 fBT=12 hp=2000 tcM=3 startR=30 branch@T35
+  BvR: T=78.4 Cq=0% Cs=94% Tb=14% P0=48.0%
+  SvA: T=90.7 WR=42.2%
+  SvR: T=72.6 WR=39.8%
+  WvR: T=65.7 WR=40.0%
+  完整 12-AI 矩阵...
+  已写入 experiments/v0.10-redwhite/candidate-C5_缩短v2-200s.json
+
+全部完成。

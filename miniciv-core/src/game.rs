@@ -152,6 +152,7 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
         e.food = config.starting_food;
         e.wood = config.starting_wood;
         e.gold = config.starting_gold;
+        e.support = config.initial_support;  // P1.5
         economies.push(e);
 
         let mut t = TechManager::new(pid);
@@ -335,12 +336,44 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                     }
                 }
                 Action::EndTurn => {}  // 显式结束回合, 什么都不做
+                Action::Expand => {
+                    // P1.5: 抽象扩张。花费资源+扣支持度→提升产出基数。
+                    let econ = &mut gs.economies[pid as usize];
+                    let (ef, ew, eg) = gs.config.expand_resource_cost;
+                    if econ.can_afford((ef, ew, eg)) {
+                        econ.spend((ef, ew, eg));
+                        econ.support -= gs.config.expand_support_cost;
+                        econ.expansion_level += 1;
+                    }
+                }
             }
         }
 
-        // 城市基础产出
+        // 城市基础产出(P1.5: +扩张加成)
         let food_bonus = bonuses.city_food;
-        city_base_income(&mut gs.economies[pid as usize], food_bonus);
+        let expand_bonus = gs.economies[pid as usize].expansion_level as i32
+            * gs.config.expand_income_bonus;
+        city_base_income(&mut gs.economies[pid as usize], food_bonus + expand_bonus);
+
+        // P1.5: 支持度衰减。每拥有一个战斗单位, 支持度-1。
+        let combat_units = player_units.iter()
+            .filter(|&&idx| {
+                let u = &gs.units[idx];
+                u.alive && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout
+            })
+            .count();
+        let decay = combat_units as i32 * gs.config.support_decay_per_military;
+        gs.economies[pid as usize].support = (gs.economies[pid as usize].support - decay).max(0);
+
+        // P1.5: 支持度惩罚(低支持→产出打折)。在收入已加完后扣回。
+        let sup = gs.economies[pid as usize].support;
+        if sup < gs.config.support_penalty_threshold {
+            let penalty = (gs.config.support_penalty_factor
+                * gs.economies[pid as usize].food as f64) as i32;
+            gs.economies[pid as usize].food = (gs.economies[pid as usize].food - penalty).max(0);
+            gs.economies[pid as usize].wood = (gs.economies[pid as usize].wood - penalty).max(0);
+            gs.economies[pid as usize].gold = (gs.economies[pid as usize].gold - penalty).max(0);
+        }
     }
 
     // 科技研究推进(N 玩家同时——消除先后手研究偏差)
@@ -934,6 +967,42 @@ mod tests {
         }
         assert!(gs.winner.is_some() || gs.turn >= max_t,
             "4 人游戏应可运行到回合上限");
+    }
+
+    #[test]
+    fn test_支持度_随战斗单位衰减() {
+        let cfg = GameConfig {
+            support_decay_per_military: 2,  // 加速测试
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        let sup_before = gs.economies[0].support;
+        // 产一个步兵(战斗单位)
+        step_game(&mut gs,
+            &[Action::ProduceUnit { unit_type: "infantry".to_string() }],
+            &[]);
+        // 下回合: 支持度应衰减
+        step_game(&mut gs, &[], &[]);
+        // P0 有 1 战斗单位 → 应衰减 2
+        // 注意: 初始侦察兵不计(非战斗), 新产的步兵算战斗单位
+        assert!(gs.economies[0].support < sup_before,
+            "支持度应衰减(sup_before={} sup_after={})",
+            sup_before, gs.economies[0].support);
+    }
+
+    #[test]
+    fn test_扩张_扣支持度加产出() {
+        let cfg = GameConfig::default();
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        let sup_before = gs.economies[0].support;
+        let food_before = gs.economies[0].food;
+        // 执行一次扩张
+        step_game(&mut gs, &[Action::Expand], &[]);
+        assert_eq!(gs.economies[0].expansion_level, 1);
+        assert!(gs.economies[0].support < sup_before,
+            "扩张应扣支持度");
+        assert!(gs.economies[0].food < food_before,
+            "扩张应花费资源");
     }
 
     #[test]

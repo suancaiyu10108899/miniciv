@@ -55,6 +55,24 @@ pub struct GameConfig {
     pub teams: Vec<u8>,
     /// 棋盘尺寸(边长, 棋盘 = map_size × map_size)。默认 15。
     pub map_size: u8,
+
+    // ── P1.5: 支持度负面维度 ──
+    /// 初始支持度(0-100)。默认 50。
+    pub initial_support: i32,
+    /// 每战斗单位每回合支持度衰减。默认 1。0=关支持度。
+    pub support_decay_per_military: i32,
+    /// 支持度惩罚阈值: 支持度低于此→产出打折。默认 30。
+    pub support_penalty_threshold: i32,
+    /// 惩罚系数: 0.3 = 低于阈值时产出打七折。默认 0.3。
+    pub support_penalty_factor: f64,
+    /// 支持度过低可能触发动荡(随机掉兵/掉城HP)。默认 10。
+    pub support_revolt_threshold: i32,
+    /// 每扩张一次扣支持度。默认 10。
+    pub expand_support_cost: i32,
+    /// 扩张资源花费 (粮, 木, 金)。
+    pub expand_resource_cost: (i32, i32, i32),
+    /// 扩张后产出基数加成(每回合额外资源)。
+    pub expand_income_bonus: i32,
 }
 
 impl Default for GameConfig {
@@ -77,6 +95,14 @@ impl Default for GameConfig {
             player_count: 2,             // P1.5: 默认 1v1
             teams: vec![0, 1],           // P1.5: 各自为战
             map_size: 15,                // P1.5: 默认 15×15
+            initial_support: 50,         // P1.5: 支持度起点
+            support_decay_per_military: 1,  // P1.5: 每战斗单位每回合-1
+            support_penalty_threshold: 30,  // P1.5: 低于30触发产出打折
+            support_penalty_factor: 0.3,     // P1.5: 打七折
+            support_revolt_threshold: 10,    // P1.5: 低于10可能动荡
+            expand_support_cost: 10,         // P1.5: 扩张一次-10支持
+            expand_resource_cost: (15, 15, 10),  // P1.5: 扩张花费
+            expand_income_bonus: 3,           // P1.5: 扩张后+3/回合产出
         }
     }
 }

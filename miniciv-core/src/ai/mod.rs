@@ -19,6 +19,8 @@ pub enum Action {
     ProduceUnit { unit_type: String },
     Research { tech_id: String },
     Destroy { unit_idx: usize },
+    /// P1.5: 抽象扩张——投入资源/扣支持度, 换取永久产出基数提升。
+    Expand,
     EndTurn,
 }
 

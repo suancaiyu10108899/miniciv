@@ -28,16 +28,22 @@ pub struct Economy {
     pub food: i32,
     pub wood: i32,
     pub gold: i32,
+    /// P1.5: 支持度(0-100)。高于80=繁荣加成, 低于阈值=惩罚, 极低=动荡风险。
+    pub support: i32,
+    /// P1.5: 扩张次数(每次扩张增加产出基数)。
+    pub expansion_level: u8,
 }
 
 impl Economy {
-    /// 新建经济——使用初始资源(25/25/25)
+    /// 新建经济——使用初始资源(25/25/25), 支持度默认50。
     pub fn new(player_id: u8) -> Self {
         Self {
             player_id,
             food: STARTING_FOOD,
             wood: STARTING_WOOD,
             gold: STARTING_GOLD,
+            support: 50,
+            expansion_level: 0,
         }
     }
 

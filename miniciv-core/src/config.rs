@@ -46,6 +46,15 @@ pub struct GameConfig {
     /// C线成本倍率(资源消耗杠杆): C开头科技 cost ×这个值。默认1.0。
     /// 高成本→建设者研究耗资源→挤占产防守兵的资源, 创造"研究vs产兵"张力。
     pub c_line_cost_mult: f64,
+
+    // ── P1.5: 多人 + 团队 ──
+    /// 玩家总数。默认 2(1v1)。
+    pub player_count: u8,
+    /// 队伍归属: teams[pid] = 队伍 ID。长度 = player_count。
+    /// 默认 [0, 1] 即各自为战(1v1); 2v2 例: [0, 0, 1, 1]。
+    pub teams: Vec<u8>,
+    /// 棋盘尺寸(边长, 棋盘 = map_size × map_size)。默认 15。
+    pub map_size: u8,
 }
 
 impl Default for GameConfig {
@@ -65,6 +74,9 @@ impl Default for GameConfig {
             academy_research_increment: 2,
             tech_turns: std::collections::HashMap::new(),
             c_line_cost_mult: 2.0,       // S2 甜点(非 ×1 历史基线): C线科技成本×2
+            player_count: 2,             // P1.5: 默认 1v1
+            teams: vec![0, 1],           // P1.5: 各自为战
+            map_size: 15,                // P1.5: 默认 15×15
         }
     }
 }

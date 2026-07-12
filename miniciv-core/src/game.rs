@@ -82,51 +82,46 @@ pub fn init_game(seed: u64, generator_id: &str) -> GameState {
     init_game_with_config(seed, generator_id, crate::config::GameConfig::default())
 }
 
-/// 用指定配置初始化游戏(M1.1: 参数可配置化的入口)。
+/// 用指定配置初始化游戏(M1.1: 参数可配置化的入口, P1.5: N 玩家)。
 pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::config::GameConfig) -> GameState {
-    let grid = generate_map(seed, generator_id);
-    // Wrap generator_id in String for owned storage
+    let grid = generate_map(seed, generator_id, config.map_size, config.player_count);
     let gen_id = generator_id.to_string();
+    let ms = config.map_size as i32;
+    let n = config.player_count;
 
     // 找到城市位置
     let mut city_positions: Vec<(i32, i32)> = Vec::new();
-    for r in 0..MAP_H as i32 {
-        for q in 0..MAP_W as i32 {
+    for r in 0..ms {
+        for q in 0..ms {
             if grid.get(q, r).terrain == crate::map::Terrain::City {
                 city_positions.push((q, r));
             }
         }
     }
-    // 按 (r, q) 排序——和 Python 一致
     city_positions.sort_by_key(|&(q, r)| (r, q));
-    let (cq0, cr0) = city_positions[0];
-    let (cq1, cr1) = city_positions[1];
+    assert!(city_positions.len() >= n as usize,
+        "地图城市数({})不足玩家数({})", city_positions.len(), n);
 
-    let mut cities = vec![
-        City::new(0, cq0, cr0),
-        City::new(1, cq1, cr1),
-    ];
-    // M1.1: 用 config 覆盖城市数值
-    for c in &mut cities {
-        c.hp = config.city_hp;
-        c.def = config.city_def;
-        c.base_food = config.city_base_food;
+    // N 座城市
+    let mut cities: Vec<City> = Vec::new();
+    for pid in 0..n {
+        let (cq, cr) = city_positions[pid as usize];
+        let mut city = City::new(pid, cq, cr);
+        city.hp = config.city_hp;
+        city.def = config.city_def;
+        city.base_food = config.city_base_food;
+        cities.push(city);
     }
 
-    // 放置初始单位: 每个玩家 3 工人 + 1 侦察兵
+    // N 组初始单位
     let mut units = Vec::new();
-    for (pid, (city_q, city_r)) in [(0, (cq0, cr0)), (1, (cq1, cr1))].iter() {
-        let pid = *pid;
-        let cx = *city_q;
-        let cy = *city_r;
-
-        // 放置工人(放在城市邻格的平原上)
+    for pid in 0..n {
+        let (cx, cy) = (cities[pid as usize].q, cities[pid as usize].r);
         for _ in 0..config.starting_workers {
             for (dq, dr) in HEX_DIRS.iter() {
-                let nq = (cx + dq).rem_euclid(MAP_W as i32);
-                let nr = (cy + dr).rem_euclid(MAP_H as i32);
+                let nq = (cx + dq).rem_euclid(ms);
+                let nr = (cy + dr).rem_euclid(ms);
                 if grid.get(nq, nr).terrain == crate::map::Terrain::Plain {
-                    // 检查是否已被占用
                     let occupied = units.iter().any(|u: &Unit| u.q == nq && u.r == nr);
                     if !occupied {
                         units.push(Unit::create(UnitType::Worker, pid, nq, nr));
@@ -135,11 +130,10 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
                 }
             }
         }
-        // 放置侦察兵
         for _ in 0..config.starting_scouts {
             for (dq, dr) in HEX_DIRS.iter() {
-                let nq = (cx + dq).rem_euclid(MAP_W as i32);
-                let nr = (cy + dr).rem_euclid(MAP_H as i32);
+                let nq = (cx + dq).rem_euclid(ms);
+                let nr = (cy + dr).rem_euclid(ms);
                 if grid.get(nq, nr).terrain == crate::map::Terrain::Plain {
                     let occupied = units.iter().any(|u: &Unit| u.q == nq && u.r == nr);
                     if !occupied {
@@ -151,22 +145,25 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
         }
     }
 
-    let mut economies = vec![Economy::new(0), Economy::new(1)];
-    for e in &mut economies {
+    let mut economies: Vec<Economy> = Vec::new();
+    let mut techs: Vec<TechManager> = Vec::new();
+    for pid in 0..n {
+        let mut e = Economy::new(pid);
         e.food = config.starting_food;
         e.wood = config.starting_wood;
         e.gold = config.starting_gold;
-    }
-    let mut techs = vec![TechManager::new(0), TechManager::new(1)];
-    for t in &mut techs {
+        economies.push(e);
+
+        let mut t = TechManager::new(pid);
         t.academy_increment = config.academy_research_increment;
         t.turns_override = config.tech_turns.clone();
         t.c_line_cost_mult = config.c_line_cost_mult;
+        techs.push(t);
     }
 
     GameState {
         seed,
-        size: MAP_W,
+        size: config.map_size,
         generator_id: gen_id,
         turn: 0,
         grid,
@@ -181,28 +178,63 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
     }
 }
 
+// ─── 团队辅助(P1.5) ────────────────────────────────
+
+/// 查询某玩家的敌对玩家列表(根据 config.teams 分组)。
+fn enemies_of(pid: u8, config: &crate::config::GameConfig) -> Vec<u8> {
+    let my_team = config.teams.get(pid as usize).copied().unwrap_or(pid);
+    (0..config.player_count)
+        .filter(|&p| {
+            let t = config.teams.get(p as usize).copied().unwrap_or(p);
+            p != pid && t != my_team
+        })
+        .collect()
+}
+
+/// 两人是否同队(P1.5)。
+fn same_team(a: u8, b: u8, config: &crate::config::GameConfig) -> bool {
+    let ta = config.teams.get(a as usize).copied().unwrap_or(a);
+    let tb = config.teams.get(b as usize).copied().unwrap_or(b);
+    ta == tb
+}
+
+/// 获取某玩家的第一个敌人(向后兼容 1v1 中 `opp = 1 - pid`)。
+fn primary_enemy(pid: u8, config: &crate::config::GameConfig) -> Option<u8> {
+    enemies_of(pid, config).first().copied()
+}
+
+/// 团队中是否有任一玩家存活(城市HP>0)。
+fn team_alive(team: u8, gs: &GameState) -> bool {
+    (0..gs.config.player_count).any(|pid| {
+        same_team(pid, pid, &gs.config) // always true — just check team match
+            && gs.config.teams.get(pid as usize).copied().unwrap_or(pid) == team
+            && gs.cities[pid as usize].is_alive()
+    })
+}
+
 // ─── 回合执行 ────────────────────────────────────────
 
-/// 执行一回合。
+/// 执行一回合(N 玩家版, P1.5)。
 ///
-/// `actions_p0`, `actions_p1`: 每个玩家各自 AI 返回的动作列表。
-/// 交替先手: 奇数回合 P0 先, 偶数回合 P1 先。
+/// `all_actions`: 每个玩家的动作列表, `all_actions[pid]` = pid 的动作。
+/// 交替先手: 回合轮转 `(turn + i) % N` 决定执行顺序以消除固定先手偏差。
 ///
-/// 每个单位可执行一个动作, 动作顺序由 AI 决定。
-/// 所有动作执行完毕后: 科技研究推进(双方同时) → 城市基础产出 → 胜利判定。
-pub fn step_game(
-    gs: &mut GameState,
-    actions_p0: &[Action],
-    actions_p1: &[Action],
-) -> StepResult {
+/// 每个玩家执行: 单位动作 → 城市产出。
+/// 全部执行后: 科技 tick(所有玩家同时) → 胜利判定 → 城市防守/渐进攻城 → 征服检查 → 阶梯。
+pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepResult {
     gs.turn += 1;
+    let n = gs.config.player_count as usize;
 
-    // 交替先手: 奇数回合 P0 先, 偶数回合 P1 先
-    let player_order: [(u8, &[Action]); 2] = if gs.turn % 2 == 1 {
-        [(0, actions_p0), (1, actions_p1)]
-    } else {
-        [(1, actions_p1), (0, actions_p0)]
-    };
+    // 交替先手: 每个回合轮转起始玩家
+    // turn=1 → [0,1], turn=2 → [1,0], turn=3 → [1,0] ...
+    // N 玩家: turn=1 → [0,1,2,3], turn=2 → [1,2,3,0], ...
+    let first = (gs.turn as usize - 1) % n;
+    let player_order: Vec<(u8, &[Action])> = (0..n)
+        .map(|i| {
+            let pid = ((first + i) % n) as u8;
+            (pid, all_actions[pid as usize].as_slice())
+        })
+        .collect();
 
     for (pid, actions) in player_order.iter() {
         let pid = *pid;
@@ -311,37 +343,34 @@ pub fn step_game(
         city_base_income(&mut gs.economies[pid as usize], food_bonus);
     }
 
-    // 科技研究推进(双方同时——消除 P0 研究先手优势)
-    for pid in [0, 1] {
-        gs.techs[pid as usize].tick_research();
+    // 科技研究推进(N 玩家同时——消除先后手研究偏差)
+    for pid in 0..n {
+        gs.techs[pid].tick_research();
     }
 
-    // 建设胜利检查(每回合, 不只 C5 完成那回合)
+    // 建设胜利检查(每回合, P1.5: 任一人达成 → 其队伍赢)
     check_construction_victory(gs);
 
-    // 城市防守: 每回合对占领者造成伤害
-    for pid in [0, 1] {
+    // 城市防守: 每回合对占领者造成伤害(P1.5: 所有城市/所有敌人)
+    for pid in 0..n as u8 {
         let city = &gs.cities[pid as usize];
-        let opp = 1 - pid;
         for u in gs.units.iter_mut() {
-            if u.alive && u.player_id == opp && u.q == city.q && u.r == city.r {
+            if u.alive && u.player_id != pid && u.q == city.q && u.r == city.r
+               && !same_team(u.player_id, pid, &gs.config)
+            {
                 u.hp -= gs.config.city_damage;
-                if u.hp <= 0 {
-                    u.hp = 0;
-                    u.alive = false;
-                }
+                if u.hp <= 0 { u.hp = 0; u.alive = false; }
             }
         }
     }
 
-    // 渐进攻城(硬伤修复 2026-07-10): 敌方近战单位占据城格 → 每回合削城 HP。
-    // 原 bug: 攻城伤害只在"移入城格"触发一次, 占领者卡城后不再攻, 高HP城几乎打不破。
-    // 现: 占领者每回合持续削城, 守方必须赶走/杀死占领者。弓箭手不占城、工人无攻城力。
-    for pid in [0, 1] {
-        let opp = 1 - pid;
+    // 渐进攻城(P1.5: 所有城市, 任意敌对近战单位占城持续削)
+    for pid in 0..n as u8 {
         let (cq, cr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
         let best_dmg = gs.units.iter()
-            .filter(|u| u.alive && u.player_id == opp && u.q == cq && u.r == cr
+            .filter(|u| u.alive && u.player_id != pid
+                     && !same_team(u.player_id, pid, &gs.config)
+                     && u.q == cq && u.r == cr
                      && !u.ranged && u.unit_type != UnitType::Worker)
             .map(|u| city_occupation_damage(u, &gs.cities[pid as usize]))
             .max();
@@ -351,17 +380,12 @@ pub fn step_game(
         }
     }
 
-    // 征服胜利检查
-    for pid in [0, 1] {
-        if !gs.cities[1 - pid as usize].is_alive() {
-            gs.winner = Some(pid);
-            gs.victory_type = Some(VictoryType::Conquest);
-        }
-    }
+    // 征服胜利检查(P1.5: 城 HP≤0 → 该玩家淘汰, 检查全队)
+    check_conquest_victory(gs);
 
     // 阶梯判定(回合上限)
     if gs.turn >= gs.config.max_turns && gs.winner.is_none() {
-        tiebreak(gs);
+        tiebreak_multi(gs);
     }
 
     // 清理死单位(移到 dead_units, 保留统计数据)
@@ -427,9 +451,11 @@ fn do_move(gs: &mut GameState, unit_idx: usize, dq: i32, dr: i32, charged: bool)
         return MoveOutcome::Blocked;  // 无法移入——己方同类别单位已满
     }
 
-    // 找目标格的敌方单位
+    // 找目标格的敌方单位(P1.5: 只敌队, 队友不互打)
+    let my_pid = gs.units[unit_idx].player_id;
     let blocker_idx = gs.units.iter().position(|u| {
-        u.alive && u.player_id != gs.units[unit_idx].player_id
+        u.alive && u.player_id != my_pid
+            && !same_team(u.player_id, my_pid, &gs.config)
             && u.q == nq && u.r == nr
     });
 
@@ -520,40 +546,50 @@ fn try_ranged_attack(gs: &mut GameState, archer_idx: usize) -> bool {
 
 // ─── 胜利判定 ────────────────────────────────────────
 
-/// 建设胜利: C5 完成 + 设施 ≥ 4 (每回合检查)
+/// 建设胜利(P1.5: 任一人达成 → 其队伍赢)。
+/// C5 完成 + 设施 ≥ 4, 每回合检查。
 fn check_construction_victory(gs: &mut GameState) {
-    for pid in [0, 1] {
-        if gs.winner.is_some() {
-            break;
-        }
+    if gs.winner.is_some() { return; }
+    let ms = gs.config.map_size as i32;
+    for pid in 0..gs.config.player_count {
         if gs.techs[pid as usize].completed.iter().any(|c| c == "C5") {
             let mut facility_count: u8 = 0;
-            for r in 0..MAP_H as i32 {
-                for q in 0..MAP_W as i32 {
+            for r in 0..ms {
+                for q in 0..ms {
                     if let Some(f) = &gs.grid.get(q, r).facility {
-                        if f.player_id == pid {
-                            facility_count += 1;
-                        }
+                        if f.player_id == pid { facility_count += 1; }
                     }
                 }
             }
             if facility_count >= gs.config.construction_require_facilities {
                 gs.winner = Some(pid);
                 gs.victory_type = Some(VictoryType::Construction);
+                return;
+            }
+        }
+    }
+}
+
+/// 征服胜利检查(P1.5: 城 HP≤0 → 该玩家淘汰, 敌对队伍赢)。
+fn check_conquest_victory(gs: &mut GameState) {
+    if gs.winner.is_some() { return; }
+    for pid in 0..gs.config.player_count {
+        if !gs.cities[pid as usize].is_alive() {
+            let losing_team = gs.config.teams.get(pid as usize).copied().unwrap_or(pid);
+            // 找第一个不同队伍的玩家作为胜者代表
+            for wp in 0..gs.config.player_count {
+                let wt = gs.config.teams.get(wp as usize).copied().unwrap_or(wp);
+                if wt != losing_team {
+                    gs.winner = Some(wp);
+                    gs.victory_type = Some(VictoryType::Conquest);
+                    return;
+                }
             }
         }
     }
 }
 
 /// 无偏"硬币":用 game seed 派生确定性但统计无偏的 0/1。
-///
-/// ⚠️ bug 修复(2026-07-10 门禁2): 原 tiebreak 随机分支用 `gs.turn % 2`,
-///    但 tiebreak 恒在 turn==MAX_TURNS(80,偶数)触发 → 恒判 P0 赢,
-///    注释说"消除 P0 偏向"实际制造了它。
-///    也不能用 `seed % 2`: paired/镜像种子恒为偶数(50000+i*100)→ 同样恒 P0。
-///    用 murmur3 finalizer 把连续 seed 打散成伪随机位:
-///    - 镜像(不同 seed)→ 奇偶各半 → P0 ~50%
-///    - paired(同 seed 两局)→ 同判定位置 → A/B 各赢一次,完美抵消
 fn unbiased_coin(seed: u64) -> u8 {
     let mut h = seed;
     h ^= h >> 33;
@@ -564,28 +600,50 @@ fn unbiased_coin(seed: u64) -> u8 {
     (h & 1) as u8
 }
 
-/// 阶梯判定: construction_count → city_hp → random
-fn tiebreak(gs: &mut GameState) {
-    let c0 = gs.techs[0].construction_count();
-    let c1 = gs.techs[1].construction_count();
-
-    if c0 > c1 {
-        gs.winner = Some(0);
-        gs.victory_type = Some(VictoryType::TiebreakConstruction);
-    } else if c1 > c0 {
-        gs.winner = Some(1);
-        gs.victory_type = Some(VictoryType::TiebreakConstruction);
-    } else if gs.cities[0].hp > gs.cities[1].hp {
-        gs.winner = Some(0);
-        gs.victory_type = Some(VictoryType::TiebreakCityHp);
-    } else if gs.cities[1].hp > gs.cities[0].hp {
-        gs.winner = Some(1);
-        gs.victory_type = Some(VictoryType::TiebreakCityHp);
-    } else {
-        // 真·无偏随机判定(见 unbiased_coin 文档)
-        gs.winner = Some(unbiased_coin(gs.seed));
-        gs.victory_type = Some(VictoryType::TiebreakRandom);
+/// 阶梯判定(P1.5: N 玩家, 按队伍聚合)。
+/// 队内建设数合计 → 队内城 HP 合计 → 随机。
+fn tiebreak_multi(gs: &mut GameState) {
+    let n = gs.config.player_count as usize;
+    use std::collections::BTreeMap;
+    let mut team_constr: BTreeMap<u8, u32> = BTreeMap::new();
+    let mut team_hp: BTreeMap<u8, i32> = BTreeMap::new();
+    for pid in 0..n {
+        let team = gs.config.teams.get(pid).copied().unwrap_or(pid as u8);
+        *team_constr.entry(team).or_insert(0) += gs.techs[pid].construction_count() as u32;
+        *team_hp.entry(team).or_insert(0) += gs.cities[pid].hp;
     }
+    let mut ranked: Vec<(u8, u32, i32)> = team_constr.iter()
+        .map(|(&t, &cc)| (t, cc, team_hp.get(&t).copied().unwrap_or(0)))
+        .collect();
+    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(b.2.cmp(&a.2)));
+
+    if ranked.len() >= 2 && ranked[0].1 == ranked[1].1 && ranked[0].2 == ranked[1].2 {
+        let coin = unbiased_coin(gs.seed);
+        let wt = ranked[coin as usize % ranked.len()].0;
+        // 找该队第一个玩家
+        gs.winner = (0..n as u8).find(|&p| {
+            gs.config.teams.get(p as usize).copied().unwrap_or(p) == wt
+        });
+    } else {
+        let wt = ranked[0].0;
+        gs.winner = (0..n as u8).find(|&p| {
+            gs.config.teams.get(p as usize).copied().unwrap_or(p) == wt
+        });
+    }
+    if gs.winner.is_some() {
+        gs.victory_type = Some(if ranked.len() >= 2 && ranked[0].1 > ranked[1].1 {
+            VictoryType::TiebreakConstruction
+        } else if ranked.len() >= 2 && ranked[0].2 > ranked[1].2 {
+            VictoryType::TiebreakCityHp
+        } else {
+            VictoryType::TiebreakRandom
+        });
+    }
+}
+
+/// 向后兼容 2 人版(调用 step_game_multi)。
+pub fn step_game(gs: &mut GameState, actions_p0: &[Action], actions_p1: &[Action]) -> StepResult {
+    step_game_multi(gs, &[actions_p0.to_vec(), actions_p1.to_vec()])
 }
 
 // ═══════════════════════════════════════════════════════
@@ -838,6 +896,44 @@ mod tests {
         // 弓手不应移动(仍站在原位)
         assert_eq!((archer.q, archer.r), (ax, ay),
             "弓手触发远程攻击后不应移动");
+    }
+
+    // ── P1.5: N 玩家测试 ────────────────────────────
+
+    #[test]
+    fn test_4玩家初始化() {
+        let cfg = GameConfig {
+            player_count: 4,
+            teams: vec![0, 0, 1, 1],  // 2v2
+            ..GameConfig::default()
+        };
+        let gs = init_game_with_config(50000, "balanced", cfg);
+        assert_eq!(gs.cities.len(), 4);
+        assert_eq!(gs.economies.len(), 4);
+        assert_eq!(gs.techs.len(), 4);
+        // 四个玩家都应有初始单位
+        for pid in 0..4u8 {
+            assert!(count_alive(&gs, pid) >= 1,
+                "玩家 {} 至少 1 个初始单位", pid);
+        }
+    }
+
+    #[test]
+    fn test_4玩家单局可跑完() {
+        let max_t = 20u16;
+        let cfg = GameConfig {
+            max_turns: max_t,
+            player_count: 4,
+            teams: vec![0, 0, 1, 1],
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(60000, "balanced", cfg);
+        while gs.winner.is_none() && gs.turn < gs.config.max_turns {
+            let empty: Vec<Action> = vec![];
+            step_game_multi(&mut gs, &vec![empty.clone(), empty.clone(), empty.clone(), empty.clone()]);
+        }
+        assert!(gs.winner.is_some() || gs.turn >= max_t,
+            "4 人游戏应可运行到回合上限");
     }
 
     #[test]

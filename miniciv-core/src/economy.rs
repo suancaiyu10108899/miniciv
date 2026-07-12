@@ -296,7 +296,7 @@ mod tests {
     #[test]
     fn test_在平原上建农场() {
         let w = make_worker(0, 5, 5);
-        let mut grid = generate_map(42, "balanced");
+        let mut grid = generate_map(42, "balanced", 15, 2);
         // 确保该格是平原且无设施
         let tile_mut = grid.get_mut(5, 5);
         tile_mut.terrain = Terrain::Plain;
@@ -314,7 +314,7 @@ mod tests {
     #[test]
     fn test_不能在水域上建设施() {
         let w = make_worker(0, 3, 3);
-        let mut grid = generate_map(777, "balanced");
+        let mut grid = generate_map(777, "balanced", 15, 2);
         // 把目标格设为水域
         grid.get_mut(3, 3).terrain = Terrain::Water;
 
@@ -325,7 +325,7 @@ mod tests {
     #[test]
     fn test_不能重复建造() {
         let w = make_worker(0, 5, 5);
-        let mut grid = generate_map(42, "balanced");
+        let mut grid = generate_map(42, "balanced", 15, 2);
         grid.get_mut(5, 5).terrain = Terrain::Plain;
         grid.get_mut(5, 5).facility = None;
 

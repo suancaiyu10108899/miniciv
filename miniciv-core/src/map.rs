@@ -142,110 +142,85 @@ const HEX_DIRS: [(i32, i32); 6] = [
 ///
 /// 这个函数拥有返回值的所有权——Grid 被 move 给调用者。
 /// 没有堆共享、没有引用计数——就是一次所有权转移(≈ C++ 的 move 语义)。
-pub fn generate_map(seed: u64, generator_id: &str) -> Grid {
-    // `let` 声明变量。不加 `mut` = 不可变(≈ C++ const)。
-    // `let mut` 才能修改。
-    let total = (MAP_W as usize) * (MAP_H as usize);
+/// 生成一张六边形环面地图(P1.5: 可配置尺寸 + N 城)。
+///
+/// # 参数
+/// * `seed` — 确定性 RNG 种子。相同 seed → 相同地图。
+/// * `generator_id` — 生成器类型。当前仅支持 "balanced"。
+/// * `map_size` — 棋盘边长(棋盘 = map_size × map_size)。
+/// * `player_count` — 城市数(玩家数)。
+///
+/// # 城市位置
+/// N 个城市均匀分布在对径方向的圆上, 确保间距最大化(P1.5 多人支撑)。
+/// 默认 15×15: 2 城在对角 (2,2)/(12,12), 4 城在四象限。
+pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    let w = map_size as usize;
+    let h = map_size as usize;
+    let total = w * h;
+    let w_i32 = w as i32;
+    let h_i32 = h as i32;
 
     // ── 第1步: 建地形池 ────────────────────────────
-    // 每种地形按比例放入 Vec，然后整体洗牌。
-    // 这保证了精确的地形比例(不像逐个格子独立随机会有波动)。
-    //
-    // Vec::with_capacity 预分配内存(≈ vector.reserve())。
-    // vec![] 宏 ≈ C++ 的初始化列表。
     let mut pool: Vec<Terrain> = Vec::with_capacity(total);
-
-    // `as usize` 显式类型转换。Rust 不允许隐式窄化转换。
     let n_plain = (total as f64 * PLAIN_RATIO) as usize;
     let n_forest = (total as f64 * FOREST_RATIO) as usize;
     let n_mountain = (total as f64 * MOUNTAIN_RATIO) as usize;
     let n_water = (total as f64 * WATER_RATIO) as usize;
 
-    // extend 批量追加元素(≈ 循环 push_back 但更高效)。
-    // std::iter::repeat_n 生成 N 个相同值的迭代器。
     pool.extend(std::iter::repeat_n(Terrain::Plain, n_plain));
     pool.extend(std::iter::repeat_n(Terrain::Forest, n_forest));
     pool.extend(std::iter::repeat_n(Terrain::Mountain, n_mountain));
     pool.extend(std::iter::repeat_n(Terrain::Water, n_water));
 
-    // 因为浮点转整数可能有舍入误差，用平原补齐到正好 total 个。
-    while pool.len() < total {
-        pool.push(Terrain::Plain);
-    }
-    pool.truncate(total);  // 安全兜底: 确保不会超过 total
+    while pool.len() < total { pool.push(Terrain::Plain); }
+    pool.truncate(total);
 
-    // ── 第2步: 用种子 RNG 洗牌 ──────────────────────
-    // ChaCha12 是密码学质量的 RNG，速度仍然很快。
-    // Python 的 random.Random 用 Mersenne Twister (MT19937)。
-    // 相同的 seed 不会产生和 Python 一模一样的地图(算法不同)，
-    // 但统计特性(地形分布)是等价的。
-    //
-    // ChaCha12Rng::seed_from_u64 创建确定性 RNG。
-    // 同 seed 一定产生相同序列。
+    // ── 第2步: 洗牌 ────────────────────────────────
     let mut rng = ChaCha12Rng::seed_from_u64(seed);
-
-    // `pool.shuffle(&mut rng)` — shuffle 方法来自 `use rand::seq::SliceRandom`。
-    // Rust 可以通过导入"扩展 trait"给已有类型添加方法。
-    // 这 ≈ C++20 的 `#include <ranges>` 给 vector 加了 .filter() 方法。
     pool.shuffle(&mut rng);
 
-    // ── 第3步: 把洗好的地形分配到格子上 ────────────
-    // 按行优先顺序填充(先遍历 r，再遍历 q)。
-    // `for _r in 0..MAP_H` ≈ C++ `for (int r = 0; r < MAP_H; r++)`
+    // ── 第3步: 填充格子 ────────────────────────────
     let mut tiles: Vec<Tile> = Vec::with_capacity(total);
-    for _r in 0..MAP_H {
-        for _q in 0..MAP_W {
-            // pool.pop() 返回最后一个元素(Option<T>)。
-            // unwrap() = "我知道这一定是 Some，不是 None——如果错了就 panic"。
-            // pool 的长度 == total，tiles 的长度也会是 total，所以这里不会出错。
-            let terrain = pool.pop().unwrap();
-            tiles.push(Tile::new(terrain));
+    for _r in 0..h {
+        for _q in 0..w {
+            tiles.push(Tile::new(pool.pop().unwrap()));
         }
     }
 
-    // ── 第4步: 放置城市 ─────────────────────────────
-    // 固定位置，和 Python mapgen_hex.py 一致。
-    // P0 在 (2, 2)，P1 在对径 (MAP_W-3, MAP_H-3) = (12, 12)。
-    // 这两个位置大致在环面上互为最远点。
-    let city0_q: i32 = 2;
-    let city0_r: i32 = 2;
-    let city1_q: i32 = (MAP_W - 3) as i32;  // = 12
-    let city1_r: i32 = (MAP_H - 3) as i32;  // = 12
+    // ── 第4步: 放置 N 座城市 ──────────────────────
+    // 用轴向坐标在环面上均匀分布: 圆半径 = map_size/3, 角间隔 = 2π/N。
+    // 若 N=2 且 map_size=15 → ≈ (2,2)/(12,12), 保持与旧版一致。
+    let center_q = w_i32 / 2;
+    let center_r = h_i32 / 2;
+    let radius = (map_size as f64 / 3.0).max(2.0);
+    let mut city_positions: Vec<(i32, i32)> = Vec::new();
+    for i in 0..player_count {
+        let angle = 2.0 * std::f64::consts::PI * i as f64 / player_count as f64;
+        let q = (center_q as f64 + radius * angle.cos()).round() as i32;
+        let r = (center_r as f64 + radius * angle.sin()).round() as i32;
+        let cq = q.rem_euclid(w_i32);
+        let cr = r.rem_euclid(h_i32);
+        city_positions.push((cq, cr));
+    }
 
-    // 直接写一维 Vec 的索引，避免调用 get_mut 两次。
-    let idx0 = (city0_r as usize) * (MAP_W as usize) + (city0_q as usize);
-    let idx1 = (city1_r as usize) * (MAP_W as usize) + (city1_q as usize);
-    tiles[idx0].terrain = Terrain::City;
-    tiles[idx1].terrain = Terrain::City;
+    for (cq, cr) in &city_positions {
+        let idx = (*cr as usize) * w + (*cq as usize);
+        tiles[idx].terrain = Terrain::City;
+    }
 
-    // ── 第5步: 城市邻格的水域 → 平原 ────────────────
-    // 防止城市被水域包围导致两城之间不可达。
-    //
-    // `|参数| { 函数体 }` 是 Rust 的闭包(lambda)语法。
-    // `&mut` 表示闭包捕获 tiles 的可变引用。
-    // ≈ C++ 的 `auto fix_water = [&](int cq, int cr) { ... };`
-    let mut fix_water = |cq: i32, cr: i32| {
+    // ── 第5步: 城市邻格水域 → 平原 ────────────────
+    for (cq, cr) in &city_positions {
         for (dq, dr) in HEX_DIRS.iter() {
-            let nq = (cq + dq).rem_euclid(MAP_W as i32) as usize;
-            let nr = (cr + dr).rem_euclid(MAP_H as i32) as usize;
-            let idx = nr * (MAP_W as usize) + nq;
-            if tiles[idx].terrain == Terrain::Water {
+            let nq = (*cq + dq).rem_euclid(w_i32) as usize;
+            let nr = (*cr + dr).rem_euclid(h_i32) as usize;
+            let idx = nr * w + nq;
+            if idx < tiles.len() && tiles[idx].terrain == Terrain::Water {
                 tiles[idx].terrain = Terrain::Plain;
             }
         }
-    };
-
-    fix_water(city0_q, city0_r);
-    fix_water(city1_q, city1_r);
-
-    // ── 返回 ────────────────────────────────────────
-    // 最后一行不带分号 = 这是返回值。
-    // 等价于 `return Grid { ... };`——Rust 惯用写法省略了 return。
-    Grid {
-        width: MAP_W,
-        height: MAP_H,
-        tiles,
     }
+
+    Grid { width: map_size, height: map_size, tiles }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -282,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_环面wrap() {
-        let grid = generate_map(42, "balanced");
+        let grid = generate_map(42, "balanced", 15, 2);
 
         // 不同坐标指向同一格（通过环面包裹）
         let t1 = grid.get(0, 0);
@@ -298,8 +273,8 @@ mod tests {
     #[test]
     fn test_同seed生成相同地图() {
         // 相同 seed → 相同地图（同一 RNG 算法下）
-        let g1 = generate_map(12345, "balanced");
-        let g2 = generate_map(12345, "balanced");
+        let g1 = generate_map(12345, "balanced", 15, 2);
+        let g2 = generate_map(12345, "balanced", 15, 2);
 
         for i in 0..g1.tiles.len() {
             assert_eq!(g1.tiles[i].terrain, g2.tiles[i].terrain);
@@ -309,8 +284,8 @@ mod tests {
     #[test]
     fn test_不同seed生成不同地图() {
         // 不同 seed → 不同地图（概率极高，实际不可能相同）
-        let g1 = generate_map(42, "balanced");
-        let g2 = generate_map(99999, "balanced");
+        let g1 = generate_map(42, "balanced", 15, 2);
+        let g2 = generate_map(99999, "balanced", 15, 2);
 
         // 至少有一些格子地形不同
         let mut differ = false;
@@ -325,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_地图恰好有两座城市() {
-        let grid = generate_map(42, "balanced");
+        let grid = generate_map(42, "balanced", 15, 2);
         let city_count: usize = grid.tiles.iter()
             .filter(|t| t.terrain == Terrain::City)
             .count();
@@ -336,7 +311,7 @@ mod tests {
     fn test_地形比例大致合理() {
         // 检查地形分布大致符合预期（±5pp 容差，
         // 因为城市放置会替换掉一些地形格）
-        let grid = generate_map(777, "balanced");
+        let grid = generate_map(777, "balanced", 15, 2);
         let total = grid.tiles.len() as f64;
 
         let count = |t: Terrain| grid.tiles.iter().filter(|x| x.terrain == t).count() as f64;

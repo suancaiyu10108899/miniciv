@@ -10,12 +10,16 @@
 > **P1.5 合同(下个对话执行)** → `docs/planning/2026-07-12-stage-P1.5-goal-acceptance.md`:
 > 支持度负面维度 + 红白取舍管理 + 配置化分组(1v1→2v2)+ EGTA。**本阶段已开工 build。**
 
-> ⚠️ **P1.5 执行状态(2026-07-12~13 第五个 AI):**
-> **Step 0 ✅**: rayon 并行。 **Step 1 ✅**: N玩家引擎+支持度+扩张。
-> **Step 2 ✅**: 红白分叉 + 支持度取舍管理。
-> **Step 3 ✅**: 红白探针 + FlatMC多人适配 + bin/eval/team-eval + instrumentation。
-> **Step 4-6 ✅**: 完整矩阵(1v1: 200s×3时机+500s; 2v2: 60+100+120s) → VERDICT:H1方向成立。
-> 测试 80→100(+20 tests)。数据 ~18,000局 → `experiments/v0.10-redwhite/`。
+> ⚠️ **P1.5 完成(2026-07-12~13 第五个 AI):**
+> **引擎**: N玩家+团队+支持度+红白分叉+抽象扩张。可配置棋盘/设施产出。
+> **AI**: 全AI `opp=1-pid`→`primary_enemy`修复(4破损→修复)。4红白探针。FlatMC P1.5候选升级。
+> **评估**: bin/eval(N玩家CLI)+team-eval(2v2)+scan-length(72组参数)+scan2v2。
+> **裁决**: H1方向成立。S-1/S-2/R-1/R-2/R-3验过。R-4弱(2v2太快)。
+> **甜点**: 1v1 hp=100/cost×2.0; 2v2 +start_workers=2/team_facilities=8/C5=4turns。
+> **已知局限**: 游戏速度7-20T(结构性, P2修); FlatMC候选爆炸(需更好搜索)。
+> **测试**: 80→103(+23)。数据 ~30,000局 → `experiments/v0.10-redwhite/`。
+> **新规范**: WORKFLOW §8 "AI同步纪律"——机制更新必须同步所有AI。
+> **新决策**: DECISIONS #20(甜点)/#21(团队建设)/#22(速度硬上限)。
 
 > ⚠️ **顶层真相(2026-07-11 第四个 AI, S2 立裁判):**
 > **接手判断**:此前"一阶深度成立"是**循环论证**——旧 Search/depth 只在 4 手写剧本里选,

@@ -1,4 +1,4 @@
-// P1.5 游戏长度扫描 — 找40-60T甜点
+// P1.5 游戏长度扫描 — facility_output + starting_res + cost_mult + city_hp
 use miniciv_core::ai::fixed::BuilderAgent;
 use miniciv_core::ai::probes::{RusherAgent, StateAwareAgent, AlwaysWhiteAgent};
 use miniciv_core::config::GameConfig;
@@ -6,21 +6,22 @@ use miniciv_core::eval::run_one_game;
 use miniciv_core::game::VictoryType;
 
 fn main() {
-    let seeds = 40u32;
-    let sb = 95000u64;
-    println!("{:>5} {:>5} {:>5} {:>8} {:>8} {:>6} {:>6} {:>6}",
-             "costX", "hp", "startR", "BvR_avgT", "SvA_avgT", "BvR_Cq%", "BvR_Cs%", "BvR_Tb%");
-    println!("{}", "-".repeat(62));
+    let seeds = 40u32; let sb = 95000u64;
+    println!("{:>5} {:>5} {:>5} {:>5} {:>8} {:>8} {:>6} {:>6} {:>6}",
+             "fOut", "startR", "costX", "hp", "BvR_avgT", "SvA_avgT", "BvR_Cq%", "BvR_Cs%", "BvR_Tb%");
+    println!("{}", "-".repeat(68));
 
     let b = BuilderAgent; let r = RusherAgent;
     let sw = StateAwareAgent; let aw = AlwaysWhiteAgent;
 
-    for cost_mult in [2.0f64, 2.5, 3.0, 3.5] {
-    for hp in [100i32, 120, 140] {
-    for start_res in [25i32, 20, 15] {
+    for fout in [2i32, 3, 4] {
+    for start_res in [10i32, 15, 20, 25] {
+    for cost_mult in [2.0f64, 2.5, 3.0] {
+    for hp in [100i32, 120] {
         let cfg = GameConfig {
-            city_hp: hp, c_line_cost_mult: cost_mult,
+            facility_output: fout,
             starting_food: start_res, starting_wood: start_res, starting_gold: start_res,
+            c_line_cost_mult: cost_mult, city_hp: hp,
             ..GameConfig::default()
         };
         let (mut bt, mut b_cq, mut b_cs, mut b_tb, mut bn) = (0u64,0,0,0,0u32);
@@ -40,8 +41,13 @@ fn main() {
         }
         let ba = bt as f64 / bn as f64;
         let sa = st as f64 / sn as f64;
-        println!("{:>5.1} {:>5} {:>5} {:>8.1} {:>8.1} {:>5.0}% {:>5.0}% {:>5.0}%",
-            cost_mult, hp, start_res, ba, sa,
-            b_cq as f64/bn as f64*100.0, b_cs as f64/bn as f64*100.0, b_tb as f64/bn as f64*100.0);
-    }}}
+        let cqp = b_cq as f64 / bn as f64 * 100.0;
+        let csp = b_cs as f64 / bn as f64 * 100.0;
+        let tbp = b_tb as f64 / bn as f64 * 100.0;
+        // Show all results — find the absolute longest games
+        {
+            println!("{:>5} {:>5} {:>5.1} {:>5} {:>8.1} {:>8.1} {:>5.0}% {:>5.0}% {:>5.0}%",
+                fout, start_res, cost_mult, hp, ba, sa, cqp, csp, tbp);
+        }
+    }}}}
 }

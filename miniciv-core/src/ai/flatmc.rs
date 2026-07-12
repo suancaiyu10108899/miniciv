@@ -21,6 +21,7 @@
 //   把"当前甜点真深还是假深"变成可裁决的问题。
 
 use crate::game::{GameState, step_game, same_team, primary_enemy};
+use crate::economy::Branch;
 use crate::unit::UnitType;
 use crate::map::Terrain;
 use crate::ai::{Action, Agent};
@@ -71,6 +72,29 @@ impl Agent for FlatMcAgent {
         }
         // 轴③姿态候选
         let postures = [Posture::Attack, Posture::Defend, Posture::Harass, Posture::Hold];
+        // 轴④ P1.5: 分支候选
+        let mut branch_opts: Vec<Option<&str>> = vec![None];
+        let my_econ = &gs.economies[pid as usize];
+        if my_econ.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
+            branch_opts.push(Some("White"));
+            branch_opts.push(Some("Red"));
+        }
+        // 轴⑤ P1.5: 组织度兑换候选(仅红线)
+        let mut redeem_opts: Vec<Option<&str>> = vec![None];
+        if my_econ.branch == Some(crate::economy::Branch::Red) {
+            if my_econ.organization >= gs.config.red_lian_da_org_cost {
+                redeem_opts.push(Some("LianDa"));
+            }
+            if my_econ.organization >= gs.config.red_mobilize_org_cost {
+                redeem_opts.push(Some("Mobilize"));
+            }
+        }
+        // 轴⑥ P1.5: 扩张候选
+        let expand_opt: Option<bool> = if my_econ.can_afford(gs.config.expand_resource_cost) {
+            Some(true)
+        } else {
+            None
+        };
 
         // ── 逐候选 rollout 评估 ─────────────────────
         let mut best_plan: Vec<Action> = Vec::new();
@@ -78,11 +102,16 @@ impl Agent for FlatMcAgent {
         for r in &research_opts {
             for p in &produce_opts {
                 for &posture in &postures {
-                    let plan = build_turn_plan(gs, pid, r, p, posture);
-                    let score = self.eval_plan(gs, pid, &plan);
-                    if score > best_score {
-                        best_score = score;
-                        best_plan = plan;
+                    for branch in &branch_opts {
+                        for redeem in &redeem_opts {
+                            // Expand: only add when affordable, skip the None branch to avoid explosion
+                            let plan = build_turn_plan_p15(gs, pid, r, p, posture, *branch, *redeem, expand_opt.is_some());
+                            let score = self.eval_plan(gs, pid, &plan);
+                            if score > best_score {
+                                best_score = score;
+                                best_plan = plan;
+                            }
+                        }
                     }
                 }
             }
@@ -159,6 +188,29 @@ fn heuristic_value(g: &GameState, pid: u8) -> f64 {
     1.0 / (1.0 + (-d).exp()) // sigmoid → (0,1)
 }
 
+/// P1.5 版本: 加入 ChooseBranch/RedeemOrg/Expand 候选。
+fn build_turn_plan_p15(
+    gs: &GameState, pid: u8,
+    research: &Option<String>, produce: &Option<&'static str>, posture: Posture,
+    branch: Option<&str>, redeem: Option<&str>, expand: bool,
+) -> Vec<Action> {
+    let mut actions = Vec::new();
+    // P1.5 actions first (before unit actions)
+    if let Some(b) = branch {
+        actions.push(Action::ChooseBranch { branch: b.to_string() });
+    }
+    if let Some(r_mode) = redeem {
+        actions.push(Action::RedeemOrg { mode: r_mode.to_string() });
+    }
+    if expand {
+        actions.push(Action::Expand);
+    }
+    // Base actions
+    let mut base = build_turn_plan(gs, pid, research, produce, posture);
+    actions.append(&mut base);
+    actions
+}
+
 /// 构造一个完整 turn-plan: 工人经济 + 本候选研究 + 本候选生产 + 按姿态移动战斗单位。
 fn build_turn_plan(
     gs: &GameState, pid: u8,
@@ -219,6 +271,29 @@ fn default_move_ex(gs: &GameState, pid: u8, mode: u8) -> Vec<Action> {
     let aggressive = mode >= 1;
     let mut actions = Vec::new();
     let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+
+    // P1.5: 可选即选分支(默认: 建设向选Red, 进攻向选White)
+    let econ_p15 = &gs.economies[pid as usize];
+    if econ_p15.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
+        if aggressive {
+            actions.push(Action::ChooseBranch { branch: "White".to_string() });
+        } else {
+            actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+        }
+    }
+    // P1.5: 红线兑换
+    if econ_p15.branch == Some(Branch::Red) {
+        if econ_p15.organization >= gs.config.red_lian_da_org_cost {
+            actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
+        } else if econ_p15.organization >= gs.config.red_mobilize_org_cost && aggressive {
+            actions.push(Action::RedeemOrg { mode: "Mobilize".to_string() });
+        }
+    }
+    // P1.5: 扩张(资源充足时)
+    if econ_p15.can_afford(gs.config.expand_resource_cost) && econ_p15.support > 40 {
+        actions.push(Action::Expand);
+    }
+
     let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
         .filter(|(_, u)| u.player_id == pid && u.alive)
         .collect();

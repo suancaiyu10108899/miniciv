@@ -151,6 +151,27 @@ experiments/vX.Y.Z/<experiment-name>/
 **边界**：不是"任何代码都并行",是"**大批量独立任务默认并行**"。小任务/交互式/确定性敏感的串行区不动。
 拉满算力 ≠ 牺牲确定性——**确定性是硬约束,算力是软目标,冲突时确定性优先**(靠"独立分片+确定性聚合"两者兼得)。
 
+---
+
+## 八、AI 同步纪律（铁律, P1.5 立）
+
+> **游戏本体机制更新后，必须同步更新所有 AI 对该机制的感知和使用。**
+> 任何新增的 Action 变体、Economy 字段、Config 参数，都必须：
+> 1. 检视所有 `ai/*.rs` 文件，确认每个 AI 是否应该使用新机制
+> 2. 对于"应该使用但未使用"的 AI，添加使用逻辑或标注"故意不使用"的理由
+> 3. 对于"与机制无关"的 AI（如 Random），至少确保不因新机制导致 panic/crash
+> 4. 在 commit message 中明确列出哪些 AI 已更新、哪些未更新及原因
+>
+> **违反后果（P1.5 实际教训）**：
+> - Builder/Rusher/Defender/Harasser/Turtle/Adaptive/CavRusher 在 P1.5 支持度/红白/扩张加入后
+>   完全没有使用这些新机制——它们"活在过去"
+> - FlatMC 候选生成器不含 ChooseBranch/RedeemOrg/Expand——裁判无法评判新游戏
+> - 导致 P1.5 矩阵中旧探针的数据不能反映真实策略空间
+> - **修复成本**：全 AI 审计 + `opp=1-pid` 修复 + FlatMC 候选升级，合计 ~2 小时
+>
+> **判定标准**：如果新增了 Action 变体 → 至少 Builder/FlatMC 必须能使用它。
+> 如果新增了 Economy 字段 → 至少 StateAware/Adaptive 必须能感知它。
+
 
 ---
 

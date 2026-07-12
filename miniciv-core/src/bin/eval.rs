@@ -15,7 +15,11 @@ use miniciv_core::ai::random::RandomAgent;
 use miniciv_core::ai::greedy::GreedyAgent;
 use miniciv_core::ai::evo::EvoAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent, CavalryRusherAgent, AdaptiveAgent};
+use miniciv_core::ai::probes::{
+    RusherAgent, HarasserAgent, TurtleAgent, DefenderAgent,
+    CavalryRusherAgent, AdaptiveAgent,
+    AlwaysWhiteAgent, AlwaysRedAgent, StateAwareAgent, TankThenRedAgent,
+};
 use miniciv_core::config::GameConfig;
 use miniciv_core::eval::run_matrix_par;
 
@@ -47,8 +51,15 @@ fn main() {
     let cavrusher = CavalryRusherAgent;
     let defender = DefenderAgent;
     let adaptive = AdaptiveAgent;
+    let always_white = AlwaysWhiteAgent;
+    let always_red = AlwaysRedAgent;
+    let state_aware = StateAwareAgent;
+    let tank_then_red = TankThenRedAgent;
     let _ = (GreedyAgent::new(), EvoAgent::new(), HarasserAgent, TurtleAgent);
-    let agents: Vec<&dyn Agent> = vec![&builder, &rusher, &cavrusher, &defender, &adaptive, &random];
+    let agents: Vec<&dyn Agent> = vec![
+        &builder, &rusher, &cavrusher, &defender, &adaptive, &random,
+        &always_white, &always_red, &state_aware, &tank_then_red,
+    ];
 
     eprintln!("跑矩阵: {} AI × {} seeds paired, 起手资源={} C线成本×{} cityHP={}",
               agents.len(), seeds, starting_res, cost_mult, city_hp);

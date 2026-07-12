@@ -19,6 +19,29 @@ use crate::constants::{
 };
 use crate::movement::HEX_DIRS;
 use crate::constants::{MAP_W, MAP_H};
+use serde::{Deserialize, Serialize};
+
+// ─── P1.5: 红白分叉 ────────────────────────────────
+
+/// 红白路线选择(P1.5 核心机制)。
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum Branch {
+    /// 白线(资本主义/先发兑现): 产出×1.5, 周期危机(支持度暴跌)
+    White,
+    /// 红线(社会主义/后发追赶): 支持度回升, 积累组织度→一次性爆发
+    Red,
+}
+
+/// 红线组织度兑换方式。
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum OrgRedeemMode {
+    /// 西南联大: 消耗组织度 → 瞬间完成 N 个可研究科技
+    LianDa,
+    /// 集中力量: 消耗组织度 → 下回合产出×N
+    Concentrate,
+    /// 全民皆兵: 消耗组织度 → 城市免费产 N 个战斗单位
+    Mobilize,
+}
 
 // ─── 资源 ────────────────────────────────────────────
 
@@ -32,6 +55,14 @@ pub struct Economy {
     pub support: i32,
     /// P1.5: 扩张次数(每次扩张增加产出基数)。
     pub expansion_level: u8,
+    /// P1.5: 红白路线选择(None=未选)。
+    pub branch: Option<Branch>,
+    /// P1.5: 红线组织度(0-100, 高支持度每回合自动积累)。
+    pub organization: i32,
+    /// P1.5: 白线危机倒计时(回合数, 0=触发危机)。
+    pub crisis_timer: u8,
+    /// P1.5: 本回合是否已执行组织度兑换(防止同回合补回)。
+    pub redeemed_this_turn: bool,
 }
 
 impl Economy {
@@ -44,6 +75,10 @@ impl Economy {
             gold: STARTING_GOLD,
             support: 50,
             expansion_level: 0,
+            branch: None,
+            organization: 0,
+            crisis_timer: 0,
+            redeemed_this_turn: false,
         }
     }
 

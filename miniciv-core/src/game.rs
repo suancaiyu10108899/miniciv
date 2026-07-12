@@ -26,7 +26,7 @@ use crate::movement::HEX_DIRS;
 use crate::combat::{resolve_melee, resolve_ranged, city_occupation_damage};
 use crate::economy::{
     worker_action_build, worker_action_produce, produce_unit,
-    destroy_facility, city_base_income,
+    destroy_facility, city_base_income, Branch,
 };
 use serde::{Deserialize, Serialize};
 
@@ -346,6 +346,67 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                         econ.expansion_level += 1;
                     }
                 }
+                Action::ChooseBranch { branch } => {
+                    // P1.5: 选择红白路线。需回合≥branch_available_turn。
+                    if gs.turn >= gs.config.branch_available_turn {
+                        let econ = &mut gs.economies[pid as usize];
+                        if econ.branch.is_none() {
+                            match branch.as_str() {
+                                "White" => {
+                                    econ.branch = Some(Branch::White);
+                                    econ.crisis_timer = gs.config.white_crisis_interval;
+                                }
+                                "Red" => {
+                                    econ.branch = Some(Branch::Red);
+                                    econ.organization = 10;  // 初始组织度
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+                Action::RedeemOrg { mode } => {
+                    // P1.5: 红线组织度兑换。仅红线玩家可用。
+                    let econ = &mut gs.economies[pid as usize];
+                    if econ.branch != Some(Branch::Red) { continue; }
+                    econ.redeemed_this_turn = true;
+                    match mode.as_str() {
+                        "LianDa" => {
+                            if econ.organization >= gs.config.red_lian_da_org_cost {
+                                econ.organization -= gs.config.red_lian_da_org_cost;
+                                // 瞬间完成 N 个可研究科技
+                                let tech = &mut gs.techs[pid as usize];
+                                for _ in 0..gs.config.red_lian_da_techs {
+                                    let avail = tech.available_to_research();
+                                    if let Some(t) = avail.first().cloned() {
+                                        tech.completed.insert(t);
+                                    }
+                                }
+                            }
+                        }
+                        "Concentrate" => {
+                            if econ.organization >= gs.config.red_mobilize_org_cost {
+                                econ.organization -= gs.config.red_mobilize_org_cost;
+                                let m = gs.config.red_concentrate_mult as i32;
+                                econ.food += econ.food * m;
+                                econ.wood += econ.wood * m;
+                                econ.gold += econ.gold * m;
+                            }
+                        }
+                        "Mobilize" => {
+                            if econ.organization >= gs.config.red_mobilize_org_cost {
+                                econ.organization -= gs.config.red_mobilize_org_cost;
+                                // 城市免费产 N 个步兵
+                                let city = &gs.cities[pid as usize];
+                                for _ in 0..gs.config.red_mobilize_units {
+                                    produce_unit(&gs.grid, city, econ,
+                                        UnitType::Infantry, &mut gs.units);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
 
@@ -373,6 +434,55 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
             gs.economies[pid as usize].food = (gs.economies[pid as usize].food - penalty).max(0);
             gs.economies[pid as usize].wood = (gs.economies[pid as usize].wood - penalty).max(0);
             gs.economies[pid as usize].gold = (gs.economies[pid as usize].gold - penalty).max(0);
+        }
+
+        // ── P1.5: 红白 tick ────────────────────────────
+        match gs.economies[pid as usize].branch {
+            Some(Branch::White) => {
+                // 白线: 产出加成(在收入之后乘, 这样扩张/科技加成也被放大)
+                let boost = gs.config.white_output_boost;
+                gs.economies[pid as usize].food = (gs.economies[pid as usize].food as f64 * boost) as i32;
+                gs.economies[pid as usize].wood = (gs.economies[pid as usize].wood as f64 * boost) as i32;
+                gs.economies[pid as usize].gold = (gs.economies[pid as usize].gold as f64 * boost) as i32;
+                // 危机倒计时
+                let econ = &mut gs.economies[pid as usize];
+                if econ.crisis_timer > 0 {
+                    econ.crisis_timer -= 1;
+                }
+                if econ.crisis_timer == 0 {
+                    // 危机触发: 扣支持度 + 随机毁设施
+                    econ.support = (econ.support - gs.config.white_crisis_support_damage).max(0);
+                    // 随机毁一个己方设施(确定性: 用 seed+turn+pid 哈希选)
+                    let hash = hash_for(gs.seed, gs.turn, pid);
+                    let ms = gs.config.map_size as i32;
+                    let mut my_facs: Vec<(i32, i32)> = Vec::new();
+                    for r in 0..ms { for q in 0..ms {
+                        if let Some(f) = &gs.grid.get(q, r).facility {
+                            if f.player_id == pid { my_facs.push((q, r)); }
+                        }
+                    }}
+                    if !my_facs.is_empty() {
+                        let idx = (hash as usize) % my_facs.len();
+                        let (fq, fr) = my_facs[idx];
+                        gs.grid.get_mut(fq, fr).facility = None;
+                    }
+                    // 重置倒计时(±2 抖动, 确定性)
+                    let interval = gs.config.white_crisis_interval;
+                    let jitter = (hash as u8 % 5).saturating_sub(2); // -2..+2
+                    econ.crisis_timer = interval.saturating_add(jitter).max(5);
+                }
+            }
+            Some(Branch::Red) => {
+                // 红线: 无产出加成, 但支持度自动回升 + 积累组织度(本回合未兑换时)
+                let econ = &mut gs.economies[pid as usize];
+                econ.support = (econ.support + gs.config.red_support_regen).min(100);
+                if !econ.redeemed_this_turn {
+                    let org_gain = (econ.support as f64 * gs.config.red_org_per_support).ceil() as i32;
+                    econ.organization = (econ.organization + org_gain).min(100);
+                }
+                econ.redeemed_this_turn = false;  // 每回合重置
+            }
+            None => {}  // 未选分支, 不走红白逻辑
         }
     }
 
@@ -620,6 +730,17 @@ fn check_conquest_victory(gs: &mut GameState) {
             }
         }
     }
+}
+
+/// 确定性哈希(seed + turn + pid → 伪随机数), 用于危机/事件等需要确定性的随机。
+fn hash_for(seed: u64, turn: u16, pid: u8) -> u64 {
+    let mut h = seed ^ ((turn as u64) << 16) ^ ((pid as u64) << 32);
+    h ^= h >> 33;
+    h = h.wrapping_mul(0xff51afd7ed558ccd);
+    h ^= h >> 33;
+    h = h.wrapping_mul(0xc4ceb9fe1a85ec53);
+    h ^= h >> 33;
+    h
 }
 
 /// 无偏"硬币":用 game seed 派生确定性但统计无偏的 0/1。
@@ -1003,6 +1124,104 @@ mod tests {
             "扩张应扣支持度");
         assert!(gs.economies[0].food < food_before,
             "扩张应花费资源");
+    }
+
+    // ── P1.5: 红白分叉测试 ──────────────────────────
+
+    #[test]
+    fn test_选择白线_产出加成和危机() {
+        let cfg = GameConfig {
+            branch_available_turn: 0,  // 开局可选
+            white_crisis_interval: 3,   // 加速危机
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // 选白线
+        step_game(&mut gs,
+            &[Action::ChooseBranch { branch: "White".to_string() }],
+            &[]);
+        assert_eq!(gs.economies[0].branch, Some(Branch::White));
+        assert!(gs.economies[0].crisis_timer > 0,
+            "白线应有危机倒计时");
+        // 跑 crisis_timer 回合看危机触发
+        for _ in 0..gs.config.white_crisis_interval + 1 {
+            step_game(&mut gs, &[], &[]);
+        }
+        // 危机触发后 timer 应重置
+        assert!(gs.economies[0].crisis_timer > 0
+            || gs.economies[0].support < 50,
+            "危机应重置timer或已扣支持度");
+    }
+
+    #[test]
+    fn test_选择红线_组织度积累和兑换() {
+        let cfg = GameConfig {
+            branch_available_turn: 0,
+            red_support_regen: 5,         // 加速测试
+            red_org_per_support: 1.0,      // 加速测试
+            red_lian_da_org_cost: 20,
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        // 选红线
+        step_game(&mut gs,
+            &[Action::ChooseBranch { branch: "Red".to_string() }],
+            &[]);
+        assert_eq!(gs.economies[0].branch, Some(Branch::Red));
+        assert!(gs.economies[0].organization >= 10,
+            "红线初始组织度 ≥10");
+        // 跑几回合看组织度积累
+        for _ in 0..3 {
+            step_game(&mut gs, &[], &[]);
+        }
+        assert!(gs.economies[0].organization > 10,
+            "组织度应随时间增长(org={})", gs.economies[0].organization);
+        // 兑换西南联大
+        let completed_before = gs.techs[0].completed.len();
+        let org_before = gs.economies[0].organization;
+        step_game(&mut gs,
+            &[Action::RedeemOrg { mode: "LianDa".to_string() }],
+            &[]);
+        assert!(gs.techs[0].completed.len() > completed_before,
+            "西南联大应完成新科技");
+        assert!(gs.economies[0].organization < org_before,
+            "兑换后组织度应减少(before={} after={})",
+            org_before, gs.economies[0].organization);
+    }
+
+    #[test]
+    fn test_红线_全民皆兵产兵() {
+        let cfg = GameConfig {
+            branch_available_turn: 0,
+            red_mobilize_org_cost: 10,     // 降低门槛, 初始10够
+            red_mobilize_units: 2,
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        step_game(&mut gs,
+            &[Action::ChooseBranch { branch: "Red".to_string() }],
+            &[]);
+        let units_before = count_alive(&gs, 0);
+        step_game(&mut gs,
+            &[Action::RedeemOrg { mode: "Mobilize".to_string() }],
+            &[]);
+        assert!(count_alive(&gs, 0) > units_before,
+            "全民皆兵应产出新单位(before={} after={})",
+            units_before, count_alive(&gs, 0));
+    }
+
+    #[test]
+    fn test_未到可选回合不能选分叉() {
+        let cfg = GameConfig {
+            branch_available_turn: 50,  // 很远
+            ..GameConfig::default()
+        };
+        let mut gs = init_game_with_config(50000, "balanced", cfg);
+        step_game(&mut gs,
+            &[Action::ChooseBranch { branch: "White".to_string() }],
+            &[]);
+        assert_eq!(gs.economies[0].branch, None,
+            "回合1<50不应允许选分叉");
     }
 
     #[test]

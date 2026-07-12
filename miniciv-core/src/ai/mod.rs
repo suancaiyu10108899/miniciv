@@ -21,6 +21,10 @@ pub enum Action {
     Destroy { unit_idx: usize },
     /// P1.5: 抽象扩张——投入资源/扣支持度, 换取永久产出基数提升。
     Expand,
+    /// P1.5: 选择红白路线。
+    ChooseBranch { branch: String },  // "Red" / "White"
+    /// P1.5: 红线组织度兑换。
+    RedeemOrg { mode: String },       // "LianDa" / "Concentrate" / "Mobilize"
     EndTurn,
 }
 

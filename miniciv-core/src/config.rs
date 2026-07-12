@@ -73,6 +73,30 @@ pub struct GameConfig {
     pub expand_resource_cost: (i32, i32, i32),
     /// 扩张后产出基数加成(每回合额外资源)。
     pub expand_income_bonus: i32,
+
+    // ── P1.5: 红白分叉 ──
+    /// 从第几回合起可选择红白路线。默认 15。0=开局可选。
+    pub branch_available_turn: u16,
+    /// 白线产出倍率。默认 1.5(+50%)。
+    pub white_output_boost: f64,
+    /// 白线危机周期(回合数)。默认 12。
+    pub white_crisis_interval: u8,
+    /// 白线危机触发的支持度伤害。默认 25。
+    pub white_crisis_support_damage: i32,
+    /// 红线支持度自动回复/回合。默认 2。
+    pub red_support_regen: i32,
+    /// 红线组织度增长率(每点支持度/回合)。默认 0.15。
+    pub red_org_per_support: f64,
+    /// 西南联大: 组织度消耗。默认 50。
+    pub red_lian_da_org_cost: i32,
+    /// 西南联大: 瞬间完成的科技数。默认 2。
+    pub red_lian_da_techs: u8,
+    /// 集中力量: 下回合产出倍率。默认 3.0。
+    pub red_concentrate_mult: f64,
+    /// 全民皆兵: 组织度消耗。默认 40。
+    pub red_mobilize_org_cost: i32,
+    /// 全民皆兵: 免费产兵数。默认 3。
+    pub red_mobilize_units: u8,
 }
 
 impl Default for GameConfig {
@@ -103,6 +127,17 @@ impl Default for GameConfig {
             expand_support_cost: 10,         // P1.5: 扩张一次-10支持
             expand_resource_cost: (15, 15, 10),  // P1.5: 扩张花费
             expand_income_bonus: 3,           // P1.5: 扩张后+3/回合产出
+            branch_available_turn: 15,       // P1.5: 第15回合起可选红白
+            white_output_boost: 1.5,         // P1.5: 白线+50%产出
+            white_crisis_interval: 12,       // P1.5: 白线危机每12回合
+            white_crisis_support_damage: 25, // P1.5: 危机扣25支持度
+            red_support_regen: 2,            // P1.5: 红线+2支持度/回合
+            red_org_per_support: 0.15,       // P1.5: 组织度=支持度×0.15/回合
+            red_lian_da_org_cost: 50,        // P1.5: 联大消耗50组织度
+            red_lian_da_techs: 2,            // P1.5: 联大完成2科技
+            red_concentrate_mult: 3.0,       // P1.5: 集中力量×3产出
+            red_mobilize_org_cost: 40,       // P1.5: 全民皆兵消耗40组织度
+            red_mobilize_units: 3,           // P1.5: 全民皆兵产3兵
         }
     }
 }

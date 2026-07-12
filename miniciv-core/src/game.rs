@@ -700,26 +700,30 @@ fn check_construction_victory(gs: &mut GameState) {
     let team_threshold = gs.config.construction_team_facilities;
 
     if team_threshold > 0 {
-        // P1.5 团队模式: 队内至少1人C5 + 队内设施合计≥门槛
-        // 收集各队数据
-        let mut team_has_c5: std::collections::BTreeMap<u8, bool> = std::collections::BTreeMap::new();
-        let mut team_facs: std::collections::BTreeMap<u8, u32> = std::collections::BTreeMap::new();
+        // P1.5 团队模式: 队内设施合计≥门槛 + C5持有者本人至少拥有个人门槛设施
+        let mut team_data: std::collections::BTreeMap<u8, (bool, u32, u32)> = std::collections::BTreeMap::new();
+        // value: (has_c5, team_total_facs, c5_holder_personal_facs)
         for pid in 0..n {
             let team = gs.config.teams.get(pid as usize).copied().unwrap_or(pid);
-            if gs.techs[pid as usize].completed.iter().any(|c| c == "C5") {
-                *team_has_c5.entry(team).or_insert(false) = true;
-            }
+            let entry = team_data.entry(team).or_insert((false, 0, 0));
+            let has_c5 = gs.techs[pid as usize].completed.iter().any(|c| c == "C5");
+            if has_c5 { entry.0 = true; }
+            let mut pfacs: u32 = 0;
             for r in 0..ms { for q in 0..ms {
                 if let Some(f) = &gs.grid.get(q, r).facility {
-                    if f.player_id == pid { *team_facs.entry(team).or_insert(0) += 1; }
+                    if f.player_id == pid {
+                        entry.1 += 1;  // team total
+                        pfacs += 1;
+                    }
                 }
             }}
+            if has_c5 { entry.2 = pfacs; }  // C5持有者个人设施数
         }
-        for team in team_has_c5.keys() {
-            if *team_has_c5.get(team).unwrap_or(&false)
-               && team_facs.get(team).copied().unwrap_or(0) >= team_threshold as u32
+        for (team, (has_c5, total_facs, c5_personal)) in &team_data {
+            if *has_c5
+               && *total_facs >= team_threshold as u32
+               && *c5_personal >= gs.config.construction_require_facilities as u32
             {
-                // 找该队第一个玩家作为 winner
                 gs.winner = (0..n).find(|&p| {
                     gs.config.teams.get(p as usize).copied().unwrap_or(p) == *team
                 });

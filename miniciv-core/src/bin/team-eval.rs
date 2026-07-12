@@ -117,10 +117,18 @@ fn main() {
         }
     }
 
+    let mut tt = std::collections::HashMap::new();
+    tt.insert("C5".to_string(), 4u8);
     let cfg = GameConfig {
         player_count: 4,
         branch_available_turn: branch_turn,
-        max_turns: 100,  // 2v2 给更多时间
+        max_turns: 100,
+        city_hp: 100,                       // 甜点: 征服可行
+        starting_workers: 2,                // 甜点: 减缓建设速度
+        c_line_cost_mult: 2.0,
+        construction_team_facilities: 8,    // 队内合计8设施
+        construction_require_facilities: 4, // C5持有者个人需4设施
+        tech_turns: tt,                     // C5=4回合
         ..GameConfig::default()
     };
 

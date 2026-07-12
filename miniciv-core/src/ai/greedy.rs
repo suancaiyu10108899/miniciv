@@ -14,7 +14,7 @@
 //   enum Strategy { ... }        — 策略模式
 //   Vec::retain()                — 原地过滤(比 Python 的列表推导更高效)
 
-use crate::game::GameState;
+use crate::game::{GameState, primary_enemy, same_team};
 use crate::unit::{Unit, UnitType, City};
 use crate::map::{Grid, Terrain};
 use crate::ai::{Action, Agent};
@@ -144,7 +144,7 @@ impl GreedyAgent {
 
 impl Agent for GreedyAgent {
     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
 
         // 收集当前玩家的存活单位

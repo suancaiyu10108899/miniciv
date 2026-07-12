@@ -10,7 +10,7 @@
 //   研究: 从可选科技中随机选
 //   生产: 从可负担的兵种中随机选
 
-use crate::game::GameState;
+use crate::game::{GameState, primary_enemy};
 use crate::unit::UnitType;
 use crate::ai::{Action, Agent};
 use crate::movement::{legal_moves, HEX_DIRS};
@@ -26,7 +26,7 @@ pub struct RandomAgent;
 
 impl Agent for RandomAgent {
     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let mut actions = Vec::new();
 
         // 收集当前玩家的存活单位
@@ -68,7 +68,8 @@ impl Agent for RandomAgent {
                         let nq = (unit.q + dq).rem_euclid(MAP_W as i32);
                         let nr = (unit.r + dr).rem_euclid(MAP_H as i32);
                         let has_enemy = gs.units.iter().any(|eu| {
-                            eu.alive && eu.player_id == opp
+                            eu.alive && eu.player_id != pid
+                                && !crate::game::same_team(eu.player_id, pid, &gs.config)
                                 && eu.q == nq && eu.r == nr
                         });
                         if has_enemy {

@@ -184,16 +184,17 @@ pub fn worker_action_produce(
     pid: u8,
     economy: &mut Economy,
     tech_bonuses: Option<&crate::tech::TechBonuses>,
+    facility_output: i32,
 ) -> Option<String> {
     let tile = grid.get(worker.q, worker.r);
-    let facility = tile.facility.as_ref()?;  // ? = 没有设施就返回 None
+    let facility = tile.facility.as_ref()?;
 
     if facility.player_id != pid {
-        return None;  // 不是己方设施
+        return None;
     }
 
     let resource_type = facility.output_resource().to_string();
-    let mut amount = FACILITY_OUTPUT;
+    let mut amount = facility_output;
 
     // 科技加成: E1/E2/E3 各 +1 对应产出
     if let Some(bonuses) = tech_bonuses {

@@ -299,6 +299,7 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                                 unit, &gs.grid, pid,
                                 &mut gs.economies[pid as usize],
                                 Some(&bonuses),
+                                gs.config.facility_output,
                             );
                         }
                     }
@@ -1309,8 +1310,8 @@ mod tests {
             gs.techs[0].completed.insert(t.to_string());
         }
         let ms = gs.config.map_size as i32;
-        // P0 3 facilities
-        for i in 0..3 {
+        // P0(C5 holder) 4 facilities — must meet personal threshold
+        for i in 0..4 {
             let nq = (gs.cities[0].q + HEX_DIRS[i].0).rem_euclid(ms);
             let nr = (gs.cities[0].r + HEX_DIRS[i].1).rem_euclid(ms);
             gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
@@ -1318,8 +1319,8 @@ mod tests {
                 player_id: 0, q: nq, r: nr,
             });
         }
-        // P1 3 facilities
-        for i in 0..3 {
+        // P1(no C5) 4 facilities
+        for i in 0..4 {
             let nq = (gs.cities[1].q + HEX_DIRS[i].0).rem_euclid(ms);
             let nr = (gs.cities[1].r + HEX_DIRS[i].1).rem_euclid(ms);
             gs.grid.get_mut(nq, nr).facility = Some(crate::unit::Facility {
@@ -1328,7 +1329,7 @@ mod tests {
             });
         }
         step_game_multi(&mut gs, &vec![vec![]; 4]);
-        assert!(gs.winner.is_some(), "团队设施合计6应触发建设胜利");
+        assert!(gs.winner.is_some(), "团队设施合计8应触发建设胜利(P0个人4≥4+总8≥6)");
         assert_eq!(gs.victory_type, Some(VictoryType::Construction));
     }
 

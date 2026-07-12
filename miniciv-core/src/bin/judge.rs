@@ -21,8 +21,11 @@ fn main() {
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(60);
     let depth: u16 = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(25);
     let instr_seeds: u32 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(20);
-    let cfg = GameConfig::default();
+    let hp: i32 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(100);
+    let cost_mult: f64 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(2.0);
+    let cfg = GameConfig { city_hp: hp, c_line_cost_mult: cost_mult, ..GameConfig::default() };
     let seed_base = 50000u64;
+    eprintln!("FlatMC judge: hp={} cost×{:.1}", hp, cost_mult);
 
     let judge = FlatMcAgent::with_depth(depth);
     let builder = BuilderAgent;

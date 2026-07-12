@@ -9,7 +9,7 @@
 // 若它在甜点带找不到某个始终最优的策略、被迫应变 → 一阶深度信号更硬。
 // 若它锁定某个策略碾压 → 暴露残留支配。
 
-use crate::game::{GameState, step_game};
+use crate::game::{GameState, step_game, primary_enemy};
 use crate::ai::{Action, Agent};
 use crate::ai::fixed::BuilderAgent;
 use crate::ai::probes::{RusherAgent, CavalryRusherAgent, DefenderAgent};

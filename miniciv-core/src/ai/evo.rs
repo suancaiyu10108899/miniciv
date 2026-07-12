@@ -10,6 +10,7 @@ use crate::map::Terrain;
 use crate::ai::{Action, Agent};
 use crate::movement::{legal_moves, hex_distance, HEX_DIRS};
 use crate::constants::{MAP_W, MAP_H};
+use crate::game::primary_enemy;
 use crate::tech::TechManager;
 use rand::RngCore;
 use std::collections::HashMap;
@@ -73,7 +74,7 @@ impl EvoAgent {
 
 impl Agent for EvoAgent {
     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = 1 - pid;
+        let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
         let w = &self.weights;
         let mut actions = Vec::new();
 

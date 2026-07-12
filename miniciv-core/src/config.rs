@@ -77,6 +77,10 @@ pub struct GameConfig {
     pub expand_resource_cost: (i32, i32, i32),
     /// 扩张后产出基数加成(每回合额外资源)。
     pub expand_income_bonus: i32,
+    /// 设施采集产出/回合。默认 4。降低可减缓建设速度。
+    pub facility_output: i32,
+    /// 单位生产成本乘数。默认 1.0。提高可减缓军事扩张。
+    pub unit_cost_mult: f64,
 
     // ── P1.5: 红白分叉 ──
     /// 从第几回合起可选择红白路线。默认 15。0=开局可选。
@@ -131,7 +135,9 @@ impl Default for GameConfig {
             support_revolt_threshold: 10,    // P1.5: 低于10可能动荡
             expand_support_cost: 10,         // P1.5: 扩张一次-10支持
             expand_resource_cost: (15, 15, 10),  // P1.5: 扩张花费
-            expand_income_bonus: 3,           // P1.5: 扩张后+3/回合产出
+            expand_income_bonus: 3,
+            facility_output: 4,              // P1.5: 可配置设施产出
+            unit_cost_mult: 1.0,             // P1.5: 单位成本乘数
             branch_available_turn: 15,       // P1.5: 第15回合起可选红白
             white_output_boost: 1.5,         // P1.5: 白线+50%产出
             white_crisis_interval: 12,       // P1.5: 白线危机每12回合

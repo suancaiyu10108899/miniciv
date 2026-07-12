@@ -84,6 +84,12 @@ pub struct TechManager {
     /// C线成本倍率(资源消耗杠杆): C开头科技的 cost ×这个值。默认1.0。
     #[serde(default = "default_cost_mult")]
     pub c_line_cost_mult: f64,
+    /// P1.5深度: 全局科技成本乘数(和c_line_cost_mult乘性叠加)。
+    #[serde(default = "default_cost_mult")]
+    pub all_tech_cost_mult: f64,
+    /// P1.5深度: 全局科技回合乘数。
+    #[serde(default = "default_cost_mult")]
+    pub tech_turns_mult: f64,
 }
 
 fn default_cost_mult() -> f64 { 1.0 }
@@ -101,6 +107,8 @@ impl TechManager {
             academy_increment: default_academy_increment(),
             turns_override: std::collections::HashMap::new(),
             c_line_cost_mult: 1.0,
+            all_tech_cost_mult: 1.0,
+            tech_turns_mult: 1.0,
         }
     }
 
@@ -175,7 +183,8 @@ impl TechManager {
 
         // 找到对应节点获取所需回合数(M1.2: turns_override 可覆盖)
         let node = find_node(tech_id)?;
-        let required = self.turns_override.get(tech_id.as_str()).copied().unwrap_or(node.turns);
+        let base_required = self.turns_override.get(tech_id.as_str()).copied().unwrap_or(node.turns);
+        let required = (base_required as f64 * self.tech_turns_mult).ceil() as u8;
         if self.research_ticks >= required {
             // 研究完成！
             let completed_id = self.researching.take().unwrap();
@@ -245,16 +254,19 @@ impl TechManager {
         find_node(tech_id).map(|n| n.cost)
     }
 
-    /// 有效花费(应用 C线成本倍率)。game 扣费用这个。
+    /// 有效花费(应用 C线成本倍率 + 全局成本倍率)。game 扣费用这个。
     pub fn cost_of(&self, tech_id: &str) -> Option<(i32, i32, i32)> {
         let base = Self::tech_cost(tech_id)?;
+        let mut m = self.all_tech_cost_mult;
         if tech_id.starts_with('C') && (self.c_line_cost_mult - 1.0).abs() > 1e-9 {
-            let m = self.c_line_cost_mult;
+            m *= self.c_line_cost_mult;
+        }
+        if (m - 1.0).abs() < 1e-9 {
+            Some(base)
+        } else {
             Some(((base.0 as f64 * m).ceil() as i32,
                   (base.1 as f64 * m).ceil() as i32,
                   (base.2 as f64 * m).ceil() as i32))
-        } else {
-            Some(base)
         }
     }
 }

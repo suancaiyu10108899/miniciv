@@ -223,8 +223,14 @@ pub fn produce_unit(
     economy: &mut Economy,
     unit_type: UnitType,
     all_units: &mut Vec<Unit>,
+    cost_mult: f64,
 ) -> bool {
-    let cost = unit_cost(unit_type);
+    let base = unit_cost(unit_type);
+    let cost = if (cost_mult - 1.0).abs() > 1e-9 {
+        ((base.0 as f64 * cost_mult).ceil() as i32,
+         (base.1 as f64 * cost_mult).ceil() as i32,
+         (base.2 as f64 * cost_mult).ceil() as i32)
+    } else { base };
     if !economy.can_afford(cost) {
         return false;
     }

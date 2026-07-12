@@ -75,6 +75,7 @@ pub struct Unit {
     pub alive: bool,
     pub damage_dealt: i32,      // 累计造成伤害（统计数据）
     pub damage_taken: i32,      // 累计承受伤害（统计数据）
+    pub build_ticks: u8,        // P1.5深度: 建造剩余回合(0=空闲)
 }
 
 impl Unit {
@@ -100,6 +101,7 @@ impl Unit {
             alive: true,
             damage_dealt: 0,
             damage_taken: 0,
+            build_ticks: 0,
         }
     }
 

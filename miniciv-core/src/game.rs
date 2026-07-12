@@ -159,6 +159,8 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
         t.academy_increment = config.academy_research_increment;
         t.turns_override = config.tech_turns.clone();
         t.c_line_cost_mult = config.c_line_cost_mult;
+        t.all_tech_cost_mult = config.all_tech_cost_mult;
+        t.tech_turns_mult = config.tech_turns_mult;
         techs.push(t);
     }
 
@@ -240,6 +242,17 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
     for (pid, actions) in player_order.iter() {
         let pid = *pid;
 
+        // P1.5深度: 建造进度推进(在动作执行前, 这样开工后下一回合就推进)
+        for u in gs.units.iter_mut() {
+            if u.player_id == pid && u.alive && u.build_ticks > 0 {
+                u.build_ticks -= 1;
+                if u.build_ticks == 0 {
+                    // 建造完成!
+                    worker_action_build(u, &mut gs.grid, pid);
+                }
+            }
+        }
+
         // 收集当前玩家的存活单位列表(用于 unit_idx 索引)
         let player_units: Vec<usize> = gs.units.iter().enumerate()
             .filter(|(_, u)| u.player_id == pid && u.alive)
@@ -286,8 +299,14 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                 Action::Build { unit_idx } => {
                     if let Some(&global_idx) = player_units.get(*unit_idx) {
                         let unit = &gs.units[global_idx];
-                        if unit.unit_type == UnitType::Worker {
-                            worker_action_build(unit, &mut gs.grid, pid);
+                        if unit.unit_type == UnitType::Worker && gs.units[global_idx].build_ticks == 0 {
+                            // P1.5深度: 多回合建造。首回合开工, 后续回合自动推进。
+                            let bts = gs.config.facility_build_turns;
+                            if bts <= 1 {
+                                worker_action_build(unit, &mut gs.grid, pid);
+                            } else {
+                                gs.units[global_idx].build_ticks = bts;
+                            }
                         }
                     }
                 }
@@ -318,6 +337,7 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                         &gs.grid, city,
                         &mut gs.economies[pid as usize],
                         ut, &mut gs.units,
+                        gs.config.unit_cost_mult,
                     );
                 }
                 Action::Research { tech_id } => {
@@ -402,7 +422,8 @@ pub fn step_game_multi(gs: &mut GameState, all_actions: &[Vec<Action>]) -> StepR
                                 let city = &gs.cities[pid as usize];
                                 for _ in 0..gs.config.red_mobilize_units {
                                     produce_unit(&gs.grid, city, econ,
-                                        UnitType::Infantry, &mut gs.units);
+                                        UnitType::Infantry, &mut gs.units,
+                                        gs.config.unit_cost_mult);
                                 }
                             }
                         }

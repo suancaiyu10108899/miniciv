@@ -81,6 +81,13 @@ pub struct GameConfig {
     pub facility_output: i32,
     /// 单位生产成本乘数。默认 1.0。提高可减缓军事扩张。
     pub unit_cost_mult: f64,
+    /// 全局科技回合乘数(P1.5深度推进)。所有科技研究回合 ×此值。默认 1.0。
+    pub tech_turns_mult: f64,
+    /// 全局科技成本乘数(P1.5深度推进)。所有科技(含M/E/C线)成本 ×此值。
+    /// 注意: 和 c_line_cost_mult 是乘性叠加。建议关掉 c_line_cost_mult(=1.0), 只用此值。
+    pub all_tech_cost_mult: f64,
+    /// 设施建造回合数(P1.5深度推进)。1=即时完成, 2=需2回合。默认 1。
+    pub facility_build_turns: u8,
 
     // ── P1.5: 红白分叉 ──
     /// 从第几回合起可选择红白路线。默认 15。0=开局可选。
@@ -110,7 +117,7 @@ pub struct GameConfig {
 impl Default for GameConfig {
     fn default() -> Self {
         Self {
-            max_turns: MAX_TURNS,
+            max_turns: 100,              // P1.5深度: 阶梯在T100(原MAX_TURNS=80)
             city_hp: 160,               // S2 甜点(非 CITY_HP=80 历史基线)
             city_def: CITY_DEF,
             city_damage: CITY_DAMAGE,
@@ -138,6 +145,9 @@ impl Default for GameConfig {
             expand_income_bonus: 3,
             facility_output: 4,              // P1.5: 可配置设施产出
             unit_cost_mult: 1.0,             // P1.5: 单位成本乘数
+            tech_turns_mult: 1.0,            // P1.5深度: 全局科技回合乘数
+            all_tech_cost_mult: 1.0,         // P1.5深度: 全局科技成本乘数
+            facility_build_turns: 1,         // P1.5深度: 设施建造回合
             branch_available_turn: 15,       // P1.5: 第15回合起可选红白
             white_output_boost: 1.5,         // P1.5: 白线+50%产出
             white_crisis_interval: 12,       // P1.5: 白线危机每12回合

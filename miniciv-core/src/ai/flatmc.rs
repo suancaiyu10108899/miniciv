@@ -20,7 +20,7 @@
 //   即便如此, 它的**根菜单**严格富于 4 剧本 → 能发现并使用死机制 → 足以第一次
 //   把"当前甜点真深还是假深"变成可裁决的问题。
 
-use crate::game::{GameState, step_game};
+use crate::game::{GameState, step_game, same_team, primary_enemy};
 use crate::unit::UnitType;
 use crate::map::Terrain;
 use crate::ai::{Action, Agent};
@@ -99,7 +99,8 @@ impl FlatMcAgent {
     /// 关键: rollout 尾巴里对手**持续**保持同一 aggressive 假设(否则只在第1回合算威胁,
     /// 被持续 rush 的 Rusher/CavRusher 屠)。
     fn eval_plan(&self, gs: &GameState, pid: u8, plan: &[Action]) -> f64 {
-        let opp = 1 - pid;
+        // P1.5: 用 primary_enemy 替代 1-pid(兼容多人)
+        let opp = primary_enemy(pid, &gs.config).unwrap_or(1 - pid);
         let mut worst = f64::MAX;
         // 对手响应假设: 0=建设 1=步兵强攻 2=骑兵强攻。取最坏(minimax), 覆盖三种主要威胁。
         for mode in [0u8, 1, 2] {
@@ -120,7 +121,7 @@ impl FlatMcAgent {
 fn rollout(g: &mut GameState, pid: u8, depth: u16, opp_mode: u8) -> f64 {
     let start_turn = g.turn;
     let max_turns = g.config.max_turns;
-    let opp = 1 - pid;
+    let opp = primary_enemy(pid, &g.config).unwrap_or(1 - pid);
     while g.winner.is_none() && g.turn < max_turns {
         if depth > 0 && g.turn.saturating_sub(start_turn) >= depth {
             return heuristic_value(g, pid);
@@ -141,7 +142,7 @@ fn rollout(g: &mut GameState, pid: u8, depth: u16, opp_mode: u8) -> f64 {
 /// 有偏(尤其权重), 已知。方向: 更接近任一胜利条件 = 更高。
 fn heuristic_value(g: &GameState, pid: u8) -> f64 {
     let prog = |p: u8| -> f64 {
-        let opp = 1 - p;
+        let opp = primary_enemy(p, &g.config).unwrap_or(1 - p);
         let constr = g.techs[p as usize].construction_count() as f64 / 5.0; // 0..1
         let c5 = if g.techs[p as usize].completed.iter().any(|c| c == "C5") { 1.0 } else { 0.0 };
         // 攻城进度: 敌城被削比例(默认满血 = config.city_hp)
@@ -214,7 +215,7 @@ fn build_turn_plan(
 /// 默认策略。mode: 0=建设向(威胁自适应防守) 1=步兵强攻 2=骑兵强攻。
 /// 1/2 用于 minimax 最坏情形(持续 rush 假设)。
 fn default_move_ex(gs: &GameState, pid: u8, mode: u8) -> Vec<Action> {
-    let opp = 1 - pid;
+    let opp = primary_enemy(pid, &gs.config).unwrap_or(1 - pid);
     let aggressive = mode >= 1;
     let mut actions = Vec::new();
     let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
@@ -345,7 +346,7 @@ fn worker_econ(local_idx: usize, unit: &crate::unit::Unit, gs: &GameState, pid: 
 
 /// 战斗单位按姿态给出移动方向。
 fn combat_move(unit: &crate::unit::Unit, gs: &GameState, pid: u8, posture: Posture) -> Option<(i32, i32)> {
-    let opp = 1 - pid;
+    let opp = primary_enemy(pid, &gs.config).unwrap_or(1 - pid);
     let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
     let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
     match posture {
@@ -370,7 +371,7 @@ fn combat_move(unit: &crate::unit::Unit, gs: &GameState, pid: u8, posture: Postu
 }
 
 fn move_toward_enemy_worker(unit: &crate::unit::Unit, gs: &GameState, pid: u8) -> Option<(i32, i32)> {
-    let opp = 1 - pid;
+    let opp = primary_enemy(pid, &gs.config).unwrap_or(1 - pid);
     let target = gs.units.iter()
         .filter(|e| e.alive && e.player_id == opp && e.unit_type == UnitType::Worker)
         .min_by_key(|e| hex_distance(unit.q, unit.r, e.q, e.r));

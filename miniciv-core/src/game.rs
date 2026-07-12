@@ -182,7 +182,7 @@ pub fn init_game_with_config(seed: u64, generator_id: &str, config: crate::confi
 // ─── 团队辅助(P1.5) ────────────────────────────────
 
 /// 查询某玩家的敌对玩家列表(根据 config.teams 分组)。
-fn enemies_of(pid: u8, config: &crate::config::GameConfig) -> Vec<u8> {
+pub fn enemies_of(pid: u8, config: &crate::config::GameConfig) -> Vec<u8> {
     let my_team = config.teams.get(pid as usize).copied().unwrap_or(pid);
     (0..config.player_count)
         .filter(|&p| {
@@ -193,14 +193,14 @@ fn enemies_of(pid: u8, config: &crate::config::GameConfig) -> Vec<u8> {
 }
 
 /// 两人是否同队(P1.5)。
-fn same_team(a: u8, b: u8, config: &crate::config::GameConfig) -> bool {
+pub fn same_team(a: u8, b: u8, config: &crate::config::GameConfig) -> bool {
     let ta = config.teams.get(a as usize).copied().unwrap_or(a);
     let tb = config.teams.get(b as usize).copied().unwrap_or(b);
     ta == tb
 }
 
 /// 获取某玩家的第一个敌人(向后兼容 1v1 中 `opp = 1 - pid`)。
-fn primary_enemy(pid: u8, config: &crate::config::GameConfig) -> Option<u8> {
+pub fn primary_enemy(pid: u8, config: &crate::config::GameConfig) -> Option<u8> {
     enemies_of(pid, config).first().copied()
 }
 

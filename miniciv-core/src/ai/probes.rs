@@ -456,10 +456,301 @@ impl Agent for AdaptiveAgent {
     fn name(&self) -> &str { "Adaptive" }
 }
 
+// ═══════════════════════════════════════════════════════
+// P1.5: 红白探针
+// ═══════════════════════════════════════════════════════
+
+/// AlwaysWhite — 可选的回合立刻选白, 之后全力产兵推城。
+/// 检验: 白线在非领先状态下是否自毁(支持度危机→崩盘)。
+pub struct AlwaysWhiteAgent;
+
+impl Agent for AlwaysWhiteAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let mut actions = Vec::new();
+        let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
+
+        // 可选即选白
+        if gs.economies[pid as usize].branch.is_none()
+           && gs.turn >= gs.config.branch_available_turn {
+            actions.push(Action::ChooseBranch { branch: "White".to_string() });
+        }
+
+        // 研究和产兵(和 Rusher 一样: M1助攻城+产步兵)
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let econ = &gs.economies[pid as usize];
+            for t in ["M1", "M4"] {
+                if tech.available_to_research().iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive).collect();
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            match unit.unit_type {
+                UnitType::Worker => {
+                    if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                        actions.push(a);
+                    }
+                }
+                UnitType::Scout => {}
+                _ => {
+                    if let Some((dq, dr)) = step_toward(unit, ecq, ecr, &gs.grid) {
+                        actions.push(Action::Move { unit_idx: local_idx, dq, dr });
+                    }
+                }
+            }
+        }
+
+        let econ = &gs.economies[pid as usize];
+        if econ.can_afford((5, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+        }
+        actions
+    }
+    fn name(&self) -> &str { "AlwaysWhite" }
+}
+
+/// AlwaysRed — 可选的回合立刻选红, 积累组织度→兑换西南联大→建设胜利。
+/// 检验: 红线在非落后状态下是否过低效(放弃产出加成→被白线碾压)。
+pub struct AlwaysRedAgent;
+
+impl Agent for AlwaysRedAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let mut actions = Vec::new();
+        let econ = &gs.economies[pid as usize];
+
+        // 可选即选红
+        if econ.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
+            actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+        }
+
+        // 组织度够了就兑西南联大(弯道超车科技)
+        if econ.branch == Some(crate::economy::Branch::Red)
+           && econ.organization >= gs.config.red_lian_da_org_cost {
+            actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
+        }
+
+        // 研究直奔 C5(建设胜利)
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let avail = tech.available_to_research();
+            for t in ["C1", "C3", "C4", "C5", "E1", "C2"] {
+                if avail.iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive).collect();
+        let mut n_worker = 0u32;
+        for (_, u) in &player_units {
+            if u.unit_type == UnitType::Worker { n_worker += 1; }
+        }
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            if let UnitType::Worker = unit.unit_type {
+                if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                    actions.push(a);
+                }
+            }
+            // 战斗单位守城(不主动出击)
+        }
+
+        let econ2 = &gs.economies[pid as usize];
+        if n_worker < 5 && econ2.can_afford((3, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+        } else if econ2.can_afford((5, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+        }
+        actions
+    }
+    fn name(&self) -> &str { "AlwaysRed" }
+}
+
+/// StateAware — 领先→选白, 落后→选红。
+/// 领先条件: 设施≥3 且城HP≥对手。
+/// 检验规格 R-1: "处境决定路线"是否优于 AlwaysWhite/AlwaysRed。
+pub struct StateAwareAgent;
+
+impl Agent for StateAwareAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let opp = 1 - pid;
+        let mut actions = Vec::new();
+        let econ = &gs.economies[pid as usize];
+
+        // 判断领先/落后
+        let mut my_facs = 0u32;
+        let ms = gs.config.map_size as i32;
+        for r in 0..ms { for q in 0..ms {
+            if let Some(f) = &gs.grid.get(q, r).facility {
+                if f.player_id == pid { my_facs += 1; }
+            }
+        }}
+        let leading = my_facs >= 3 && gs.cities[pid as usize].hp >= gs.cities[opp as usize].hp;
+
+        // 领先→白, 落后→红
+        if econ.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
+            if leading {
+                actions.push(Action::ChooseBranch { branch: "White".to_string() });
+            } else {
+                actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+            }
+        }
+
+        // 按所选路线行动
+        if econ.branch == Some(crate::economy::Branch::Red)
+           && econ.organization >= gs.config.red_lian_da_org_cost {
+            actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
+        }
+
+        // 研究: 白线走M兵, 红线走C建设
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let order: &[&str] = if econ.branch == Some(crate::economy::Branch::White) {
+                &["M1", "M4", "M2", "C1"]
+            } else {
+                &["C1", "C3", "C4", "C5", "E1"]
+            };
+            let avail = tech.available_to_research();
+            for t in order {
+                if avail.iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive).collect();
+        let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
+        let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            match unit.unit_type {
+                UnitType::Worker => {
+                    if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                        actions.push(a);
+                    }
+                }
+                UnitType::Scout => {}
+                _ => {
+                    // 白线进攻, 红线守城
+                    let (tq, tr) = if econ.branch == Some(crate::economy::Branch::White) {
+                        (ecq, ecr)
+                    } else {
+                        (mcq, mcr)
+                    };
+                    if let Some((dq, dr)) = step_toward(unit, tq, tr, &gs.grid) {
+                        actions.push(Action::Move { unit_idx: local_idx, dq, dr });
+                    }
+                }
+            }
+        }
+
+        let econ2 = &gs.economies[pid as usize];
+        if econ.branch == Some(crate::economy::Branch::White) {
+            if econ2.can_afford((5, 0, 0)) {
+                actions.push(Action::ProduceUnit { unit_type: "infantry".to_string() });
+            }
+        } else {
+            if econ2.can_afford((3, 0, 0)) {
+                actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+            }
+        }
+        actions
+    }
+    fn name(&self) -> &str { "StateAware" }
+}
+
+/// TankThenRed — 前期故意不产兵(保持高支持度)→选红线→爆发。
+/// 检验规格 R-2: "故意摆烂等红线"是否比正常发育更差(应输)。
+pub struct TankThenRedAgent;
+
+impl Agent for TankThenRedAgent {
+    fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
+        let mut actions = Vec::new();
+        let econ = &gs.economies[pid as usize];
+        let has_branch = econ.branch.is_some();
+
+        // 先选红线(不造兵, 支持度高→组织度快)
+        if !has_branch && gs.turn >= gs.config.branch_available_turn {
+            actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+        }
+
+        // 选了红线后, 组织度够了就尽可能兑换
+        if econ.branch == Some(crate::economy::Branch::Red) {
+            if econ.organization >= gs.config.red_lian_da_org_cost {
+                actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
+            } else if econ.organization >= gs.config.red_mobilize_org_cost {
+                actions.push(Action::RedeemOrg { mode: "Mobilize".to_string() });
+            }
+        }
+
+        // 研究直奔建设(靠组织度兑换弯道超车, 不靠常规研究)
+        let tech = &gs.techs[pid as usize];
+        if tech.researching.is_none() {
+            let avail = tech.available_to_research();
+            for t in ["C1", "C3", "C4", "C5", "E1"] {
+                if avail.iter().any(|a| a == t) {
+                    if let Some(cost) = TechManager::tech_cost(t) {
+                        if econ.can_afford(cost) {
+                            actions.push(Action::Research { tech_id: t.to_string() });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
+            .filter(|(_, u)| u.player_id == pid && u.alive).collect();
+
+        for (local_idx, (_, unit)) in player_units.iter().enumerate() {
+            if let UnitType::Worker = unit.unit_type {
+                if let Some(a) = worker_econ_action(local_idx, unit, gs, pid) {
+                    actions.push(a);
+                }
+            }
+            // 战斗单位: 守城不进攻(不产兵→只能被动防守)
+        }
+
+        // 不主动产战斗单位(只在 Mobilize 兑换时才产)
+        // 只产工人保证建设
+        let worker_count = player_units.iter()
+            .filter(|(_, u)| u.unit_type == UnitType::Worker).count();
+        if worker_count < 6 && econ.can_afford((3, 0, 0)) {
+            actions.push(Action::ProduceUnit { unit_type: "worker".to_string() });
+        }
+
+        actions
+    }
+    fn name(&self) -> &str { "TankThenRed" }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::{init_game, step_game};
+    use crate::game::{init_game, init_game_with_config, step_game};
+    use crate::config::GameConfig;
     use crate::constants::MAX_TURNS;
     use crate::ai::random::RandomAgent;
     use rand_chacha::ChaCha12Rng;
@@ -481,5 +772,29 @@ mod tests {
     fn test_探针单局可跑完() {
         assert!(run(&RusherAgent, &RandomAgent, 50000).winner.is_some());
         assert!(run(&HarasserAgent, &RandomAgent, 50000).winner.is_some());
+    }
+
+    #[test]
+    fn test_红白探针单局可跑完() {
+        // P1.5: 确保红白探针不会 panic/死循环
+        let cfg = GameConfig { branch_available_turn: 0, ..GameConfig::default() };
+        let probes: [(&str, &dyn Agent); 4] = [
+            ("AlwaysWhite", &AlwaysWhiteAgent),
+            ("AlwaysRed", &AlwaysRedAgent),
+            ("StateAware", &StateAwareAgent),
+            ("TankThenRed", &TankThenRedAgent),
+        ];
+        for (name, agent) in probes.iter() {
+            let mut gs = init_game_with_config(50000, "balanced", cfg.clone());
+            let mut r0 = ChaCha12Rng::seed_from_u64(50000);
+            let mut r1 = ChaCha12Rng::seed_from_u64(50001);
+            let mt = gs.config.max_turns;
+            while gs.winner.is_none() && gs.turn < mt {
+                let a0 = agent.decide(&gs, 0, &mut r0);
+                let a1 = RandomAgent.decide(&gs, 1, &mut r1);
+                step_game(&mut gs, &a0, &a1);
+            }
+            assert!(gs.winner.is_some(), "{} vs Random 未决出胜者", name);
+        }
     }
 }

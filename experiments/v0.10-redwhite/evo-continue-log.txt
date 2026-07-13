@@ -1,0 +1,302 @@
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\map.rs:25:24
+   |
+25 | use crate::constants::{MAP_W, MAP_H};
+   |                        ^^^^^  ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `FACILITY_OUTPUT`
+  --> src\economy.rs:18:5
+   |
+18 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\game.rs:23:5
+   |
+23 |     MAP_W, MAP_H,
+   |     ^^^^^  ^^^^^
+
+warning: unused import: `step_game`
+  --> src\eval.rs:13:53
+   |
+13 | use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
+   |                                                     ^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\greedy.rs:17:45
+   |
+17 | use crate::game::{GameState, primary_enemy, same_team};
+   |                                             ^^^^^^^^^
+
+warning: unused import: `City`
+  --> src\ai\greedy.rs:18:35
+   |
+18 | use crate::unit::{Unit, UnitType, City};
+   |                                   ^^^^
+
+warning: unused import: `Grid`
+  --> src\ai\greedy.rs:19:18
+   |
+19 | use crate::map::{Grid, Terrain};
+   |                  ^^^^
+
+warning: unused imports: `CAVALRY_CHARGE_BONUS`, `CITY_BASE_FOOD`, `CITY_DEF`, `CITY_HP`, `FACILITY_OUTPUT`, `STARTING_FOOD`, `STARTING_GOLD`, and `STARTING_WOOD`
+  --> src\ai\greedy.rs:23:19
+   |
+23 |     MAP_W, MAP_H, CITY_HP, CITY_DEF, CAVALRY_CHARGE_BONUS,
+   |                   ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+24 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+25 |     STARTING_FOOD, STARTING_WOOD, STARTING_GOLD,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused imports: `TechBonuses` and `TechManager`
+  --> src\ai\greedy.rs:27:19
+   |
+27 | use crate::tech::{TechManager, TechBonuses};
+   |                   ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\evo.rs:14:5
+   |
+14 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\fixed.rs:21:5
+   |
+21 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\probes.rs:19:5
+   |
+19 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `primary_enemy`
+  --> src\ai\search.rs:12:41
+   |
+12 | use crate::game::{GameState, step_game, primary_enemy};
+   |                                         ^^^^^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\flatmc.rs:23:41
+   |
+23 | use crate::game::{GameState, step_game, same_team, primary_enemy};
+   |                                         ^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\flatmc.rs:29:5
+   |
+29 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `generator_id`
+   --> src\map.rs:156:32
+    |
+156 | pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_generator_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\combat.rs:73:9
+   |
+73 |     let mut def_damage = calc_damage(defender.atk, def_bonus, attacker.def, att_bonus);
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `opp`
+  --> src\ai\random.rs:29:13
+   |
+29 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+   |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `rng`
+   --> src\ai\greedy.rs:146:47
+    |
+146 |     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+    |                                               ^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `opp`
+   --> src\ai\greedy.rs:147:13
+    |
+147 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `size`
+   --> src\ai\greedy.rs:330:9
+    |
+330 |     let size = MAP_W as i32;
+    |         ^^^^ help: if this is intentional, prefix it with an underscore: `_size`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:501:25
+    |
+501 |     strategy: Strategy, a: &StrategicAssessment,
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `pid`
+   --> src\ai\greedy.rs:720:34
+    |
+720 |     unit: &Unit, gs: &GameState, pid: u8,
+    |                                  ^^^ help: if this is intentional, prefix it with an underscore: `_pid`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:843:31
+    |
+843 |     counter: &Option<String>, a: &StrategicAssessment,
+    |                               ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `cfg`
+   --> src\ai\evo.rs:481:75
+    |
+481 |     tx: i32, ty: i32, dist_weight: f64, high_ground: f64, terrain_w: f64, cfg: &GreedyConfig,
+    |                                                                           ^^^ help: if this is intentional, prefix it with an underscore: `_cfg`
+
+warning: unused variable: `team_trailing`
+   --> src\ai\probes.rs:695:21
+    |
+695 |                 let team_trailing = t_lead <= 2;
+    |                     ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_team_trailing`
+
+warning: function `team_alive` is never used
+   --> src\game.rs:210:4
+    |
+210 | fn team_alive(team: u8, gs: &GameState) -> bool {
+    |    ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+   --> src\ai\greedy.rs:230:5
+    |
+226 | struct StrategicAssessment {
+    |        ------------------- fields in this struct
+...
+230 |     res_ratio: f64,
+    |     ^^^^^^^^^
+231 |     tech_lead: i32,
+    |     ^^^^^^^^^
+...
+234 |     my_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^
+235 |     opp_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+236 |     opp_near_city_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+237 |     enemy_defense_strong: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+238 |     weak_point: Option<(i32, i32)>,
+239 |     my_power: i32,
+    |     ^^^^^^^^
+240 |     opp_power: i32,
+    |     ^^^^^^^^^
+    |
+    = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `miniciv-core` (lib) generated 28 warnings (run `cargo fix --lib -p miniciv-core` to apply 26 suggestions)
+warning: unused import: `std::io::Write`
+  --> src\bin\train-evo.rs:20:5
+   |
+20 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `miniciv-core` (bin "train-evo") generated 1 warning (run `cargo fix --bin "train-evo" -p miniciv-core` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.17s
+     Running `target\release\train-evo.exe 120 40 12 ../experiments/v0.10-redwhite/evo-checkpoint.json`
+从checkpoint恢复: gen=59 best_fitness=0.850
+Evo GA: 40个体 × 120代(从60代开始) × 12seeds × 5对手 = 4800 评估/代, C1甜点(不改)
+Gen 60: best=0.817 top10avg=0.771 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 61: best=0.808 top10avg=0.752 
+Gen 62: best=0.775 top10avg=0.748 
+Gen 63: best=0.817 top10avg=0.767 
+Gen 64: best=0.808 top10avg=0.764 
+Gen 65: best=0.808 top10avg=0.762 
+Gen 66: best=0.783 top10avg=0.750 
+Gen 67: best=0.833 top10avg=0.781 
+Gen 68: best=0.808 top10avg=0.769 
+Gen 69: best=0.808 top10avg=0.752 
+Gen 70: best=0.833 top10avg=0.774 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 71: best=0.825 top10avg=0.773 
+Gen 72: best=0.858 top10avg=0.771 ★
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 73: best=0.825 top10avg=0.743 
+Gen 74: best=0.817 top10avg=0.758 
+Gen 75: best=0.792 top10avg=0.741 
+Gen 76: best=0.800 top10avg=0.766 
+Gen 77: best=0.792 top10avg=0.761 
+Gen 78: best=0.808 top10avg=0.783 
+Gen 79: best=0.750 top10avg=0.732 
+Gen 80: best=0.817 top10avg=0.783 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 81: best=0.767 top10avg=0.747 
+Gen 82: best=0.825 top10avg=0.778 
+Gen 83: best=0.792 top10avg=0.755 
+Gen 84: best=0.783 top10avg=0.748 
+Gen 85: best=0.825 top10avg=0.782 
+Gen 86: best=0.800 top10avg=0.756 
+Gen 87: best=0.800 top10avg=0.771 
+Gen 88: best=0.792 top10avg=0.755 
+Gen 89: best=0.783 top10avg=0.745 
+Gen 90: best=0.783 top10avg=0.758 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 91: best=0.800 top10avg=0.768 
+Gen 92: best=0.800 top10avg=0.778 
+Gen 93: best=0.808 top10avg=0.761 
+Gen 94: best=0.783 top10avg=0.742 
+Gen 95: best=0.792 top10avg=0.766 
+Gen 96: best=0.808 top10avg=0.771 
+Gen 97: best=0.783 top10avg=0.757 
+Gen 98: best=0.867 top10avg=0.777 ★
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 99: best=0.800 top10avg=0.773 
+Gen 100: best=0.825 top10avg=0.780 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 101: best=0.850 top10avg=0.775 
+Gen 102: best=0.817 top10avg=0.747 
+Gen 103: best=0.808 top10avg=0.768 
+Gen 104: best=0.800 top10avg=0.754 
+Gen 105: best=0.833 top10avg=0.775 
+Gen 106: best=0.833 top10avg=0.774 
+Gen 107: best=0.792 top10avg=0.766 
+Gen 108: best=0.817 top10avg=0.773 
+Gen 109: best=0.792 top10avg=0.758 
+Gen 110: best=0.767 top10avg=0.747 
+  checkpoint → ../experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 111: best=0.808 top10avg=0.772 
+Gen 112: best=0.817 top10avg=0.758 
+Gen 113: best=0.800 top10avg=0.765 
+Gen 114: best=0.808 top10avg=0.765 
+Gen 115: best=0.775 top10avg=0.759 
+Gen 116: best=0.775 top10avg=0.751 
+Gen 117: best=0.808 top10avg=0.762 
+Gen 118: best=0.775 top10avg=0.756 
+Gen 119: best=0.808 top10avg=0.770 
+
+最终权重 → ../experiments/v0.10-redwhite/evo-trained-weights.json (fitness=0.867)
+  attack_adjacent: 1.549
+  rush_enemy_city: 0.184
+  defend_own_city: 0.010
+  intercept_near_city: 0.203
+  retreat_hp_threshold: 0.164
+  terrain_def_weight: 0.010
+  retreat_terrain_bonus: 0.722
+  archer_keep_distance: 0.843
+  archer_prefer_high: 0.315
+  build_efficiency: 4.976
+  resource_variety: 0.010
+  research_priority: 1.478
+  military_tech_bias: 0.425
+  cavalry_production: 0.223
+  archer_production: 0.743

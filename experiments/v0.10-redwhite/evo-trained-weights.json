@@ -1,21 +1,21 @@
 {
   "weights": {
-    "attack_adjacent": 2.5142601698955653,
-    "defend_own_city": 0.05339997040206985,
-    "retreat_hp_threshold": 0.14960246755023762,
-    "rush_enemy_city": 0.20213880672722398,
-    "intercept_near_city": 0.13794684027541204,
-    "retreat_terrain_bonus": 0.2175800496006407,
-    "archer_keep_distance": 1.1823390351442786,
-    "research_priority": 0.37887741108479145,
-    "archer_prefer_high": 0.40800919610893727,
-    "build_efficiency": 3.682532150821368,
-    "cavalry_production": 0.17870698323010553,
-    "terrain_def_weight": 0.019498452205613602,
-    "resource_variety": 0.01,
-    "military_tech_bias": 0.6248323463512118,
-    "archer_production": 0.2686351928954561
+    "archer_production": 0.7426656284344384,
+    "archer_prefer_high": 0.31537401475165977,
+    "intercept_near_city": 0.2034610615189832,
+    "attack_adjacent": 1.548691174827451,
+    "archer_keep_distance": 0.8425651264642874,
+    "build_efficiency": 4.975918001865299,
+    "retreat_terrain_bonus": 0.7223441180071024,
+    "retreat_hp_threshold": 0.16376698325562786,
+    "rush_enemy_city": 0.18403990501390965,
+    "terrain_def_weight": 0.01,
+    "cavalry_production": 0.22267510703344504,
+    "defend_own_city": 0.01,
+    "research_priority": 1.4782782920952953,
+    "military_tech_bias": 0.4245682055365393,
+    "resource_variety": 0.010031773113827976
   },
-  "fitness": 0.85,
-  "generation": 60
+  "fitness": 0.8666666666666668,
+  "generation": 120
 }

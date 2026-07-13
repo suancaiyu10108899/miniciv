@@ -255,4 +255,20 @@ hp=100 使征服成为可行路径（~60% Builder vs Rusher, 0% 阶梯）。
 
 ---
 
-*最后更新: 2026-07-05*
+### 23. P1.5深度推进甜点锁定（2026-07-13 第六个 AI）
+
+**日期**: 2026-07-13
+**决策**: P1.5 深度推进最终甜点 C1: `ttM=12, uM=8, fBT=14, hp=2000, tcM=4, startR=40, branch@T40`。
+**为什么**: 6,912组合粗扫→5候选×12AI×200seeds全矩阵筛选。C1在82.9T达成StateAware 75.4%>AlwaysWhite 74.2%(H2H 65%)、Cq/Cs=41/50%、Tb=8.75%。2v2验证频率依赖(WvR 1v1 61.8%→2v2 13.8%, 48pp逆转)。
+**依据**: `experiments/v0.10-redwhite/VERDICT-FINAL.md` + scan-push 6,912组合 + candidates-summary。
+
+### 24. 全AI config-aware成本修复（2026-07-13 第六个 AI）
+
+**日期**: 2026-07-13
+**决策**: 所有AI的 `can_afford` 和 `cost_of` 必须使用 config-aware 版本，非硬编码基础成本。新增 `effective_unit_cost()` helper。
+**为什么**: 极端参数下基础成本和实际成本差3-8倍，AI自欺→CavRusher 0.5%。修复后复活到35.2%。
+**依据**: 本对话 Phase 1 修复记录。
+
+---
+
+*最后更新: 2026-07-13*

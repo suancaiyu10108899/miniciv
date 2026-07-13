@@ -4,12 +4,14 @@
 
 **P1.5 深度推进 — 全局压缩延寿甜点锁定, 交接给自动化会话跑完整矩阵。**
 
-> 🧭 **交接状态(2026-07-13 第六个 AI 接手):**
-> Phase 1 完成: 修复CavRusher/StateAware/config-aware成本(全AI `tech_cost`→`cost_of` + `unit_cost`×mult),
-> 修复6处文档腐烂。103 tests ✅。
-> 甜点基线: ttM=9.0/hp=1200/fBT=8/uM=8.0→44.6T(60s)/53.6T(200s), 目标65-80T。
-> **当前 Phase 2**: 粗扫扩参数(ttM=10-16, hp=1500-2500)推向65-80T, overnight 自动。
-> **规划详情**: `docs/planning/2026-07-13-P1.5-deep-dive.md`。
+> 🧭 **交接状态(2026-07-13 第六个 AI 完成 P1.5 深度推进):**
+> **最终甜点 C1**: ttM=12/hp=2000/fBT=14/uM=8/tcM=4/startR=40/branch@T40 → **82.9T**。
+> 1v1: StateAware 75.4%(最强), Cq/Cs=41/50%, Tb=8.75%, SvA vs Aw H2H=65%(R-1✅)。
+> 2v2: WvR 13.8%(1v1 61.8%→2v2 13.8%, 48pp逆转, R-3✅✅)。
+> **裁决: H1 方向强成立。** 全局压缩延寿有效(7-35T→82.9T)，红白反滚雪球有深度。
+> 诚实边界: StateAware 2v2 失效(0% vs AllWhite), Evo权重失效(3.3%), FlatMC未跑完(需要分层升级)。
+> **下一个 AI**: P2 结构性改动(更大棋盘+多回合建造) + FlatMC升级 + Evo重训 + StateAware 2v2修复。
+> **完整裁决**: `experiments/v0.10-redwhite/VERDICT-FINAL.md`。
 
 ---
 

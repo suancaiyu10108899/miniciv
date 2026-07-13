@@ -17,28 +17,35 @@ fn main() {
     let seeds: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(300);
     let out = args.get(2).cloned().unwrap_or_else(|| "experiments/v0.10-redwhite/sweet-matrix.json".to_string());
 
-    // 甜点配置
+    // P1.5深度C1甜点配置 (可CLI覆盖: seeds out [ttM] [uM] [fBT] [hp] [tcM] [startR] [branch])
+    let ttM: f64 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(12.0);
+    let uM: f64 = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8.0);
+    let fBT: u8 = args.get(5).and_then(|s| s.parse().ok()).unwrap_or(14);
+    let hp: i32 = args.get(6).and_then(|s| s.parse().ok()).unwrap_or(2000);
+    let tcM: f64 = args.get(7).and_then(|s| s.parse().ok()).unwrap_or(4.0);
+    let startR: i32 = args.get(8).and_then(|s| s.parse().ok()).unwrap_or(40);
+    let branch: u16 = args.get(9).and_then(|s| s.parse().ok()).unwrap_or(40);
     let cfg = GameConfig {
-        max_turns: 200,
-        tech_turns_mult: 9.0,
-        all_tech_cost_mult: 3.0,
-        unit_cost_mult: 8.0,
-        facility_build_turns: 8,
-        city_hp: 1200,
-        c_line_cost_mult: 1.0,
-        starting_food: 30, starting_wood: 30, starting_gold: 30,
+        max_turns: 250,
+        tech_turns_mult: ttM, all_tech_cost_mult: tcM,
+        unit_cost_mult: uM, facility_build_turns: fBT,
+        city_hp: hp, c_line_cost_mult: 1.0,
+        starting_food: startR, starting_wood: startR, starting_gold: startR,
         facility_output: 4, starting_workers: 2,
-        branch_available_turn: 25,
+        branch_available_turn: branch,
         ..GameConfig::default()
     };
 
-    eprintln!("甜点矩阵: {} AI, {} seeds paired, T_max=200, HP=1200, ttM=9.0, fBT=8, uM=8.0, tcM=3.0, startR=30, branch@T25",
-        if seeds >= 300 { "10" } else { "10" }, seeds);
+    eprintln!("甜点矩阵: {} AI, {} seeds paired, T_max=250, HP={}, ttM={:.0}, fBT={}, uM={:.0}, tcM={:.0}, startR={}, branch@T{}",
+        12, seeds, hp, ttM, fBT, uM, tcM, startR, branch);
 
+    let greedy = GreedyAgent::new();
+    let evo = EvoAgent::new();
     let agents: Vec<&dyn Agent> = vec![
         &BuilderAgent, &RusherAgent, &CavalryRusherAgent,
         &DefenderAgent, &AdaptiveAgent, &RandomAgent,
         &AlwaysWhiteAgent, &AlwaysRedAgent, &StateAwareAgent, &TankThenRedAgent,
+        &greedy, &evo,
     ];
 
     let m = run_matrix_par(&agents, seeds, 50000, "balanced", &cfg);

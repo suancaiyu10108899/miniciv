@@ -7,7 +7,7 @@
 use miniciv_core::ai::Agent;
 use miniciv_core::ai::flatmc::FlatMcAgent;
 use miniciv_core::ai::fixed::BuilderAgent;
-use miniciv_core::ai::probes::{RusherAgent, CavalryRusherAgent, DefenderAgent, AdaptiveAgent};
+use miniciv_core::ai::probes::{RusherAgent, CavalryRusherAgent, DefenderAgent, AdaptiveAgent, AlwaysWhiteAgent, AlwaysRedAgent, StateAwareAgent, TankThenRedAgent};
 use miniciv_core::ai::Action;
 use miniciv_core::config::GameConfig;
 use miniciv_core::eval::run_pair_par as run_pair;
@@ -42,9 +42,11 @@ fn main() {
     let cav = CavalryRusherAgent;
     let def = DefenderAgent;
     let adaptive = AdaptiveAgent;
+    let aw = AlwaysWhiteAgent; let ar = AlwaysRedAgent; let sa = StateAwareAgent; let ttr = TankThenRedAgent;
     let opps: Vec<(&str, &dyn Agent)> = vec![
         ("Builder", &builder), ("Rusher", &rusher), ("CavRusher", &cav),
         ("Defender", &def), ("Adaptive", &adaptive),
+        ("AlwaysWhite", &aw), ("AlwaysRed", &ar), ("StateAware", &sa), ("TankThenRed", &ttr),
     ];
 
     eprintln!("裁判矩阵: FlatMC(depth={}) vs 剧本, {} seeds paired, 默认甜点(成本×2 HP160)", depth, seeds);

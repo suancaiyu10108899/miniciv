@@ -160,9 +160,10 @@ fn empty_labels() -> [String; 6] {
 // ── ES 训练主循环 ──
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let generations: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(200);
-    let pop_n: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(100);
+    let generations: u32 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(300);
+    let pop_n: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(200);
     let seeds_per: u32 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8);
+    let resume_path = args.get(4).cloned(); // optional: resume from checkpoint
 
     let cfg = GameConfig {
         max_turns: 250, tech_turns_mult: 12.0, all_tech_cost_mult: 4.0,
@@ -188,106 +189,118 @@ fn main() {
     ];
 
     let mut rng = ChaCha12Rng::seed_from_u64(55555);
-    let nn = NnWeights::new(&mut rng);
+    let mut nn = NnWeights::new(&mut rng);
     let head_sizes: Vec<usize> = action_map.iter().map(|a| a.len()).collect();
-    let mut theta = nn.flatten();
+
+    // 恢复或初始化
+    let (start_gen, mut theta, mut best_fitness, mut best_theta) = if let Some(rp) = &resume_path {
+        if let Ok(json) = std::fs::read_to_string(rp) {
+            if let Ok(data) = serde_json::from_str::<serde_json::Value>(&json) {
+                let flat: Vec<f64> = data["weights"].as_array().unwrap().iter().map(|v|v.as_f64().unwrap()).collect();
+                let gen: u32 = data["generation"].as_u64().unwrap_or(0) as u32;
+                let fit: f64 = data["fitness"].as_f64().unwrap_or(0.0);
+                eprintln!("从checkpoint恢复: gen={} fitness={:.3}", gen, fit);
+                (gen+1, flat.clone(), fit, flat)
+            } else { (0, nn.flatten(), 0.0, nn.flatten()) }
+        } else { (0, nn.flatten(), 0.0, nn.flatten()) }
+    } else { (0, nn.flatten(), 0.0, nn.flatten()) };
+
     let n_params = theta.len();
-    let sigma = 0.1;  // 噪声标准差
-    let lr = 0.01;    // 学习率
+    let sigma_init = 0.11;
+    let sigma_end = 0.03;
     let sb = 800000u64;
 
-    eprintln!("Evo-V2 ES: {}参数 × {}噪声 × {}seeds × {}对手 = {}局/代, {}代",
-        n_params, pop_n, seeds_per, opponents.len(), pop_n*2*opponents.len()*seeds_per as usize*2, generations);
+    // Adam 状态
+    let mut adam_m = vec![0.0f64; n_params];
+    let mut adam_v = vec![0.0f64; n_params];
+    let adam_beta1 = 0.9;
+    let adam_beta2 = 0.999;
+    let adam_eps = 1e-8;
+    let adam_lr = 0.005;
 
-    let mut best_fitness = 0.0f64;
-    let mut best_theta = theta.clone();
+    eprintln!("Evo-V2b Adam+衰减 {}参数×{}噪声×{}seeds×{}对手, {}代, σ{}→{}",
+        n_params, pop_n, seeds_per, opponents.len(), generations, sigma_init, sigma_end);
 
-    for gen in 0..generations {
-        // 生成噪声扰动
+    for gen in start_gen..generations {
+        let progress = gen as f64 / generations as f64;
+        let sigma = sigma_init + (sigma_end - sigma_init) * progress;
+
+        // 生成噪声
         let dist = Normal::new(0.0, sigma).unwrap();
         let noises: Vec<Vec<f64>> = (0..pop_n).map(|_| {
             (0..n_params).map(|_| dist.sample(&mut rng)).collect()
         }).collect();
 
-        // 并行评估所有θ+ε和θ-ε
+        // 并行评估
         let scores: Vec<(usize, f64, f64)> = noises.par_iter().enumerate().map(|(i, eps)| {
-            let theta_plus: Vec<f64> = theta.iter().zip(eps.iter()).map(|(t,e)| t+e).collect();
-            let theta_minus: Vec<f64> = theta.iter().zip(eps.iter()).map(|(t,e)| t-e).collect();
-            let nn_plus = NnWeights::from_flat(&theta_plus, &head_sizes);
-            let nn_minus = NnWeights::from_flat(&theta_minus, &head_sizes);
-            let fit = |nn: &NnWeights| -> f64 {
-                let mut agent = NnAgent { weights: nn.clone(), action_map: action_map.clone() };
+            let tp: Vec<f64> = theta.iter().zip(eps.iter()).map(|(t,e)| t+e).collect();
+            let tm: Vec<f64> = theta.iter().zip(eps.iter()).map(|(t,e)| t-e).collect();
+            let fit = |flat: &[f64]| -> f64 {
+                let nw = NnWeights::from_flat(flat, &head_sizes);
+                let mut agent = NnAgent { weights: nw, action_map: action_map.clone() };
                 let mut total_wr = 0.0f64;
                 for (_, opp) in &opponents {
                     let mut wins = 0u32;
                     for s in 0..seeds_per {
-                        let seed = sb + gen as u64*100000 + i as u64*1000 + s as u64;
-                        let g = run_game_nn(&mut agent, *opp, seed, &cfg);
-                        if g == Some(0) { wins += 1; }
-                        let g2 = run_game_nn(&mut agent, *opp, seed+500000, &cfg);
-                        if g2 == Some(0) { wins += 1; }
+                        let seed = sb+gen as u64*100000+i as u64*1000+s as u64;
+                        if run_game_nn(&mut agent, *opp, seed, &cfg) == Some(0) { wins += 1; }
+                        if run_game_nn(&mut agent, *opp, seed+500000, &cfg) == Some(0) { wins += 1; }
                     }
-                    total_wr += wins as f64 / (seeds_per*2) as f64;
+                    total_wr += wins as f64/(seeds_per*2) as f64;
                 }
                 total_wr / opponents.len() as f64
             };
-            (i, fit(&nn_plus), fit(&nn_minus))
+            (i, fit(&tp), fit(&tm))
         }).collect();
 
-        // 估计梯度: Σ ε_i * (f(θ+ε) - f(θ-ε)) / (2σ²N)
+        // 梯度估计
         let mut grad = vec![0.0f64; n_params];
         for &(i, fp, fm) in &scores {
             let diff = fp - fm;
-            for j in 0..n_params {
-                grad[j] += noises[i][j] * diff;
-            }
+            for j in 0..n_params { grad[j] += noises[i][j] * diff; }
         }
+        for j in 0..n_params { grad[j] /= 2.0 * sigma * sigma * pop_n as f64; }
+
+        // Adam 更新
         for j in 0..n_params {
-            grad[j] /= 2.0 * sigma * sigma * pop_n as f64;
+            adam_m[j] = adam_beta1 * adam_m[j] + (1.0 - adam_beta1) * grad[j];
+            adam_v[j] = adam_beta2 * adam_v[j] + (1.0 - adam_beta2) * grad[j] * grad[j];
+            let m_hat = adam_m[j] / (1.0 - adam_beta1.powi(gen as i32+1));
+            let v_hat = adam_v[j] / (1.0 - adam_beta2.powi(gen as i32+1));
+            theta[j] += adam_lr * m_hat / (v_hat.sqrt() + adam_eps);
         }
 
-        // 更新
-        for j in 0..n_params { theta[j] += lr * grad[j]; }
-
-        // 评估当前最好
+        // 评估
         let current_nn = NnWeights::from_flat(&theta, &head_sizes);
-        let mut agent = NnAgent { weights: current_nn.clone(), action_map: action_map.clone() };
+        let mut agent = NnAgent { weights: current_nn, action_map: action_map.clone() };
         let mut current_fit = 0.0f64;
         for (_, opp) in &opponents {
             let mut wins = 0u32;
             for s in 0..seeds_per {
-                let seed = sb + 999999 + s as u64;
-                let g = run_game_nn(&mut agent, *opp, seed, &cfg);
-                if g == Some(0) { wins += 1; }
-                let g2 = run_game_nn(&mut agent, *opp, seed+500000, &cfg);
-                if g2 == Some(0) { wins += 1; }
+                if run_game_nn(&mut agent, *opp, sb+999999+s as u64, &cfg) == Some(0) { wins += 1; }
+                if run_game_nn(&mut agent, *opp, sb+999999+s as u64+500000, &cfg) == Some(0) { wins += 1; }
             }
-            current_fit += wins as f64 / (seeds_per*2) as f64;
+            current_fit += wins as f64/(seeds_per*2) as f64;
         }
         current_fit /= opponents.len() as f64;
 
-        if current_fit > best_fitness {
-            best_fitness = current_fit;
-            best_theta = theta.clone();
-        }
+        if current_fit > best_fitness { best_fitness = current_fit; best_theta = theta.clone(); }
 
-        if gen % 10 == 0 || gen == generations - 1 {
-            eprintln!("Gen {}: fit={:.3} best={:.3} {}", gen, current_fit, best_fitness,
+        if gen % 10 == 0 || gen == generations-1 {
+            eprintln!("Gen {}: fit={:.3} best={:.3} σ={:.3} {}", gen, current_fit, best_fitness, sigma,
                 if current_fit > best_fitness {"★"}else{""});
         }
 
-        // checkpoint
-        if gen % 20 == 0 {
+        if gen % 25 == 0 {
             let ckpt = serde_json::json!({"weights":best_theta,"head_sizes":&head_sizes,"action_map":&action_map,"fitness":best_fitness,"generation":gen});
-            std::fs::write("../experiments/v0.10-redwhite/evo-v2-checkpoint.json", serde_json::to_string_pretty(&ckpt).unwrap()).ok();
+            std::fs::write("../experiments/v0.10-redwhite/evo-v2b-checkpoint.json", serde_json::to_string_pretty(&ckpt).unwrap()).ok();
         }
     }
 
-    // 保存最终权重
     let output = serde_json::json!({"weights":best_theta,"head_sizes":&head_sizes,"action_map":&action_map,"fitness":best_fitness,"generation":generations});
-    let out = "../experiments/v0.10-redwhite/evo-v2-weights.json";
+    let out = "../experiments/v0.10-redwhite/evo-v2b-weights.json";
     std::fs::write(out, serde_json::to_string_pretty(&output).unwrap()).unwrap();
-    eprintln!("V2完成: fitness={:.3} → {}", best_fitness, out);
+    eprintln!("V2b完成: fitness={:.3} → {}", best_fitness, out);
 }
 
 // NN agent 对局

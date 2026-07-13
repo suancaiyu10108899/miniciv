@@ -235,3 +235,9 @@ warning: `miniciv-core` (bin "bc-collect") generated 4 warnings (run `cargo fix 
     Finished `release` profile [optimized] target(s) in 4.79s
      Running `target\release\bc-collect.exe 300`
   1 games, 113 rows
+  51 games, 8388 rows
+  101 games, 15122 rows
+  151 games, 21837 rows
+  201 games, 29032 rows
+  251 games, 35993 rows
+完成: 300 games, 43836 rows → ../experiments/v0.10-redwhite/bc-training-data.csv

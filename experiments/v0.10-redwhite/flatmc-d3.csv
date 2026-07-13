@@ -1,4 +1,0 @@
-depth,opponent,flatmc_wr%,wr_std%,avg_turns,turn_std,cq%,cs%,tb%
-3,Builder,0.0,0.0,247.5,29.7,0,0,0
-3,StateAware,5.5,0.7,116.3,14.0,6,0,0
-3,AlwaysWhite,3.0,0.5,98.2,11.8,2,0,1

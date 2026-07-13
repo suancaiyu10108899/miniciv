@@ -4,14 +4,13 @@
 
 **P1.5 深度推进 — 全局压缩延寿甜点锁定, 交接给自动化会话跑完整矩阵。**
 
-> 🧭 **交接状态(2026-07-13 第六个 AI 完成 P1.5 深度推进):**
+> 🧭 **交接状态(2026-07-13 第六个 AI 完成四个任务):**
 > **最终甜点 C1**: ttM=12/hp=2000/fBT=14/uM=8/tcM=4/startR=40/branch@T40 → **82.9T**。
-> 1v1: StateAware 75.4%(最强), Cq/Cs=41/50%, Tb=8.75%, SvA vs Aw H2H=65%(R-1✅)。
-> 2v2: WvR 13.8%(1v1 61.8%→2v2 13.8%, 48pp逆转, R-3✅✅)。
-> **裁决: H1 方向强成立。** 全局压缩延寿有效(7-35T→82.9T)，红白反滚雪球有深度。
-> 诚实边界: StateAware 2v2 失效(0% vs AllWhite), Evo权重失效(3.3%), FlatMC未跑完(需要分层升级)。
-> **下一个 AI**: P2 结构性改动(更大棋盘+多回合建造) + FlatMC升级 + Evo重训 + StateAware 2v2修复。
-> **完整裁决**: `experiments/v0.10-redwhite/VERDICT-FINAL.md`。
+> **Evo GA重训**: 3.3%→85.0% fitness, vs Builder 94.7%, vs StateAware 75.7%。权重: `evo-trained-weights.json`。
+> **FlatMC打表**: depth=2在C1(82T游戏)中太浅, 仅vs Rusher 52.5%, 其余0-37%。需更深搜索(P2)。
+> **StateAware 2v2**: 修复后1.0%(修复前0.0%), 微升但仍弱。团队协调框架已就位, 处境判断需更多工作。
+> **裁决: H1 方向强成立。** R-1(处境决定路线✅), R-3(频率依赖48pp逆转✅✅)。
+> **下一个 AI**: P2 结构性改动(更大棋盘+多回合建造) + FlatMC更深搜索 + StateAware 2v2处境判断改进。
 
 ---
 

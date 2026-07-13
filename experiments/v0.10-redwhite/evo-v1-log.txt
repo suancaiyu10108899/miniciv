@@ -241,3 +241,11 @@ warning: `miniciv-core` (bin "train-evo-v1") generated 5 warnings (run `cargo fi
      Running `target\release\train-evo-v1.exe 80 40 12`
 Evo-V1: 40个体×80代×12seeds, 27特征(25+12交互)
 Gen 0: best=0.175 top10=0.129 
+Gen 10: best=0.458 top10=0.400 
+Gen 20: best=0.775 top10=0.713 
+Gen 30: best=0.825 top10=0.767 
+Gen 40: best=0.783 top10=0.748 
+Gen 50: best=0.833 top10=0.752 
+Gen 60: best=0.792 top10=0.761 
+Gen 70: best=0.850 top10=0.764 
+V1完成: fitness=0.867 → ../experiments/v0.10-redwhite/evo-v1-weights.json

@@ -1,31 +1,31 @@
 {
-  "fitness": 0.12000000000000002,
+  "fitness": 0.15,
   "strategy_weights": {
-    "aggression": 1.6770827271756248,
-    "construction": 0.6281215663727717,
-    "defense": 0.302005628772794,
-    "greed": 1.0876791129988983
+    "aggression": 1.1117139012242585,
+    "construction": 1.13364292333761,
+    "defense": 1.0587319633495214,
+    "greed": 1.235429396381143
   },
   "tactic_weights": {
     "Aggressive": {
-      "research_pref": 1.7527063705928922,
-      "rush_weight": 1.6397515175161952,
-      "unit_pref": 1.3312605824309116
+      "research_pref": 1.3283760874285027,
+      "rush_weight": 1.012894476834624,
+      "unit_pref": 1.5392644465438414
     },
     "Construction": {
-      "research_pref": 1.3903392925314353,
-      "rush_weight": 1.4468332758406826,
-      "unit_pref": 1.9808849289764658
+      "research_pref": 1.0561296101251387,
+      "rush_weight": 0.9448317800716948,
+      "unit_pref": 1.69628002975274
     },
     "Defensive": {
-      "research_pref": 1.6702240236728332,
-      "rush_weight": 1.5879395299364485,
-      "unit_pref": 1.6212302892665666
+      "research_pref": 1.1838277010473863,
+      "rush_weight": 1.4594752565599087,
+      "unit_pref": 1.489476368699156
     },
     "Greed": {
-      "research_pref": 2.1305316256071136,
-      "rush_weight": 0.9451331296448426,
-      "unit_pref": 1.0650288129341927
+      "research_pref": 0.8999995089297658,
+      "rush_weight": 0.9431948189452994,
+      "unit_pref": 1.155426155530093
     }
   }
 }

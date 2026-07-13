@@ -1,0 +1,325 @@
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\map.rs:25:24
+   |
+25 | use crate::constants::{MAP_W, MAP_H};
+   |                        ^^^^^  ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `FACILITY_OUTPUT`
+  --> src\economy.rs:18:5
+   |
+18 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\game.rs:23:5
+   |
+23 |     MAP_W, MAP_H,
+   |     ^^^^^  ^^^^^
+
+warning: unused import: `step_game`
+  --> src\eval.rs:13:53
+   |
+13 | use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
+   |                                                     ^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\greedy.rs:17:45
+   |
+17 | use crate::game::{GameState, primary_enemy, same_team};
+   |                                             ^^^^^^^^^
+
+warning: unused import: `City`
+  --> src\ai\greedy.rs:18:35
+   |
+18 | use crate::unit::{Unit, UnitType, City};
+   |                                   ^^^^
+
+warning: unused import: `Grid`
+  --> src\ai\greedy.rs:19:18
+   |
+19 | use crate::map::{Grid, Terrain};
+   |                  ^^^^
+
+warning: unused imports: `CAVALRY_CHARGE_BONUS`, `CITY_BASE_FOOD`, `CITY_DEF`, `CITY_HP`, `FACILITY_OUTPUT`, `STARTING_FOOD`, `STARTING_GOLD`, and `STARTING_WOOD`
+  --> src\ai\greedy.rs:23:19
+   |
+23 |     MAP_W, MAP_H, CITY_HP, CITY_DEF, CAVALRY_CHARGE_BONUS,
+   |                   ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+24 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+25 |     STARTING_FOOD, STARTING_WOOD, STARTING_GOLD,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused imports: `TechBonuses` and `TechManager`
+  --> src\ai\greedy.rs:27:19
+   |
+27 | use crate::tech::{TechManager, TechBonuses};
+   |                   ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\evo.rs:14:5
+   |
+14 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\fixed.rs:21:5
+   |
+21 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\probes.rs:19:5
+   |
+19 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `primary_enemy`
+  --> src\ai\search.rs:12:41
+   |
+12 | use crate::game::{GameState, step_game, primary_enemy};
+   |                                         ^^^^^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\flatmc.rs:23:41
+   |
+23 | use crate::game::{GameState, step_game, same_team, primary_enemy};
+   |                                         ^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\flatmc.rs:29:5
+   |
+29 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `generator_id`
+   --> src\map.rs:156:32
+    |
+156 | pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_generator_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\combat.rs:73:9
+   |
+73 |     let mut def_damage = calc_damage(defender.atk, def_bonus, attacker.def, att_bonus);
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `opp`
+  --> src\ai\random.rs:29:13
+   |
+29 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+   |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `rng`
+   --> src\ai\greedy.rs:146:47
+    |
+146 |     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+    |                                               ^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `opp`
+   --> src\ai\greedy.rs:147:13
+    |
+147 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `size`
+   --> src\ai\greedy.rs:330:9
+    |
+330 |     let size = MAP_W as i32;
+    |         ^^^^ help: if this is intentional, prefix it with an underscore: `_size`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:501:25
+    |
+501 |     strategy: Strategy, a: &StrategicAssessment,
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `pid`
+   --> src\ai\greedy.rs:720:34
+    |
+720 |     unit: &Unit, gs: &GameState, pid: u8,
+    |                                  ^^^ help: if this is intentional, prefix it with an underscore: `_pid`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:843:31
+    |
+843 |     counter: &Option<String>, a: &StrategicAssessment,
+    |                               ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `cfg`
+   --> src\ai\evo.rs:481:75
+    |
+481 |     tx: i32, ty: i32, dist_weight: f64, high_ground: f64, terrain_w: f64, cfg: &GreedyConfig,
+    |                                                                           ^^^ help: if this is intentional, prefix it with an underscore: `_cfg`
+
+warning: unused variable: `team_trailing`
+   --> src\ai\probes.rs:695:21
+    |
+695 |                 let team_trailing = t_lead <= 2;
+    |                     ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_team_trailing`
+
+warning: function `team_alive` is never used
+   --> src\game.rs:210:4
+    |
+210 | fn team_alive(team: u8, gs: &GameState) -> bool {
+    |    ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+   --> src\ai\greedy.rs:230:5
+    |
+226 | struct StrategicAssessment {
+    |        ------------------- fields in this struct
+...
+230 |     res_ratio: f64,
+    |     ^^^^^^^^^
+231 |     tech_lead: i32,
+    |     ^^^^^^^^^
+...
+234 |     my_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^
+235 |     opp_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+236 |     opp_near_city_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+237 |     enemy_defense_strong: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+238 |     weak_point: Option<(i32, i32)>,
+239 |     my_power: i32,
+    |     ^^^^^^^^
+240 |     opp_power: i32,
+    |     ^^^^^^^^^
+    |
+    = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `miniciv-core` (lib) generated 28 warnings (run `cargo fix --lib -p miniciv-core` to apply 26 suggestions)
+warning: unused import: `std::io::Write`
+  --> src\bin\train-evo.rs:20:5
+   |
+20 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `miniciv-core` (bin "train-evo") generated 1 warning (run `cargo fix --bin "train-evo" -p miniciv-core` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target\release\train-evo.exe 80 50 15`
+Evo GA: 50个体 × 80代(从0代开始) × 15seeds × 5对手 = 7500 评估/代, C1甜点(不改)
+Gen 0: best=0.200 top10avg=0.101 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 1: best=0.207 top10avg=0.174 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 2: best=0.220 top10avg=0.187 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 3: best=0.273 top10avg=0.223 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 4: best=0.340 top10avg=0.258 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 5: best=0.420 top10avg=0.339 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 6: best=0.473 top10avg=0.407 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 7: best=0.420 top10avg=0.405 
+Gen 8: best=0.547 top10avg=0.439 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 9: best=0.507 top10avg=0.447 
+Gen 10: best=0.687 top10avg=0.460 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 11: best=0.707 top10avg=0.573 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 12: best=0.747 top10avg=0.709 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 13: best=0.767 top10avg=0.729 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 14: best=0.760 top10avg=0.727 
+Gen 15: best=0.760 top10avg=0.733 
+Gen 16: best=0.747 top10avg=0.735 
+Gen 17: best=0.780 top10avg=0.742 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 18: best=0.767 top10avg=0.738 
+Gen 19: best=0.760 top10avg=0.730 
+Gen 20: best=0.760 top10avg=0.725 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 21: best=0.780 top10avg=0.735 
+Gen 22: best=0.793 top10avg=0.734 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 23: best=0.753 top10avg=0.729 
+Gen 24: best=0.787 top10avg=0.739 
+Gen 25: best=0.760 top10avg=0.733 
+Gen 26: best=0.793 top10avg=0.735 
+Gen 27: best=0.760 top10avg=0.729 
+Gen 28: best=0.793 top10avg=0.737 
+Gen 29: best=0.767 top10avg=0.736 
+Gen 30: best=0.793 top10avg=0.751 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 31: best=0.767 top10avg=0.745 
+Gen 32: best=0.787 top10avg=0.746 
+Gen 33: best=0.760 top10avg=0.728 
+Gen 34: best=0.800 top10avg=0.751 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 35: best=0.780 top10avg=0.742 
+Gen 36: best=0.793 top10avg=0.755 
+Gen 37: best=0.787 top10avg=0.752 
+Gen 38: best=0.787 top10avg=0.749 
+Gen 39: best=0.780 top10avg=0.750 
+Gen 40: best=0.793 top10avg=0.759 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 41: best=0.767 top10avg=0.737 
+Gen 42: best=0.780 top10avg=0.759 
+Gen 43: best=0.807 top10avg=0.754 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 44: best=0.787 top10avg=0.761 
+Gen 45: best=0.800 top10avg=0.755 
+Gen 46: best=0.807 top10avg=0.765 
+Gen 47: best=0.753 top10avg=0.745 
+Gen 48: best=0.800 top10avg=0.749 
+Gen 49: best=0.780 top10avg=0.749 
+Gen 50: best=0.793 top10avg=0.751 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 51: best=0.787 top10avg=0.761 
+Gen 52: best=0.787 top10avg=0.761 
+Gen 53: best=0.813 top10avg=0.769 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 54: best=0.807 top10avg=0.767 
+Gen 55: best=0.773 top10avg=0.759 
+Gen 56: best=0.787 top10avg=0.749 
+Gen 57: best=0.800 top10avg=0.765 
+Gen 58: best=0.807 top10avg=0.765 
+Gen 59: best=0.780 top10avg=0.758 
+Gen 60: best=0.813 top10avg=0.765 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 61: best=0.793 top10avg=0.757 
+Gen 62: best=0.767 top10avg=0.733 
+Gen 63: best=0.787 top10avg=0.753 
+Gen 64: best=0.780 top10avg=0.766 
+Gen 65: best=0.773 top10avg=0.755 
+Gen 66: best=0.767 top10avg=0.749 
+Gen 67: best=0.773 top10avg=0.753 
+Gen 68: best=0.793 top10avg=0.761 
+Gen 69: best=0.753 top10avg=0.745 
+Gen 70: best=0.800 top10avg=0.761 
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 71: best=0.787 top10avg=0.752 
+Gen 72: best=0.787 top10avg=0.761 
+Gen 73: best=0.787 top10avg=0.763 
+Gen 74: best=0.827 top10avg=0.755 ★
+  checkpoint → experiments/v0.10-redwhite/evo-checkpoint.json
+Gen 75: best=0.767 top10avg=0.753 
+Gen 76: best=0.753 top10avg=0.733 
+Gen 77: best=0.787 top10avg=0.754 
+Gen 78: best=0.780 top10avg=0.761 
+Gen 79: best=0.773 top10avg=0.741 
+
+thread 'main' (46920) panicked at src\bin\train-evo.rs:162:38:
+called `Result::unwrap()` on an `Err` value: Os { code: 3, kind: NotFound, message: "系统找不到指定的路径。" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: process didn't exit successfully: `target\release\train-evo.exe 80 50 15` (exit code: 101)

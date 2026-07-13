@@ -620,76 +620,147 @@ impl Agent for AlwaysRedAgent {
 }
 
 /// StateAware — 领先→选白, 落后→选红。
-/// P1.5深度改进(第六个AI): 领先判断从"设施≥3且城HP≥对手"
-/// 改为多维信号(资源/军事/科技/支持度风险), 适配极端参数下设施建造极慢的情况。
-/// 检验规格 R-1: "处境决定路线"是否优于 AlwaysWhite/AlwaysRed。
+/// P1.5深度改进v2(第六个AI): 1v1/2v2自适应。
+///   1v1: 5维个人领先判断 + 支持度风险
+///   2v2: 团队状态评估 + 角色协商(队友选白则我选红互补) + 多人目标选择
+/// 检验规格 R-1: "处境决定路线"是否优于固定路线。
 pub struct StateAwareAgent;
 
 impl Agent for StateAwareAgent {
     fn decide(&self, gs: &GameState, pid: u8, _rng: &mut dyn RngCore) -> Vec<Action> {
-        let opp = crate::game::primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+        let n = gs.config.player_count;
         let mut actions = Vec::new();
         let econ = &gs.economies[pid as usize];
 
-        // P1.5深度: 多维领先判断(不只依赖设施数——极端参数下建得极慢)
-        let mut my_facs = 0u32;
+        // ── P1.5v2: 团队辅助函数 ──
+        let my_team: Vec<u8> = (0..n).filter(|&p| crate::game::same_team(pid, p, &gs.config)).collect();
+        let enemies: Vec<u8> = (0..n).filter(|&p| !crate::game::same_team(pid, p, &gs.config)).collect();
+        let is_multi = n > 2;  // 2v2+模式
         let ms = gs.config.map_size as i32;
+
+        // ── 统计己方个人指标 ──
+        let mut my_facs = 0u32;
         for r in 0..ms { for q in 0..ms {
             if let Some(f) = &gs.grid.get(q, r).facility {
                 if f.player_id == pid { my_facs += 1; }
             }
         }}
-        // 军事力: 己方战斗单位 vs 对手
         let my_mil = gs.units.iter()
             .filter(|u| u.alive && u.player_id == pid
                      && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout)
             .count();
-        let opp_mil = gs.units.iter()
-            .filter(|u| u.alive && u.player_id == opp
-                     && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout)
-            .count();
-        // 资源总量
         let my_res = econ.food + econ.wood + econ.gold;
-        let opp_res = gs.economies[opp as usize].food + gs.economies[opp as usize].wood + gs.economies[opp as usize].gold;
-        // 科技数
         let my_techs = gs.techs[pid as usize].completed.len();
-        let opp_techs = gs.techs[opp as usize].completed.len();
         let my_city_hp = gs.cities[pid as usize].hp;
-        let opp_city_hp = gs.cities[opp as usize].hp;
 
-        // 综合领先评分(每个维度 >对手 积1分, 共5维)
-        let mut lead_score = 0i32;
-        if my_facs > 0 && my_facs >= 2 { lead_score += 1; }  // 至少建了2设施
-        if my_mil >= opp_mil { lead_score += 1; }
-        if my_res >= opp_res { lead_score += 1; }
-        if my_techs >= opp_techs { lead_score += 1; }
-        if my_city_hp >= opp_city_hp { lead_score += 1; }
-
-        // 领先(≥3/5维度占优) → 白; 落后(≤1) → 红; 均势(2)→看支持度风险
-        let leading = lead_score >= 3;
-        let trailing = lead_score <= 1;
-
-        // P1.5深度: 支持度风险评估——如果支持度已偏低, 选白会加速危机, 可能不如选红稳
-        let support_risky = econ.support < gs.config.support_penalty_threshold + 15;
-
+        // ── 分支选择逻辑(1v1 vs 2v2 不同) ──
         if econ.branch.is_none() && gs.turn >= gs.config.branch_available_turn {
-            if leading && !support_risky {
-                actions.push(Action::ChooseBranch { branch: "White".to_string() });
-            } else if trailing || support_risky {
-                actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+            if is_multi {
+                // ══ 2v2: 团队状态评估 + 角色协商 ══
+                // 团队聚合指标
+                let mut team_facs = my_facs;
+                let mut team_mil = my_mil as u32;
+                let mut team_res = my_res;
+                let mut team_techs = my_techs as u32;
+                let mut team_min_hp = my_city_hp;
+                let mut enemy_facs = 0u32;
+                let mut enemy_mil = 0u32;
+                let mut enemy_res = 0i32;
+                let mut enemy_techs = 0u32;
+                for &t in &my_team { if t != pid {
+                    team_facs += count_facilities(gs, t);
+                    team_mil += count_military(gs, t);
+                    let er = &gs.economies[t as usize];
+                    team_res += er.food + er.wood + er.gold;
+                    team_techs += gs.techs[t as usize].completed.len() as u32;
+                    team_min_hp = team_min_hp.min(gs.cities[t as usize].hp);
+                }}
+                for &e in &enemies {
+                    enemy_facs += count_facilities(gs, e);
+                    enemy_mil += count_military(gs, e);
+                    let er = &gs.economies[e as usize];
+                    enemy_res += er.food + er.wood + er.gold;
+                    enemy_techs += gs.techs[e as usize].completed.len() as u32;
+                }
+
+                // 团队领先评分
+                let mut t_lead = 0i32;
+                if team_facs >= enemy_facs { t_lead += 1; }
+                if team_mil >= enemy_mil { t_lead += 1; }
+                if team_res >= enemy_res { t_lead += 1; }
+                if team_techs >= enemy_techs { t_lead += 1; }
+                if team_min_hp > 0 { t_lead += 1; }  // 没人被灭城
+
+                let team_leading = t_lead >= 3;
+                let team_trailing = t_lead <= 2;
+
+                // 角色协商: 检查队友是否已选路线
+                let teammate_branch: Option<crate::economy::Branch> = my_team.iter()
+                    .filter(|&&t| t != pid)
+                    .filter_map(|&t| gs.economies[t as usize].branch)
+                    .next();
+
+                // 支持度风险(2v2中加倍——游戏更长, 危机更致命)
+                let support_risky_2v2 = econ.support < 50;
+
+                match teammate_branch {
+                    // 队友选了White → 我选Red互补(白冲锋+红兜底)
+                    Some(crate::economy::Branch::White) => {
+                        actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+                    }
+                    // 队友选了Red → 如果团队领先且支持度安全, 我选White施压
+                    Some(crate::economy::Branch::Red) => {
+                        if team_leading && !support_risky_2v2 {
+                            actions.push(Action::ChooseBranch { branch: "White".to_string() });
+                        } else {
+                            actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+                        }
+                    }
+                    // 队友未选 → 根据团队状态决定
+                    None => {
+                        if team_leading && !support_risky_2v2 {
+                            actions.push(Action::ChooseBranch { branch: "White".to_string() });
+                        } else {
+                            actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+                        }
+                    }
+                }
             } else {
-                // 均势且支持度安全: 略倾向白(利用产出加成扩大优势)
-                actions.push(Action::ChooseBranch { branch: "White".to_string() });
+                // ══ 1v1: 个人5维领先判断(原有逻辑) ══
+                let opp = enemies.first().copied().unwrap_or(if pid == 0 { 1 } else { 0 });
+                let opp_mil = count_military(gs, opp) as usize;
+                let opp_res = gs.economies[opp as usize].food + gs.economies[opp as usize].wood + gs.economies[opp as usize].gold;
+                let opp_techs = gs.techs[opp as usize].completed.len();
+                let opp_city_hp = gs.cities[opp as usize].hp;
+
+                let mut lead_score = 0i32;
+                if my_facs >= 2 { lead_score += 1; }
+                if my_mil >= opp_mil { lead_score += 1; }
+                if my_res >= opp_res { lead_score += 1; }
+                if my_techs >= opp_techs { lead_score += 1; }
+                if my_city_hp >= opp_city_hp { lead_score += 1; }
+
+                let leading = lead_score >= 3;
+                let trailing = lead_score <= 1;
+                let support_risky = econ.support < gs.config.support_penalty_threshold + 15;
+
+                if leading && !support_risky {
+                    actions.push(Action::ChooseBranch { branch: "White".to_string() });
+                } else if trailing || support_risky {
+                    actions.push(Action::ChooseBranch { branch: "Red".to_string() });
+                } else {
+                    actions.push(Action::ChooseBranch { branch: "White".to_string() });
+                }
             }
         }
 
-        // 按所选路线行动
+        // ── 行动(White=进攻, Red=防守/建设) ──
         if econ.branch == Some(crate::economy::Branch::Red)
            && econ.organization >= gs.config.red_lian_da_org_cost {
             actions.push(Action::RedeemOrg { mode: "LianDa".to_string() });
         }
 
-        // 研究: 白线走M兵 → C1(解锁经济基础), 红线走C建设
+        // 研究
         let tech = &gs.techs[pid as usize];
         if tech.researching.is_none() {
             let order: &[&str] = if econ.branch == Some(crate::economy::Branch::White) {
@@ -712,8 +783,50 @@ impl Agent for StateAwareAgent {
 
         let player_units: Vec<(usize, &crate::unit::Unit)> = gs.units.iter().enumerate()
             .filter(|(_, u)| u.player_id == pid && u.alive).collect();
-        let (ecq, ecr) = (gs.cities[opp as usize].q, gs.cities[opp as usize].r);
-        let (mcq, mcr) = (gs.cities[pid as usize].q, gs.cities[pid as usize].r);
+
+        // ── 多人目标选择 ──
+        let (target_q, target_r) = if econ.branch == Some(crate::economy::Branch::White) {
+            // White: 进攻——找最近的敌人中威胁最大的
+            if is_multi {
+                // 2v2: 优先帮队友——扑向离队友城最近的敌单位
+                let mut best_target = (gs.cities[enemies[0] as usize].q, gs.cities[enemies[0] as usize].r);
+                let mut best_d = i32::MAX;
+                for &t in &my_team { if t != pid {
+                    let (tq, tr) = (gs.cities[t as usize].q, gs.cities[t as usize].r);
+                    for &e in &enemies {
+                        let (eq, er) = (gs.cities[e as usize].q, gs.cities[e as usize].r);
+                        let d = crate::movement::hex_distance(tq, tr, eq, er) as i32;
+                        if d < best_d { best_d = d; best_target = (eq, er); }
+                    }
+                }}
+                // 如果队友安全: 直接扑最近的敌城
+                if best_d > 8 {
+                    let mc = &gs.cities[pid as usize];
+                    let mut nd = i32::MAX;
+                    for &e in &enemies {
+                        let d = crate::movement::hex_distance(mc.q, mc.r, gs.cities[e as usize].q, gs.cities[e as usize].r) as i32;
+                        if d < nd { nd = d; best_target = (gs.cities[e as usize].q, gs.cities[e as usize].r); }
+                    }
+                }
+                best_target
+            } else {
+                let opp = enemies[0];
+                (gs.cities[opp as usize].q, gs.cities[opp as usize].r)
+            }
+        } else {
+            // Red: 守城——守团队中最弱的城
+            if is_multi {
+                let mut weakest = pid;
+                let mut min_hp = my_city_hp;
+                for &t in &my_team {
+                    let hp = gs.cities[t as usize].hp;
+                    if hp < min_hp { min_hp = hp; weakest = t; }
+                }
+                (gs.cities[weakest as usize].q, gs.cities[weakest as usize].r)
+            } else {
+                (gs.cities[pid as usize].q, gs.cities[pid as usize].r)
+            }
+        };
 
         for (local_idx, (_, unit)) in player_units.iter().enumerate() {
             match unit.unit_type {
@@ -724,13 +837,7 @@ impl Agent for StateAwareAgent {
                 }
                 UnitType::Scout => {}
                 _ => {
-                    // 白线进攻, 红线守城
-                    let (tq, tr) = if econ.branch == Some(crate::economy::Branch::White) {
-                        (ecq, ecr)
-                    } else {
-                        (mcq, mcr)
-                    };
-                    if let Some((dq, dr)) = step_toward(unit, tq, tr, &gs.grid) {
+                    if let Some((dq, dr)) = step_toward(unit, target_q, target_r, &gs.grid) {
                         actions.push(Action::Move { unit_idx: local_idx, dq, dr });
                     }
                 }
@@ -752,6 +859,26 @@ impl Agent for StateAwareAgent {
         actions
     }
     fn name(&self) -> &str { "StateAware" }
+}
+
+/// 统计某玩家设施数
+fn count_facilities(gs: &GameState, pid: u8) -> u32 {
+    let ms = gs.config.map_size as i32;
+    let mut count = 0u32;
+    for r in 0..ms { for q in 0..ms {
+        if let Some(f) = &gs.grid.get(q, r).facility {
+            if f.player_id == pid { count += 1; }
+        }
+    }}
+    count
+}
+
+/// 统计某玩家战斗单位数
+fn count_military(gs: &GameState, pid: u8) -> u32 {
+    gs.units.iter()
+        .filter(|u| u.alive && u.player_id == pid
+                 && u.unit_type != UnitType::Worker && u.unit_type != UnitType::Scout)
+        .count() as u32
 }
 
 /// TankThenRed — 前期故意不产兵(保持高支持度)→选红线→爆发。

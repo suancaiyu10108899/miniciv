@@ -217,3 +217,7 @@ warning: `miniciv-core` (bin "flatmc-full") generated 1 warning (run `cargo fix 
 [skip] 24,StateAware
 [skip] 24,AlwaysWhite
 [A 1/18] depth=32 vs Builder: WR=88.4%±1.0 T=142.5±17.3 elapsed=219s eta=3730s
+[A 2/18] depth=32 vs StateAware: WR=93.7%±0.8 T=117.7±14.1 elapsed=184s eta=1476s
+[A 3/18] depth=32 vs AlwaysWhite: WR=90.5%±0.9 T=136.1±16.1 elapsed=266s eta=1332s
+[A 4/18] depth=40 vs Builder: WR=94.8%±0.7 T=136.5±15.5 elapsed=275s eta=964s
+[A 5/18] depth=40 vs StateAware: WR=93.2%±0.8 T=120.5±14.1 elapsed=223s eta=581s

@@ -1,0 +1,279 @@
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\map.rs:25:24
+   |
+25 | use crate::constants::{MAP_W, MAP_H};
+   |                        ^^^^^  ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `FACILITY_OUTPUT`
+  --> src\economy.rs:18:5
+   |
+18 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MAP_H` and `MAP_W`
+  --> src\game.rs:23:5
+   |
+23 |     MAP_W, MAP_H,
+   |     ^^^^^  ^^^^^
+
+warning: unused import: `step_game`
+  --> src\eval.rs:13:53
+   |
+13 | use crate::game::{GameState, init_game_with_config, step_game, step_game_multi, VictoryType};
+   |                                                     ^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\greedy.rs:17:45
+   |
+17 | use crate::game::{GameState, primary_enemy, same_team};
+   |                                             ^^^^^^^^^
+
+warning: unused import: `City`
+  --> src\ai\greedy.rs:18:35
+   |
+18 | use crate::unit::{Unit, UnitType, City};
+   |                                   ^^^^
+
+warning: unused import: `Grid`
+  --> src\ai\greedy.rs:19:18
+   |
+19 | use crate::map::{Grid, Terrain};
+   |                  ^^^^
+
+warning: unused imports: `CAVALRY_CHARGE_BONUS`, `CITY_BASE_FOOD`, `CITY_DEF`, `CITY_HP`, `FACILITY_OUTPUT`, `STARTING_FOOD`, `STARTING_GOLD`, and `STARTING_WOOD`
+  --> src\ai\greedy.rs:23:19
+   |
+23 |     MAP_W, MAP_H, CITY_HP, CITY_DEF, CAVALRY_CHARGE_BONUS,
+   |                   ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+24 |     FACILITY_OUTPUT, CITY_BASE_FOOD,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+25 |     STARTING_FOOD, STARTING_WOOD, STARTING_GOLD,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused imports: `TechBonuses` and `TechManager`
+  --> src\ai\greedy.rs:27:19
+   |
+27 | use crate::tech::{TechManager, TechBonuses};
+   |                   ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\evo.rs:14:5
+   |
+14 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\fixed.rs:21:5
+   |
+21 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\probes.rs:19:5
+   |
+19 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `primary_enemy`
+  --> src\ai\search.rs:12:41
+   |
+12 | use crate::game::{GameState, step_game, primary_enemy};
+   |                                         ^^^^^^^^^^^^^
+
+warning: unused import: `same_team`
+  --> src\ai\flatmc.rs:23:41
+   |
+23 | use crate::game::{GameState, step_game, same_team, primary_enemy};
+   |                                         ^^^^^^^^^
+
+warning: unused import: `crate::tech::TechManager`
+  --> src\ai\flatmc.rs:29:5
+   |
+29 | use crate::tech::TechManager;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `generator_id`
+   --> src\map.rs:156:32
+    |
+156 | pub fn generate_map(seed: u64, generator_id: &str, map_size: u8, player_count: u8) -> Grid {
+    |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_generator_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\combat.rs:73:9
+   |
+73 |     let mut def_damage = calc_damage(defender.atk, def_bonus, attacker.def, att_bonus);
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `opp`
+  --> src\ai\random.rs:29:13
+   |
+29 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+   |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `rng`
+   --> src\ai\greedy.rs:146:47
+    |
+146 |     fn decide(&self, gs: &GameState, pid: u8, rng: &mut dyn RngCore) -> Vec<Action> {
+    |                                               ^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `opp`
+   --> src\ai\greedy.rs:147:13
+    |
+147 |         let opp = primary_enemy(pid, &gs.config).unwrap_or(if pid == 0 { 1 } else { 0 });
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_opp`
+
+warning: unused variable: `size`
+   --> src\ai\greedy.rs:330:9
+    |
+330 |     let size = MAP_W as i32;
+    |         ^^^^ help: if this is intentional, prefix it with an underscore: `_size`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:501:25
+    |
+501 |     strategy: Strategy, a: &StrategicAssessment,
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `pid`
+   --> src\ai\greedy.rs:720:34
+    |
+720 |     unit: &Unit, gs: &GameState, pid: u8,
+    |                                  ^^^ help: if this is intentional, prefix it with an underscore: `_pid`
+
+warning: unused variable: `a`
+   --> src\ai\greedy.rs:843:31
+    |
+843 |     counter: &Option<String>, a: &StrategicAssessment,
+    |                               ^ help: if this is intentional, prefix it with an underscore: `_a`
+
+warning: unused variable: `cfg`
+   --> src\ai\evo.rs:481:75
+    |
+481 |     tx: i32, ty: i32, dist_weight: f64, high_ground: f64, terrain_w: f64, cfg: &GreedyConfig,
+    |                                                                           ^^^ help: if this is intentional, prefix it with an underscore: `_cfg`
+
+warning: unused variable: `team_trailing`
+   --> src\ai\probes.rs:695:21
+    |
+695 |                 let team_trailing = t_lead <= 2;
+    |                     ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_team_trailing`
+
+warning: function `team_alive` is never used
+   --> src\game.rs:210:4
+    |
+210 | fn team_alive(team: u8, gs: &GameState) -> bool {
+    |    ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+   --> src\ai\greedy.rs:230:5
+    |
+226 | struct StrategicAssessment {
+    |        ------------------- fields in this struct
+...
+230 |     res_ratio: f64,
+    |     ^^^^^^^^^
+231 |     tech_lead: i32,
+    |     ^^^^^^^^^
+...
+234 |     my_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^
+235 |     opp_frontline_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+236 |     opp_near_city_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^
+237 |     enemy_defense_strong: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+238 |     weak_point: Option<(i32, i32)>,
+239 |     my_power: i32,
+    |     ^^^^^^^^
+240 |     opp_power: i32,
+    |     ^^^^^^^^^
+    |
+    = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `miniciv-core` (lib) generated 28 warnings (run `cargo fix --lib -p miniciv-core` to apply 26 suggestions)
+warning: unused import: `miniciv_core::ai::greedy::GreedyConfig`
+ --> src\bin\eval-trained.rs:9:5
+  |
+9 | use miniciv_core::ai::greedy::GreedyConfig;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `miniciv-core` (bin "eval-trained") generated 1 warning (run `cargo fix --bin "eval-trained" -p miniciv-core` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.29s
+     Running `target\release\eval-trained.exe 300 ../experiments/v0.10-redwhite/final-matrix-300s.json`
+Evo(训练后): 加载 15 权重, fitness=0.850
+矩阵: 13 AI × 300 seeds paired, C1甜点
+═══ 关键对局 ═══
+       Builder vs Rusher           53.7%  Cq:278 Cs:265 Tb:57 avgT:84.7
+       Builder vs CavRusher        54.7%  Cq:272 Cs:268 Tb:60 avgT:87.6
+       Builder vs Defender         82.8%  Cq:0 Cs:328 Tb:272 avgT:148.0
+       Builder vs AlwaysWhite      44.0%  Cq:336 Cs:258 Tb:6 avgT:70.1
+       Builder vs AlwaysRed        58.7%  Cq:0 Cs:367 Tb:233 avgT:136.1
+       Builder vs StateAware       52.8%  Cq:282 Cs:312 Tb:6 avgT:80.6
+       Builder vs TankThenRed      52.2%  Cq:0 Cs:510 Tb:90 avgT:88.9
+       Builder vs Evo              98.3%  Cq:10 Cs:166 Tb:424 avgT:202.3
+       Builder vs Evo               4.0%  Cq:576 Cs:13 Tb:11 avgT:87.5
+        Rusher vs CavRusher        47.2%  Cq:234 Cs:0 Tb:366 avgT:182.5
+        Rusher vs Defender          4.3%  Cq:26 Cs:159 Tb:415 avgT:193.1
+        Rusher vs AlwaysWhite       5.5%  Cq:594 Cs:0 Tb:6 avgT:95.2
+        Rusher vs AlwaysRed        51.8%  Cq:311 Cs:258 Tb:31 avgT:94.3
+        Rusher vs StateAware       20.2%  Cq:595 Cs:0 Tb:5 avgT:97.8
+        Rusher vs TankThenRed      36.2%  Cq:217 Cs:333 Tb:50 avgT:81.9
+        Rusher vs Evo              97.0%  Cq:173 Cs:0 Tb:427 avgT:200.1
+        Rusher vs Evo              26.5%  Cq:342 Cs:0 Tb:258 avgT:154.7
+     CavRusher vs Defender          2.8%  Cq:17 Cs:106 Tb:477 avgT:212.2
+     CavRusher vs AlwaysWhite       4.5%  Cq:598 Cs:0 Tb:2 avgT:86.2
+     CavRusher vs AlwaysRed        39.3%  Cq:236 Cs:285 Tb:79 avgT:115.6
+     CavRusher vs StateAware       15.8%  Cq:594 Cs:0 Tb:6 avgT:100.1
+     CavRusher vs TankThenRed      34.2%  Cq:205 Cs:345 Tb:50 avgT:83.2
+     CavRusher vs Evo              96.2%  Cq:139 Cs:0 Tb:461 avgT:211.4
+     CavRusher vs Evo              11.7%  Cq:429 Cs:0 Tb:171 avgT:130.9
+      Defender vs AlwaysWhite      27.7%  Cq:434 Cs:151 Tb:15 avgT:80.6
+      Defender vs AlwaysRed        10.2%  Cq:0 Cs:91 Tb:509 avgT:223.5
+      Defender vs StateAware        2.2%  Cq:584 Cs:9 Tb:7 avgT:101.2
+      Defender vs TankThenRed      22.7%  Cq:0 Cs:392 Tb:208 avgT:127.3
+      Defender vs Evo              98.8%  Cq:7 Cs:15 Tb:578 avgT:245.5
+      Defender vs Evo               5.2%  Cq:569 Cs:5 Tb:26 avgT:91.0
+   AlwaysWhite vs AlwaysRed        65.2%  Cq:391 Cs:202 Tb:7 avgT:75.3
+   AlwaysWhite vs StateAware       34.0%  Cq:595 Cs:0 Tb:5 avgT:99.2
+   AlwaysWhite vs TankThenRed      44.7%  Cq:268 Cs:326 Tb:6 avgT:69.7
+   AlwaysWhite vs Evo              99.8%  Cq:598 Cs:0 Tb:2 avgT:82.8
+   AlwaysWhite vs Evo              80.0%  Cq:599 Cs:0 Tb:1 avgT:95.0
+     AlwaysRed vs StateAware       16.0%  Cq:499 Cs:79 Tb:22 avgT:101.5
+     AlwaysRed vs TankThenRed      37.3%  Cq:0 Cs:422 Tb:178 avgT:118.1
+     AlwaysRed vs Evo              98.8%  Cq:7 Cs:234 Tb:359 avgT:201.1
+     AlwaysRed vs Evo               9.2%  Cq:545 Cs:48 Tb:7 avgT:85.1
+    StateAware vs TankThenRed      35.5%  Cq:209 Cs:385 Tb:6 avgT:76.7
+    StateAware vs Evo              99.8%  Cq:452 Cs:48 Tb:100 avgT:130.3
+    StateAware vs Evo              21.2%  Cq:590 Cs:6 Tb:4 avgT:90.7
+   TankThenRed vs Evo              98.8%  Cq:7 Cs:300 Tb:293 avgT:176.0
+   TankThenRed vs Evo               5.8%  Cq:565 Cs:29 Tb:6 avgT:85.5
+           Evo vs Evo               2.0%  Cq:255 Cs:0 Tb:345 avgT:179.8
+
+═══ 全局胜率 ═══
+           Builder:  56.3%
+            Rusher:  38.9%
+         CavRusher:  34.7%
+          Defender:  41.8%
+          Adaptive:  59.4%
+            Random:  24.6%
+       AlwaysWhite:  76.4%
+         AlwaysRed:  52.6%
+        StateAware:  71.7%
+       TankThenRed:  61.9%
+            Greedy:  47.6%
+               Evo:  39.5%
+               Evo:  39.5%
+已写入 ../experiments/v0.10-redwhite/final-matrix-300s.json

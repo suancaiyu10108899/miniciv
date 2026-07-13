@@ -38,6 +38,7 @@ experiments/v0.6.3/  — construction first >30%
 experiments/v0.7.0-grid-final/ — 方格终版矩阵 (10,000 games)
 experiments/v0.7.0-hex-baseline/ — 六边形基线矩阵 (900 games)
 eval_final/          — 4×4 核心矩阵 (16,000 games)
+experiments/v0.10-redwhite/ — P1.5全部(~120万局+164K BC样本)
 ```
 
 ### 实验格式标准

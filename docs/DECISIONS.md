@@ -269,6 +269,13 @@ hp=100 使征服成为可行路径（~60% Builder vs Rusher, 0% 阶梯）。
 **为什么**: 极端参数下基础成本和实际成本差3-8倍，AI自欺→CavRusher 0.5%。修复后复活到35.2%。
 **依据**: 本对话 Phase 1 修复记录。
 
+### 25. FlatMC对手模型过拟合确认（2026-07-13 第六个 AI）
+
+**日期**: 2026-07-13
+**决策**: FlatMC minimax 假设集（Builder/Rusher/CavRusher）不覆盖 AlwaysWhite。深度超过 d40 后对所有对手的胜率单调下降——d96 vs Builder 76.1%（从 d40 的 94.8% 跌下来），vs AlwaysWhite 49.5%（从 d16 的 92.6% 跌下来）。P2 必须扩展 minimax 对手集。
+**为什么**: 深度 2→96×500s 全曲线 + 胜利方式分析（深深度出现建设尝试替代征服→两头落空）。自对弈非传递性也支持（d40>d24 但 d40<d32）。
+**依据**: `experiments/v0.10-redwhite/flatmc-d{2-96}.csv` + flatmc-self 数据。
+
 ---
 
 *最后更新: 2026-07-13*

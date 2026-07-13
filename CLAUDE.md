@@ -14,54 +14,63 @@
 
 ---
 
-## 交接清单
+## 交接清单 (P1.5 完成 → P2)
 
-### 1. 当前甜点参数
+### 1. 最终甜点参数 (C1)
 ```
-max_turns: 150-200        tech_turns_mult: 9.0       all_tech_cost_mult: 3.0
-unit_cost_mult: 8.0       facility_build_turns: 8     city_hp: 1200
-c_line_cost_mult: 1.0     starting_resources: 30      facility_output: 4
-starting_workers: 2       branch_available_turn: 25
+max_turns: 250            tech_turns_mult: 12.0       all_tech_cost_mult: 4.0
+unit_cost_mult: 8.0       facility_build_turns: 14    city_hp: 2000
+c_line_cost_mult: 1.0     starting_resources: 40      facility_output: 4
+starting_workers: 2       branch_available_turn: 40
 ```
-**结果**: Builder vs Rusher 53.6T, 55%征服/39%建设/5%阶梯。但仅200 seeds, StateAware非最强, CavRusher坏了。
+**结果**: 82.9T均结束, 征服41/建设50/阶梯9%。FlatMC d24全局87.8%最强。
+克制环: StateAware>AlwaysWhite>Builder>StateAware。
 
-### 2. 需要继续做的事(按优先级)
-| # | 任务 | 工具 | 预计 |
-|---|------|------|------|
-| 1 | 扫参推高回合数→65-80T | `bin/scan-fine` 扩参数范围(ttM=10-14, fBT=10-12, hp=1500-2000) | 自动 20min |
-| 2 | 红白分叉点扫描 branch@20-40T | 修改 scan-fine 加入 branch_turn 扫描 | 自动 15min |
-| 3 | 完整1v1 500s矩阵 | `bin/sweet-eval 500` | 自动 1-2h |
-| 4 | 完整2v2 200s矩阵 | 需更新 team-eval 支持新Config字段 | 编码30min + 自动1h |
-| 5 | 修CavRusher(极端参数下骑兵成本40粮不可行) | 修改 probes.rs | 10min |
-| 6 | FlatMC分层评估升级 | 修改 flatmc.rs | 1-2h |
-| 7 | Evo重训(Rust端遗传算法) | 新bin或lib | 1h编码+训练 |
-| 8 | 统计输出(方差/标准差/每胜利类型回合分布) | 扩sweet-eval | 30min |
-| 9 | 文档+裁决+VERDICT更新 | 写experiments/v0.10-redwhite/VERDICT.md | 1h |
+### 2. 已完成 (P1.5全部)
+| # | 任务 | 状态 |
+|---|------|------|
+| 1 | 全局压缩延寿 7-35T→82.9T | ✅ |
+| 2 | 红白分叉点 branch@T40 | ✅ |
+| 3 | 完整1v1 500s矩阵 (6 AI) | ✅ |
+| 4 | 完整2v2矩阵 | ✅ |
+| 5 | 修CavRusher (0.5%→35%) | ✅ |
+| 6 | FlatMC深度曲线 2→96×500s | ✅ |
+| 7 | Evo GA重训 (3.3%→86.7%) | ✅ |
+| 8 | Evo三方向升级 (V1/V2/V3) | ✅ |
+| 9 | BC蒸馏框架 (164K自对弈数据) | ✅ |
+| 10 | 文档+裁决+VERDICT | ✅ |
 
-### 3. 新增Config字段(所有AI需感知)
-```
-tech_turns_mult: f64      (tech.rs tick_research)
-all_tech_cost_mult: f64   (tech.rs cost_of)
-unit_cost_mult: f64       (economy.rs produce_unit + game.rs)
-facility_build_turns: u8  (unit.rs build_ticks + game.rs)
-construction_team_facilities: u8 (game.rs check_construction_victory)
-```
+### 3. P1.5关键发现
+- **对手模型过拟合**: FlatMC深度>40后对所有对手下降 (minimax只假设Builder/Rusher/CavRusher)
+- **非传递克制环**: StateAware>AlwaysWhite>Builder>StateAware
+- **频率依赖**: WvR 1v1 64%→2v2 15%, 48pp逆转
+- **线性Evo天花板**: 0.867, 加交互特征不突破
+- **NN(2000参)+ES**: 0.863, 需要更好优化器
 
-### 4. 新增二进制工具
-```
-bin/sweet-eval   — 甜点专用矩阵(硬编码甜点Config)
-bin/scan-coarse  — 粗扫(修改源码改参数范围)
-bin/scan-fine    — 细扫(同上)
-bin/scan2v2      — 2v2快速参数扫描
-bin/scan-length  — 游戏长度单维扫描
-bin/team-eval    — 2v2团队评估(需更新Config支持新字段)
-```
+### 4. P2需要做的事
+| # | 任务 | 原因 |
+|---|------|------|
+| 1 | 更大棋盘 (≥25×25) | 突破15×15硬天花板 |
+| 2 | 扩展FlatMC minimax对手集 | 修对手模型过拟合 |
+| 3 | NN继续训练 (Adam+更多代) | V2b已到0.863, 有潜力超线性Evo |
+| 4 | BC重新设计 (整体turn-plan) | 动作分解架构失败 |
+| 5 | 多回合建造/更多科技节点 | 增加决策深度 |
+| 6 | 迷雾FOW | 信息博弈 |
+| 7 | StateAware 2v2修复 | 当前1% |
 
-### 5. 已知Bug/问题
-- CavRusher在极端参数下不可用(骑兵成本过高) — 需修探针
-- StateAware不如AlwaysWhite(60.8% vs 70.7%) — 分叉点或判断逻辑需调整
-- team-eval未支持新Config字段(ttM/tcM/uM/fBT) — 需更新
-- FlatMC候选爆炸(2000+候选) — 需分层评估
+### 5. 关键数据文件
+```
+experiments/v0.10-redwhite/
+├── flatmc-d{2-96}.csv          — FlatMC深度曲线(500 seeds)
+├── flatmc-self-d*.csv          — 自对弈数据
+├── phase-a-matrix.csv          — FlatMC×Evo矩阵
+├── final-matrix-500s.json      — 6AI最终矩阵
+├── bc-selfplay-data.csv        — BC自对弈164K行
+├── evo-trained-weights.json    — Evo最佳权重(86.7%)
+├── evo-v2b-weights.json        — NN权重(86.3%)
+├── VERDICT-FINAL.md            — 完整裁决
+└── scan-push-30s.csv           — 6912组合粗扫
+```
 
 ### 6. 测试: 103 passed / 0 failed / 3 ignored
 

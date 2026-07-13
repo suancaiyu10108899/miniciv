@@ -202,10 +202,46 @@ warning: multiple fields are never read
     = note: `StrategicAssessment` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
 
 warning: `miniciv-core` (lib) generated 28 warnings (run `cargo fix --lib -p miniciv-core` to apply 26 suggestions)
-    Finished `release` profile [optimized] target(s) in 0.15s
-     Running `target\release\bc-selfplay.exe 1000`
-BC自对弈: 1000局, FlatMC d32 vs d24, 全核并行
-100g/14684r
-200g/30232r
-300g/47874r
-400g/64479r
+warning: unused import: `VictoryType`
+ --> src\bin\bc-collect-self.rs:8:71
+  |
+8 | use miniciv_core::game::{GameState, init_game_with_config, step_game, VictoryType};
+  |                                                                       ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src\bin\bc-collect-self.rs:114:22
+    |
+114 |     let (mut r,mut p,mut po,mut b,mut re,mut ex) = ("None".to_string(),"None".to_string(),"Attack".to_string(),"None".to_string(),"...
+    |                      ----^^
+    |                      |
+    |                      help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `miniciv-core` (bin "bc-collect-self") generated 2 warnings (run `cargo fix --bin "bc-collect-self" -p miniciv-core` to apply 2 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target\release\bc-collect-self.exe 1000`
+BC自对弈: 1000局 FlatMC d32 vs d24, CPU拉满
+[50/1000] 7216行 elapsed=19s
+[100/1000] 15319行 elapsed=35s
+[150/1000] 23418行 elapsed=54s
+[200/1000] 31555行 elapsed=71s
+[250/1000] 39767行 elapsed=91s
+[300/1000] 47751行 elapsed=109s
+[350/1000] 56286行 elapsed=128s
+[400/1000] 64109行 elapsed=150s
+[450/1000] 72493行 elapsed=175s
+[500/1000] 81355行 elapsed=198s
+[550/1000] 89593行 elapsed=223s
+[600/1000] 97357行 elapsed=244s
+[650/1000] 105866行 elapsed=269s
+[700/1000] 114426行 elapsed=296s
+[750/1000] 123131行 elapsed=319s
+[800/1000] 131220行 elapsed=342s
+[850/1000] 139258行 elapsed=364s
+[900/1000] 147300行 elapsed=385s
+[950/1000] 155407行 elapsed=407s
+[1000/1000] 164193行 elapsed=438s
+完成: 164193行, 438s

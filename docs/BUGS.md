@@ -72,19 +72,14 @@ B4/B5 随 B2 一并处理。
 - **B6 新增 — Greedy HashMap 迭代非确定性(隐藏)**: greedy.rs `clean_opponent_history`
   用 `map.keys()`(HashMap 顺序随机)淘汰对手模型 → 同 seed 不同结果。只影响 Greedy。
   **✅ S2 修复(2026-07-11)**: `opponent_models` HashMap→BTreeMap, keys() 有序 → 淘汰确定(最小 seed), 消除非确定性。
-- **B3(range_dist 弓箭手射程2)⚠️ 仍待修** — 下一步。
-
 - **B3(range_dist 弓箭手射程2)✅ 已修**: try_ranged_attack, 弓箭手站射程2内攻击不移动、不还手。
   Move 处理集成(有射程内目标则射击不移动)。Defender 弓箭手守城生效, 但攻城修复后步兵 rush 太强, 仍挡不住。
 
 ## 全部硬伤修复完成
-B1(攻城渐进)/B2(move_speed)/B3(射程2)/B5(冲锋) 全修; B4 本已实现; B6(Greedy非确定)只影响Greedy待修。
+B1(攻城渐进)/B2(move_speed)/B3(射程2)/B5(冲锋) 全修; B4 本已实现; B6(Greedy非确定) S2已修复(BTreeMap替代HashMap)。
 **兵种机制现在完整。** 重测(修完后甜点带矩阵): 军事变强、征服/建设均衡(44/42), 但Rusher偏强需重新平衡。
 数据 → experiments/v0.8.2-balance-scan/matrix-sweet-bugfixed.json
 
-## B7 — 遇林停实现成"卡死"(2026-07-10 修复)
-**现象**: 骑兵朝森林移动 → dq,dr 变(0,0) → 原地完全不动(卡死), 不是"停在林边"。
-六边地图50
 ## B7 — 遇林停实现成"卡死"(2026-07-10 修复) ✅
 
 **现象**: 骑兵朝森林移动 → dq,dr 变(0,0) → 原地完全不动(卡死), 不是"停在林边"。

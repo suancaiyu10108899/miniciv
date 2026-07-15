@@ -2,15 +2,20 @@
 
 ## 当前阶段
 
-**P1.5 深度推进 — 全局压缩延寿甜点锁定, 交接给自动化会话跑完整矩阵。**
+**P2 规划设计 — 已完成 8+ 轮讨论 + 3 组外部 AI 输入整合，等待 P2-PLAN 合同提炼。**
 
-> 🧭 **P1.5 收尾(2026-07-13 第六个 AI):**
-> **裁决: H1 方向强成立 + 无平台期。** 全局压缩延寿(7-35T→82.9T)、红白反滚雪球(R-1✅ R-3✅✅)、
-> Evo GA重训(3.3%→85%)、FlatMC深度曲线(2→24无平台, depth=16达74-98%)。
-> **最终甜点 C1**: ttM=12/hp=2000/fBT=14/uM=8/tcM=4/startR=40/branch@T40。
-> **关键洞察**: FlatMC从depth=2到24未遇平台期(三段跃升), 游戏搜索空间远超预估 → P2需depth≥16裁判。
-> **下一个 AI**: P2 — 更大棋盘(≥25×25)、多回合建造、更多科技节点、迷雾FOW、StateAware 2v2修复。
-> **完整裁决**: `experiments/v0.10-redwhite/VERDICT-FINAL.md` | **tag**: `v0.10-p1.5`
+> 🧭 **P2 规划设计 (2026-07-13~15 第七个 AI):**
+> P1.5 已关闭(tag: v0.10-p1.5, H1 裁决)。本轮对话完成：
+> 1. **P2-AUDIT**: 全面审计代码/文档/实验真实状态 → `docs/P2-AUDIT.md`
+> 2. **8+ 轮 P2 设计讨论**: 四时代框架、聚落分级、Flexible Zoning、河流水域格、五货币三战略、
+>    天命系统、贸易依赖度、清洁能源、核威慑中断机制、多边贸易竞争、灾害军民两用、
+>    沙漠/海洋地形价值重定义、铜双铸、战争烈度分级、行政力等 → `docs/planning/2026-07-13-P2-planning-discussion.md`
+> 3. **3 组外部 AI 输入整合**: GPT-5.6 Sol / DeepSeek V4 Pro / Claude Fable 5 各提供
+>    完整规划蓝图 + 中国史机制灵感素材库 → `docs/planning/P2-external-inputs/`
+> 4. **综合整理**: 交叉验证 + 新元素评估 + P2-PLAN 推荐结构 → `docs/planning/P2-external-synthesis.md`
+> **下一个对话**: 审阅综合整理 → 决断 P2 范围 → 提炼 `docs/P2-PLAN.md`（合同）。
+> **代码状态**: 103 tests 绿, 1 个 commit 未 push(网络问题), working tree clean。
+> **版本**: V1.0.0-dev (P2 规划锁定，尚未开始实现)
 
 ---
 
@@ -166,9 +171,10 @@ experiments/v0.10-redwhite/
 | 找什么 | 去哪 |
 |--------|------|
 | Phase 进度 + 当前状态 | **本文件**（唯一真相源） |
+| **P2 设计讨论完整记录** | **`docs/planning/2026-07-13-P2-planning-discussion.md`**（8+轮共识+待决事项） |
+| **P2 外部输入综合整理** | **`docs/planning/P2-external-synthesis.md`**（三AI交叉验证+推荐结构） |
+| **P2 启动审计** | **`docs/P2-AUDIT.md`**（代码/文档/AI/实验真实状态） |
 | **北极星愿景(中国史4X/红白反滚雪球/三步走)** | **`docs/planning/2026-07-12-north-star-vision.md`**（活文档,最长远愿景+深度规格） |
-| **P1.5「立红白」合同(下个对话执行)** | **`docs/planning/2026-07-12-stage-P1.5-goal-acceptance.md`**（committed形态+验收+止损） |
-| **个人管理体系(vault)对接** | **`docs/personal-management/README.md`**（阶段结束向 dev-hub 同步纪律） |
 | 游戏参数（唯一真相源） | `docs/GAME.md` |
 | 设计决策 | `docs/DECISIONS.md` |
 | 开发纪律 | `docs/WORKFLOW.md` |
@@ -181,6 +187,7 @@ experiments/v0.10-redwhite/
 | 文档索引(活跃/历史分层) | `docs/INDEX.md` |
 | Rust 代码 | `miniciv-core/src/` |
 | Python 六边引擎 | `prototype_hex/` |
-| 交接文档(深化起点) | `docs/HANDOFF.md` |
+| 交接文档(深化起点,已过期) | `docs/HANDOFF.md` |
+| P1.5 交接(最新) | `docs/HANDOFF-P2.md` |
 | Session 日志 | `docs/sessions/` |
 | 学习笔记 | `docs/learning/` |

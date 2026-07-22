@@ -1,6 +1,6 @@
 // BC V2训练: 监督学习, 复用V2b NN架构, 从自对弈数据训练
 // 用法: cargo run --release --bin bc-train-v2 -- [data.csv] [weights_out.json]
-use std::collections::{HashMap, BTreeMap};
+use std::collections::HashMap;
 use rand::Rng;
 use rand::SeedableRng;
 use rand_chacha::ChaCha12Rng;
@@ -36,12 +36,12 @@ fn main() {
     // 初始化NN参数(复用V2b架构)
     let n_in=25; let n_h1=32; let n_h2=16;
     let mut rng = ChaCha12Rng::seed_from_u64(42);
-    let rand_mat = |r:usize,c:usize| -> Vec<Vec<f64>> { let s=(2.0/c as f64).sqrt(); (0..r).map(|_|(0..c).map(|_|rng.gen_range(-s..s)).collect()).collect() };
+    let mut rand_mat = |r:usize,c:usize| -> Vec<Vec<f64>> { let s=(2.0/c as f64).sqrt(); (0..r).map(|_|(0..c).map(|_|rng.gen_range(-s..s)).collect()).collect() };
     let mut w1=rand_mat(n_h1,n_in); let mut b1=vec![0.0f64;n_h1];
     let mut w2=rand_mat(n_h2,n_h1); let mut b2=vec![0.0f64;n_h2];
 
     // 6个输出头(从数据统计类别)
-    let axes = ["research","produce","posture","branch","redeem","expand"];
+    let _axes = ["research","produce","posture","branch","redeem","expand"];
     let mut head_classes: Vec<Vec<String>> = Vec::new();
     let mut head_w: Vec<Vec<Vec<f64>>> = Vec::new();
     let mut head_b: Vec<Vec<f64>> = Vec::new();
@@ -60,9 +60,8 @@ fn main() {
     eprintln!("架构: 25→32→16→{:?}类", head_classes.iter().map(|c|c.len()).collect::<Vec<_>>());
 
     // Adam训练
-    let lr=0.001; let b1a=0.9; let b2a=0.999; let eps=1e-8; let epochs=300; let batch=64;
+    let lr=0.001; let epochs=300; let batch=64;
     let n = features.len();
-    let mut adam = vec![vec![vec![0.0f64;0];0];8]; // 简化: 用固定lr
 
     for ep in 0..epochs {
         let mut loss_sum=0.0f64; let mut correct=0u32; let mut total=0u32;

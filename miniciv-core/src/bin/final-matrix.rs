@@ -29,7 +29,10 @@ fn main() {
     }
     let bc = BcAgent::from_file("../experiments/v0.10-redwhite/bc-v2-weights.json").ok();
     let builder = BuilderAgent; let aw = AlwaysWhiteAgent; let sa = StateAwareAgent; let ad = AdaptiveAgent;
-    let mut agent_list: Vec<Box<dyn Agent>> = vec![Box::new(BuilderAgent),Box::new(AlwaysWhiteAgent),Box::new(StateAwareAgent),Box::new(AdaptiveAgent)];
+    let mut agent_list: Vec<Box<dyn Agent>> = vec![];
+    agent_list.push(Box::new(BuilderAgent)); agent_list.push(Box::new(AlwaysWhiteAgent));
+    agent_list.push(Box::new(StateAwareAgent)); agent_list.push(Box::new(AdaptiveAgent));
+    agent_list.push(Box::new(fmc24)); agent_list.push(Box::new(fmc32));
     if let Some(b) = bc { eprintln!("BC loaded"); agent_list.push(Box::new(b)); }
     agent_list.push(Box::new(evo));
     let refs: Vec<&dyn Agent> = agent_list.iter().map(|a| a.as_ref()).collect();
